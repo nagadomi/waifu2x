@@ -1,0 +1,78 @@
+<html>
+  <head>
+    <style type="text/css" rel="http://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.3/normalize.min.css"></style>
+    <style type="text/css">
+    body {
+      margin: 1em 2em 1em 2em;
+      background: LightGray;
+      width: 640px;
+    }
+    fieldset {
+      margin-top: 1em;
+      margin-bottom: 1em;
+    }
+    .about {
+      font-size: 0.8em;
+      margin: 1em 0 1em 0;
+    }
+    .help {
+      font-size: 0.8em;
+      margin: 1em 0 1em 0;
+    }
+    </style>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script type="text/javascript">
+    function clear_file() {
+      var new_file = $("#file").clone();
+      new_file.change(clear_url);
+      $("#file").replaceWith(new_file);
+    }
+    function clear_url() {
+      $("#url").val("")
+    }
+    $(function (){
+      $("#url").change(clear_file);
+      $("#file").change(clear_url);
+    })
+    </script>
+  </head>
+  <body>
+    <h1>waifu2x</h1>
+    <div class="header">
+      <a href="https://github.com/you">
+	<img style="position: absolute; top: 0; left: 540; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png">
+      </a>
+      <a href="index.ja.html">ja</a>/<a href="index.html">en</a>
+    </div>
+    <div class="about">
+      Single-Image Super-Resolution for anime/fan-arts using Deep Convolutional Neural Networks.
+    </div>
+    <form action="/api" method="POST" enctype="multipart/form-data" target="_blank">
+      <fieldset>
+	<legend>Image</legend>
+	<div>
+	  URL: <input id="url" type="text" name="url" size="64"/> or
+	</div>
+	<div>
+	  FILE: <input id="file" type="file" name="file"/>
+	</div>
+	<div class="help">
+	  Limits: FileSize: 2MB, Noise Reduction: 2560x2560px, Upscaling: 1280x1280px
+	</div>
+      </fieldset>
+      <fieldset>
+	<legend>Noise Reduction (expect JPEG Artifact)</legend>
+	<label><input type="radio" name="noise" value="0"> None</label>
+	<label><input type="radio" name="noise" value="1" checked="checked"> Low</label>
+	<label><input type="radio" name="noise" value="2"> High</label>
+      </fieldset>
+      <fieldset>
+	<legend>Upscaling</legend>
+	<label><input type="radio" name="scale" value="0" checked="checked"> None</label>
+	<label><input type="radio" name="scale" value="1"> 1.6x</label>
+	<label><input type="radio" name="scale" value="2"> 2x</label>
+      </fieldset>
+      <input type="submit"/>
+    </form>
+  </body>
+</html>
