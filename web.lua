@@ -1,4 +1,4 @@
-local ROOT = '/home/nagadomi/dev/waifu2x'
+local ROOT = '/home/ubuntu/waifu2x'
 
 _G.TURBO_SSL = true -- Enable SSL
 local turbo = require 'turbo'
@@ -142,9 +142,9 @@ function APIHandler:post()
 	 end
       elseif noise ~= 0 or scale ~= 0 then
 	 if noise == 1 then
-	    x = apply_denose1(x)
+	    x = apply_denoise1(x)
 	 elseif noise == 2 then
-	    x = apply_denose2(x)
+	    x = apply_denoise2(x)
 	 end
 	 if scale == 1 then
 	    local x16 = {math.floor(x:size(3) * 1.6 + 0.5), math.floor(x:size(2) * 1.6 + 0.5)}
@@ -170,6 +170,7 @@ function APIHandler:post()
 	 self:write("ERROR: max image size exceeded.")
       end
    end
+   collectgarbage()
 end
 local FormHandler = class("FormHandler", turbo.web.RequestHandler)
 function FormHandler:get()
@@ -197,5 +198,5 @@ local app = turbo.web.Application:new(
       {"^/api$", APIHandler},
    }
 )
-app:listen(8888, "0.0.0.0", {max_body_size = CURL_MAX_SIZE})
+app:listen(8812, "0.0.0.0", {max_body_size = CURL_MAX_SIZE})
 turbo.ioloop.instance():start()
