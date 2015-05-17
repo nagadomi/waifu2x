@@ -1,6 +1,11 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8">
+    <link rel="canonical" href="http://waifu2x.udp.jp/"/>
+    
+    <title>waifu2x</title>
+    
+    <script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
     <style type="text/css" rel="http://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.3/normalize.min.css"></style>
     <style type="text/css">
     body {
@@ -40,7 +45,7 @@
   <body>
     <h1>waifu2x</h1>
     <div class="header">
-      <a href="https://github.com/you">
+      <a href="https://github.com/nagadomi/waifu2x">
 	<img style="position: absolute; top: 0; left: 540; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png">
       </a>
     </div>
@@ -49,7 +54,7 @@
     </div>
     <form action="/api" method="POST" enctype="multipart/form-data" target="_blank">
       <fieldset>
-	<legend>Image</legend>
+	<legend>画像</legend>
 	<div>
 	  URL: <input id="url" type="text" name="url" size="64"/> or
 	</div>
@@ -77,9 +82,20 @@
     <div class="help">
       <ul>
 	<li>なし/なしで入力画像を変換せずに出力する。ブラウザのタブで変換結果を比較したい人用。</li>
-	<li>JPEG画像であれば劣化がないように見えてもノイズ除去弱を推奨。</li>
-	<li>マンガスキャンの拡大はスクリーントーンが謎の模様に再構成されるため非対応。</li>
       </ul>
+    </div>
+    <!-- buttons -->
+    <div>
+      <div style="float:left">
+	<g:plusone size="small"></g:plusone>
+      </div>
+      <div style="float:left">
+	<div id="fb-root"></div>
+	<script src="http://connect.facebook.net/en_US/all.js#xfbml=1">
+	</script>
+	<fb:like href="http://waifu2x.udp.jp/" send="true" layout="button_count" width="450" show_faces="true" font=""></fb:like>
+      </div>
+      <div style="clear:both"></div>
     </div>
   </body>
 </html>
