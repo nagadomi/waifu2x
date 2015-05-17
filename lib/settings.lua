@@ -51,7 +51,7 @@ torch.setnumthreads(settings.core)
 settings.images = string.format("%s/images.t7", settings.data_dir)
 settings.image_list = string.format("%s/image_list.txt", settings.data_dir)
 
-settings.validation_ratio = 01
+settings.validation_ratio = 0.1
 settings.validation_crops = 40
 settings.block_offset = 7 -- see srcnn.lua
 

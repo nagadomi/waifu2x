@@ -6,7 +6,7 @@ local pairwise_transform = {}
 
 function pairwise_transform.scale(src, scale, size, offset, options)
    options = options or {}
-   local yi = torch.radom(0, src:size(2) - size - 1)
+   local yi = torch.random(0, src:size(2) - size - 1)
    local xi = torch.random(0, src:size(3) - size - 1)
    local down_scale = 1.0 / scale
    local y = image.crop(src, xi, yi, xi + size, yi + size)

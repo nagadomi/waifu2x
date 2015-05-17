@@ -2,10 +2,10 @@ require 'optim'
 require 'cutorch'
 require 'xlua'
 
-local function minibatch_sgd(model, criterion,
-			     train_x,
-			     config, transformer,
-			     input_size, target_size)
+local function minibatch_adam(model, criterion,
+			      train_x,
+			      config, transformer,
+			      input_size, target_size)
    local parameters, gradParameters = model:getParameters()
    config = config or {}
    local sum_loss = 0
@@ -47,7 +47,6 @@ local function minibatch_sgd(model, criterion,
 	 model:backward(inputs, criterion:backward(output, targets))
 	 return f, gradParameters
       end
-      -- must use Adam!!
       optim.adam(feval, parameters, config)
       
       c = c + 1
@@ -60,4 +59,4 @@ local function minibatch_sgd(model, criterion,
    return { mse = sum_loss / count_loss}
 end
 
-return minibatch_sgd
+return minibatch_adam
