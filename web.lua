@@ -167,7 +167,7 @@ function APIHandler:post()
 	 self:write("ERROR: unsupported image format.")
       else
 	 self:set_status(400)
-	 self:write("ERROR: max image size exceeded.")
+	 self:write("ERROR: image size exceeds maximum allowable size.")
       end
    end
    collectgarbage()
