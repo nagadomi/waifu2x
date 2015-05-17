@@ -1,11 +1,11 @@
+<!DOCTYPE html> 
 <html>
   <head>
-    <link rel="canonical" href="http://waifu2x.udp.jp/"/>
-    
+    <meta charset="UTF-8">
+    <link rel="canonical" href="http://waifu2x.udp.jp/">
     <title>waifu2x</title>
     
-    <script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
-    <style type="text/css" rel="http://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.3/normalize.min.css"></style>
+    <link type="text/css" rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.3/normalize.min.css">
     <style type="text/css">
     body {
       margin: 1em 2em 1em 2em;
@@ -25,7 +25,7 @@
       margin: 1em 0 1em 0;
     }
     </style>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     <script type="text/javascript">
     function clear_file() {
       var new_file = $("#file").clone();
@@ -45,7 +45,7 @@
     <h1>waifu2x</h1>
     <div class="header">
       <a href="https://github.com/nagadomi/waifu2x">
-	<img style="position: absolute; top: 0; left: 540; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png">
+	<img style="position: absolute; top: 0; left: 540px; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png">
       </a>
       <a href="index.ja.html">ja</a>/<a href="index.html">en</a>
     </div>
@@ -56,10 +56,10 @@
       <fieldset>
 	<legend>Image</legend>
 	<div>
-	  URL: <input id="url" type="text" name="url" size="64"/> or
+	  URL: <input id="url" type="text" name="url" style="width:400px"> or
 	</div>
 	<div>
-	  FILE: <input id="file" type="file" name="file"/>
+	  FILE: <input id="file" type="file" name="file">
 	</div>
 	<div class="help">
 	  Limits: FileSize: 2MB, Noise Reduction: 2560x2560px, Upscaling: 1280x1280px
@@ -79,18 +79,5 @@
       </fieldset>
       <input type="submit"/>
     </form>
-    <!-- buttons -->
-    <div>
-      <div style="float:left">
-	<g:plusone size="small"></g:plusone>
-      </div>
-      <div style="float:left">
-	<div id="fb-root"></div>
-	<script src="http://connect.facebook.net/en_US/all.js#xfbml=1">
-	</script>
-	<fb:like href="http://waifu2x.udp.jp/" send="true" layout="button_count" width="450" show_faces="true" font=""></fb:like>
-      </div>
-      <div style="clear:both"></div>
-    </div>
   </body>
 </html>
