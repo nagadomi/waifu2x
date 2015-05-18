@@ -173,6 +173,8 @@ function APIHandler:post()
    collectgarbage()
 end
 local FormHandler = class("FormHandler", turbo.web.RequestHandler)
+local index_ja = file.read(path.join(ROOT, "assets/index.ja.html"))
+local index_en = file.read(path.join(ROOT, "assets/index.html"))
 function FormHandler:get()
    local lang = self.request.headers:get("Accept-Language")
    if lang then
@@ -181,12 +183,12 @@ function FormHandler:get()
 	 langs[i] = utils.split(langs[i], ";")[1]
       end
       if langs[1] == "ja" then
-	 self:write(file.read(path.join(ROOT, "assets/index.ja.html")))
+	 self:write(index_ja)
       else
-	 self:write(file.read(path.join(ROOT, "assets/index.html")))
+	 self:write(index_en)
       end
    else
-      self:write(file.read(path.join(ROOT, "assets/index.html")))
+      self:write(index_en)
    end
 end
 
