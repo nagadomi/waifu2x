@@ -17,6 +17,15 @@ waifu2x is inspired by SRCNN [1]. 2D character picture (HatsuneMiku) is licensed
 - [1] Chao Dong, Chen Change Loy, Kaiming He, Xiaoou Tang, "Image Super-Resolution Using Deep Convolutional Networks", http://arxiv.org/abs/1501.00092
 - [2] "For Creators", http://piapro.net/en_for_creators.html
 
+## Public AMI
+```
+AMI name: waifu2x server
+AMI ID: ami-75f01931
+Region: N. California
+Instance: g2.2xlarge (require a GPU)
+OS: Ubuntu 14.04
+User: ubuntu
+```
 ## Dependencies
 
 ### Platform
@@ -25,6 +34,8 @@ waifu2x is inspired by SRCNN [1]. 2D character picture (HatsuneMiku) is licensed
 - [NVIDIA cuDNN](https://developer.nvidia.com/cuDNN)
 
 ### Packages (luarocks)
+- cutorch
+- cunn
 - [cudnn](https://github.com/soumith/cudnn.torch)
 - [graphicsmagick](https://github.com/clementfarabet/graphicsmagick)
 - [turbo](https://github.com/kernelsauce/turbo)
@@ -33,7 +44,7 @@ waifu2x is inspired by SRCNN [1]. 2D character picture (HatsuneMiku) is licensed
 
 NOTE: Turbo 1.1.3 has bug in file uploading. Please install from the master branch on github.
 
-## Running The Web Application
+## Web Application
 
 Please edit the first line in `web.lua`.
 ```
@@ -102,7 +113,7 @@ th cleanup_model.lua -model models/noise2_model.t7 -oformat ascii
 ```
 You can check the performance of model with `models/noise2_best.png`.
 
-### Training a 2x Upsclaing model
+### Training a 2x UPscaling model
 
 ```
 th train.lua -method scale -scale 2 -test images/miku_small.png
