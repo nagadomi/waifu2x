@@ -1,7 +1,7 @@
 require 'image'
 local iproc = require './iproc'
 
-local function reconstract_layer(model, x, block_size, offset)
+local function reconstruct_layer(model, x, block_size, offset)
    if x:dim() == 2 then
       x = x:reshape(1, x:size(1), x:size(2))
    end
@@ -26,7 +26,7 @@ local function reconstract_layer(model, x, block_size, offset)
    end
    return new_x
 end
-local function reconstract(model, x, offset, block_size)
+local function reconstruct(model, x, offset, block_size)
    block_size = block_size or 128
    local output_size = block_size - offset * 2
    local h_blocks = math.floor(x:size(2) / output_size) +
@@ -41,7 +41,7 @@ local function reconstract(model, x, offset, block_size)
    local pad_h2 = (h - offset) - x:size(2)
    local pad_w2 = (w - offset) - x:size(3)
    local yuv = image.rgb2yuv(iproc.padding(x, pad_w1, pad_w2, pad_h1, pad_h2))
-   local y = reconstract_layer(model, yuv[1], block_size, offset)
+   local y = reconstruct_layer(model, yuv[1], block_size, offset)
    y[torch.lt(y, 0)] = 0
    y[torch.gt(y, 1)] = 1
    yuv[1]:copy(y)
@@ -55,4 +55,4 @@ local function reconstract(model, x, offset, block_size)
    return output
 end
 
-return reconstract
+return reconstruct

@@ -8,7 +8,7 @@ local settings = require './lib/settings'
 local minibatch_adam = require './lib/minibatch_adam'
 local iproc = require './lib/iproc'
 local create_model = require './lib/srcnn'
-local reconstract, reconstract_ch = require './lib/reconstract'
+local reconstruct = require './lib/reconstruct'
 local pairwise_transform = require './lib/pairwise_transform'
 local image_loader = require './lib/image_loader'
 
@@ -16,12 +16,12 @@ local function save_test_scale(model, rgb, file)
    local input = iproc.scale(rgb,
 			     rgb:size(3) * settings.scale,
 			     rgb:size(2) * settings.scale)
-   local up = reconstract(model, input, settings.block_offset)
+   local up = reconstruct(model, input, settings.block_offset)
    
    image.save(file, up)
 end
 local function save_test_jpeg(model, rgb, file)
-   local im, count = reconstract(model, rgb, settings.block_offset)
+   local im, count = reconstruct(model, rgb, settings.block_offset)
    image.save(file, im)
 end
 local function split_data(x, test_size)

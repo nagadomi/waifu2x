@@ -16,7 +16,7 @@ package.path = package.path .. ";" .. path.join(ROOT, 'lib', '?.lua')
 
 require 'LeakyReLU'
 local iproc = require 'iproc'
-local reconstract = require 'reconstract'
+local reconstruct = require 'reconstruct'
 local image_loader = require 'image_loader'
 
 local noise1_model = torch.load(path.join(ROOT, "models", "noise1_model.t7"), "ascii")
@@ -74,13 +74,13 @@ local function get_image(req)
 end
 
 local function apply_denoise1(x)
-   return reconstract(noise1_model, x, BLOCK_OFFSET)
+   return reconstruct(noise1_model, x, BLOCK_OFFSET)
 end
 local function apply_denoise2(x)
-   return reconstract(noise2_model, x, BLOCK_OFFSET)
+   return reconstruct(noise2_model, x, BLOCK_OFFSET)
 end
 local function apply_scale2x(x)
-   return reconstract(scale20_model,
+   return reconstruct(scale20_model,
 		      iproc.scale(x, x:size(3) * 2.0, x:size(2) * 2.0),
 		      BLOCK_OFFSET)
 end

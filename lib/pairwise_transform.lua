@@ -1,7 +1,7 @@
 require 'image'
 local gm = require 'graphicsmagick'
 local iproc = require './iproc'
-local reconstract = require './reconstract'
+local reconstruct = require './reconstruct'
 local pairwise_transform = {}
 
 function pairwise_transform.scale(src, scale, size, offset, options)
@@ -55,7 +55,7 @@ function pairwise_transform.scale(src, scale, size, offset, options)
       end
    end
    if options.denoise_model and (options.denoise_ratio or 0.5) > torch.uniform() then
-      x = reconstract(options.denoise_model, x:float():div(255), offset):mul(255):byte()
+      x = reconstruct(options.denoise_model, x:float():div(255), offset):mul(255):byte()
    end
    x = iproc.scale(x, y:size(3), y:size(2))
    y = y:float():div(255)
