@@ -162,7 +162,7 @@ th convert_data.lua
 ### Training a Noise Reduction(level1) model
 
 ```
-th train.lua -method noise -noise_level 1 -test images/miku_noise.png
+th train.lua -method noise -noise_level 1 -test images/miku_noisy.png
 th cleanup_model.lua -model models/noise1_model.t7 -oformat ascii
 ```
 You can check the performance of model with `models/noise1_best.png`.
@@ -170,7 +170,7 @@ You can check the performance of model with `models/noise1_best.png`.
 ### Training a Noise Reduction(level2) model
 
 ```
-th train.lua -method noise -noise_level 2 -test images/miku_noise.png
+th train.lua -method noise -noise_level 2 -test images/miku_noisy.png
 th cleanup_model.lua -model models/noise2_model.t7 -oformat ascii
 ```
 You can check the performance of model with `models/noise2_best.png`.
