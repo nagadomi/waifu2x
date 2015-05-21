@@ -70,6 +70,7 @@ Google! Search keyword is "install cuda ubuntu" and "install cudnn ubuntu"
 sudo luarocks install cutorch
 sudo luarocks install cunn
 sudo luarocks install cudnn
+sudo apt-get install graphicsmagick libgraphicsmagick-dev
 sudo luarocks install graphicsmagick
 ```
 
