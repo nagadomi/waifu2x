@@ -49,7 +49,7 @@ NOTE: Turbo 1.1.3 has bug in file uploading. Please install from the master bran
 
 ## Installation
 
-### STEP1: Setting Up the Command line Tool Environment
+### Setting Up the Command Line Tool Environment
  (on Ubuntu 14.04)
  
 #### Install Torch7
@@ -78,7 +78,7 @@ Test the waifu2x command line tool.
 th waifu2x.lua
 ```
 
-### STEP2: Setting Up the Web Application Environment (if you needed)
+### Setting Up the Web Application Environment (if you needed)
 
 #### Install luajit 2.0.4
 
