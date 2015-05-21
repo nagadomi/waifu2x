@@ -84,7 +84,7 @@ th waifu2x.lua
 #### Install luajit 2.0.4
 
 ```
-curl http://luajit.org/download/LuaJIT-2.0.4.tar.gz
+curl -O http://luajit.org/download/LuaJIT-2.0.4.tar.gz
 tar -xzvf LuaJIT-2.0.4.tar.gz
 cd LuaJIT-2.0.4
 make
