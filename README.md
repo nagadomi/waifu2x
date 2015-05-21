@@ -152,7 +152,7 @@ Genrating a file list.
 ```
 find /path/to/image/dir -name "*.png" > data/image_list.txt
 ```
-(You should use PNG! In my case, waifu2x is trained by 3000 PNG images.)
+(You should use PNG! In my case, waifu2x is trained with 3000 high-resolution-beautiful-PNG images.)
 
 Converting training data.
 ```
