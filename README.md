@@ -28,6 +28,9 @@ User: ubuntu
 ```
 ## Dependencies
 
+### Hardware
+- NVIDIA GPU (Compute Capability 3.0 or later)
+
 ### Platform
 - [Torch7](http://torch.ch/)
 - [NVIDIA CUDA](https://developer.nvidia.com/cuda-toolkit)
@@ -43,6 +46,64 @@ User: ubuntu
 - uuid
 
 NOTE: Turbo 1.1.3 has bug in file uploading. Please install from the master branch on github.
+
+## Installation
+
+### STEP1: Setting Up the Command line Tool Environment
+ (on Ubuntu 14.04)
+ 
+#### Install Torch7
+
+```
+sudo apt-get install curl
+curl -s https://raw.githubusercontent.com/torch/ezinstall/master/install-all | sudo bash 
+```
+see [Torch (easy) install](https://github.com/torch/ezinstall)
+
+#### Install CUDA and cuDNN.
+
+Google! Search keyword is "install cuda ubuntu" and "install cudnn ubuntu"
+
+#### Install packages
+
+```
+sudo luarocks install cutorch
+sudo luarocks install cunn
+sudo luarocks install cudnn
+sudo luarocks install graphicsmagick
+```
+
+Test the waifu2x command line tool. 
+```
+th waifu2x.lua
+```
+
+### STEP2: Setting Up the Web Application Environment (if you needed)
+
+#### Install luajit 2.0.4
+
+```
+curl http://luajit.org/download/LuaJIT-2.0.4.tar.gz
+tar -xzvf LuaJIT-2.0.4.tar.gz
+cd LuaJIT-2.0.4
+make
+sudo make install
+```
+
+#### Install packages
+
+Install luarocks packages.
+```
+sudo luarocks install md5
+sudo luarocks install uuid
+```
+
+Install turbo.
+```
+git clone https://github.com/kernelsauce/turbo.git
+cd turbo
+sudo luarocks make rockspecs/turbo-dev-1.rockspec 
+```
 
 ## Web Application
 
