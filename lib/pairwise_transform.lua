@@ -23,13 +23,13 @@ function pairwise_transform.scale(src, scale, size, offset, options)
    }
    local downscale_filter = filters[torch.random(1, #filters)]
    
-   if r == 1 then
+   if flip == 1 then
       y = image.hflip(y)
-   elseif r == 2 then
+   elseif flip == 2 then
       y = image.vflip(y)
-   elseif r == 3 then
+   elseif flip == 3 then
       y = image.hflip(image.vflip(y))
-   elseif r == 4 then
+   elseif flip == 4 then
       -- none
    end
    if options.color_augment then
