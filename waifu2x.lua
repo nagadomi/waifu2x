@@ -37,12 +37,11 @@ local function waifu2x()
       local model = torch.load(path.join(opt.model_dir,
 					 ("noise%d_model.t7"):format(opt.noise_level)), "ascii")
       model:evaluate()
-      new_x = reconstruct(model, x, BLOCK_OFFSET)
+      new_x = reconstruct.image(model, x, BLOCK_OFFSET)
    elseif opt.m == "scale" then
       local model = torch.load(path.join(opt.model_dir, "scale2.0x_model.t7"), "ascii")
       model:evaluate()
-      x = iproc.scale(x, x:size(3) * 2.0, x:size(2) * 2.0)
-      new_x = reconstruct(model, x, BLOCK_OFFSET)
+      new_x = reconstruct.scale(model, 2.0, x, BLOCK_OFFSET)
    elseif opt.m == "noise_scale" then
       local noise_model = torch.load(path.join(opt.model_dir,
 					       ("noise%d_model.t7"):format(opt.noise_level)), "ascii")
@@ -50,9 +49,8 @@ local function waifu2x()
 
       noise_model:evaluate()
       scale_model:evaluate()
-      x = reconstruct(noise_model, x, BLOCK_OFFSET)
-      x = iproc.scale(x, x:size(3) * 2.0, x:size(2) * 2.0)
-      new_x = reconstruct(scale_model, x, BLOCK_OFFSET)
+      x = reconstruct.image(noise_model, x, BLOCK_OFFSET)
+      new_x = reconstruct.scale(scale_model, 2.0, x, BLOCK_OFFSET)
    else
       error("undefined method:" .. opt.method)
    end
