@@ -74,15 +74,13 @@ local function get_image(req)
 end
 
 local function apply_denoise1(x)
-   return reconstruct(noise1_model, x, BLOCK_OFFSET)
+   return reconstruct.image(noise1_model, x, BLOCK_OFFSET)
 end
 local function apply_denoise2(x)
-   return reconstruct(noise2_model, x, BLOCK_OFFSET)
+   return reconstruct.image(noise2_model, x, BLOCK_OFFSET)
 end
 local function apply_scale2x(x)
-   return reconstruct(scale20_model,
-		      iproc.scale(x, x:size(3) * 2.0, x:size(2) * 2.0),
-		      BLOCK_OFFSET)
+   return reconstruct.scale(scale20_model, 2.0, x, BLOCK_OFFSET)
 end
 local function cache_do(cache, x, func)
    if path.exists(cache) then
