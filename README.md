@@ -144,6 +144,33 @@ th waifu2x.lua -m noise_scale -noise_level 2 -i input_image.png -o output_image.
 
 See also `images/gen.sh`.
 
+### Video Encoding
+
+\* `avconv` is `ffmpeg` on Ubuntu 14.04.
+
+Extracting images and audio from a video. (range: 00:09:00 ~ 00:12:00)
+```
+mkdir frames
+avconv -i data/raw.avi -ss 00:09:00 -t 00:03:00 -r 24 -f image2 frames/%06d.png
+avconv -i data/raw.avi -ss 00:09:00 -t 00:03:00 audio.mp3
+```
+
+Generating a image list.
+```
+find ./frames -name "*.png" |sort > data/frame.txt
+```
+
+waifu2x (for example, noise reduction)
+```
+mkdir new_frames
+th waifu2x.lua -m noise -noise_level 1 -l data/frame.txt -o new_frames/%d.png
+```
+
+Generating a video from waifu2xed images and audio.
+```
+avconv -f image2 -r 24 -i new_frames/%d.png -i audio.mp3 -r 24 -vcodec libx264 -crf 16 video.mp4
+```
+
 ## Training Your Own Model
 
 ### Data Preparation
