@@ -23,8 +23,7 @@ local function convert_image(opt)
       opt.o = path.join(path.dirname(opt.i), string.format("%s(%s).png", base, opt.m))
    end
    if opt.m == "noise" then
-      local model = torch.load(path.join(opt.model_dir,
-					 ("noise%d_model.t7"):format(opt.noise_level)), "ascii")
+      local model = torch.load(path.join(opt.model_dir, ("noise%d_model.t7"):format(opt.noise_level)), "ascii")
       model:evaluate()
       new_x = reconstruct.image(model, x, BLOCK_OFFSET)
    elseif opt.m == "scale" then
@@ -32,8 +31,7 @@ local function convert_image(opt)
       model:evaluate()
       new_x = reconstruct.scale(model, opt.scale, x, BLOCK_OFFSET)
    elseif opt.m == "noise_scale" then
-      local noise_model = torch.load(path.join(opt.model_dir,
-					       ("noise%d_model.t7"):format(opt.noise_level)), "ascii")
+      local noise_model = torch.load(path.join(opt.model_dir, ("noise%d_model.t7"):format(opt.noise_level)), "ascii")
       local scale_model = torch.load(path.join(opt.model_dir, ("scale%.1fx_model.t7"):format(opt.scale)), "ascii")
       noise_model:evaluate()
       scale_model:evaluate()
@@ -62,37 +60,54 @@ local function convert_frames(opt)
    end
    fp:close()
    for i = 1, #lines do
-      local x = image_loader.load_float(lines[i])
-      local new_x = nil
-      if opt.m == "noise" and opt.noise_level == 1 then
-	 new_x = reconstruct.image(noise1_model, x, BLOCK_OFFSET)
-      elseif opt.m == "noise" and opt.noise_level == 2 then
-	 new_x = reconstruct.image(noise2_model, x, BLOCK_OFFSET)
-      elseif opt.m == "scale" then
-	 new_x = reconstruct.scale(scale_model, opt.scale, x, BLOCK_OFFSET)
-      elseif opt.m == "noise_scale" and opt.noise_level == 1 then
-	 x = reconstruct.image(noise1_model, x, BLOCK_OFFSET)
-	 new_x = reconstruct.scale(scale_model, opt.scale, x, BLOCK_OFFSET)
-      elseif opt.m == "noise_scale" and opt.noise_level == 2 then
-	 x = reconstruct.image(noise2_model, x, BLOCK_OFFSET)
-	 new_x = reconstruct.scale(scale_model, opt.scale, x, BLOCK_OFFSET)
-      else
-	 error("undefined method:" .. opt.method)
-      end
-      local output = nil
-      if opt.o == "(auto)" then
-	 local name = path.basename(lines[i])
-	 local e = path.extension(name)
-	 local base = name:sub(0, name:len() - e:len())
-	 output = path.join(path.dirname(opt.i), string.format("%s(%s).png", base, opt.m))
-      else
-	 output = string.format(opt.o, i)
-      end
-      image.save(output, new_x)
-      xlua.progress(i, #lines)
-      if i % 10 == 0 then
-	 collectgarbage()
-      end
+	if file_exists(string.format(opt.o, i)) == false then
+	      local x = image_loader.load_float(lines[i])
+	      local new_x = nil
+
+	      if opt.m == "noise" and opt.noise_level == 1 then
+		 new_x = reconstruct.image(noise1_model, x, BLOCK_OFFSET)
+	      elseif opt.m == "noise" and opt.noise_level == 2 then
+		 new_x = reconstruct.image(noise2_model, x, BLOCK_OFFSET)
+	      elseif opt.m == "scale" then
+		 new_x = reconstruct.scale(scale_model, opt.scale, x, BLOCK_OFFSET)
+	      elseif opt.m == "noise_scale" and opt.noise_level == 1 then
+		 x = reconstruct.image(noise1_model, x, BLOCK_OFFSET)
+		 new_x = reconstruct.scale(scale_model, opt.scale, x, BLOCK_OFFSET)
+	      elseif opt.m == "noise_scale" and opt.noise_level == 2 then
+		 x = reconstruct.image(noise2_model, x, BLOCK_OFFSET)
+		 new_x = reconstruct.scale(scale_model, opt.scale, x, BLOCK_OFFSET)
+	      else
+		 error("undefined method:" .. opt.method)
+	      end
+
+	      local output = nil
+	      if opt.o == "(auto)" then
+		 local name = path.basename(lines[i])
+		 local e = path.extension(name)
+		 local base = name:sub(0, name:len() - e:len())
+		 output = path.join(path.dirname(opt.i), string.format("%s(%s).png", base, opt.m))
+	      else
+		 output = string.format(opt.o, i)
+	      end
+
+	      image.save(output, new_x)
+	      xlua.progress(i, #lines)
+	      if i % 10 == 0 then
+		 collectgarbage()
+	      end
+	else
+           xlua.progress(i, #lines)
+	end
+   end
+end
+
+function file_exists(name)
+   local f=io.open(name,"r")
+   if f~=nil then 
+	io.close(f) 
+	return true 
+   else 
+	return false 
    end
 end
 
