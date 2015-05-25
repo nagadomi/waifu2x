@@ -59,7 +59,7 @@ local function convert_frames(opt)
    end
    fp:close()
    for i = 1, #lines do
-	if file_exists(string.format(opt.o, i)) == false then
+	if path.exists(string.format(opt.o, i)) == false then
 	      local x = image_loader.load_float(lines[i])
 	      local new_x = nil
 	      if opt.m == "noise" and opt.noise_level == 1 then
@@ -94,16 +94,6 @@ local function convert_frames(opt)
 	else
            xlua.progress(i, #lines)
 	end
-   end
-end
-
-function file_exists(name)
-   local f=io.open(name,"r")
-   if f~=nil then 
-	io.close(f) 
-	return true 
-   else 
-	return false 
    end
 end
 
