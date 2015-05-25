@@ -163,7 +163,7 @@ find ./frames -name "*.png" |sort > data/frame.txt
 waifu2x (for example, noise reduction)
 ```
 mkdir new_frames
-th waifu2x.lua -m noise -noise_level 1 -l data/frame.txt -o new_frames/%d.png
+th waifu2x.lua -m noise -noise_level 1 -resume 1 -l data/frame.txt -o new_frames/%d.png
 ```
 
 Generating a video from waifu2xed images and audio.
@@ -202,7 +202,7 @@ th cleanup_model.lua -model models/noise2_model.t7 -oformat ascii
 ```
 You can check the performance of model with `models/noise2_best.png`.
 
-### Training a 2x UPscaling model
+### Training a 2x UpScaling model
 
 ```
 th train.lua -method scale -scale 2 -test images/miku_small.png
