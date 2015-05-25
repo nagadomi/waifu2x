@@ -59,7 +59,7 @@ local function convert_frames(opt)
    end
    fp:close()
    for i = 1, #lines do
-	if path.exists(string.format(opt.o, i)) == false then
+	if opt.resume == 0 or path.exists(string.format(opt.o, i)) == false then
 	      local x = image_loader.load_float(lines[i])
 	      local new_x = nil
 	      if opt.m == "noise" and opt.noise_level == 1 then
@@ -110,6 +110,7 @@ local function waifu2x()
    cmd:option("-m", "noise_scale", 'method (noise|scale|noise_scale)')
    cmd:option("-noise_level", 1, '(1|2)')
    cmd:option("-crop_size", 128, 'patch size per process')
+   cmd:option("-resume", 0, "skip existing files (0|1)")
    
    local opt = cmd:parse(arg)
    if string.len(opt.l) == 0 then
