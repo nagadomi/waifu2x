@@ -18,14 +18,8 @@ waifu2x is inspired by SRCNN [1]. 2D character picture (HatsuneMiku) is licensed
 - [2] "For Creators", http://piapro.net/en_for_creators.html
 
 ## Public AMI
-```
-AMI name: waifu2x server
-AMI ID: ami-75f01931
-Region: N. California
-Instance: g2.2xlarge (require a GPU)
-OS: Ubuntu 14.04
-User: ubuntu
-```
+(maintenance)
+
 ## Dependencies
 
 ### Hardware
