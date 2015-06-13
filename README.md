@@ -1,6 +1,6 @@
 # waifu2x
 
-Image Super-Resolution for anime/fan-art using Deep Convolutional Neural Networks.
+Image Super-Resolution for anime-style-art using Deep Convolutional Neural Networks.
 
 Demo-Application can be found at http://waifu2x.udp.jp/ .
 
@@ -19,6 +19,9 @@ waifu2x is inspired by SRCNN [1]. 2D character picture (HatsuneMiku) is licensed
 
 ## Public AMI
 (maintenance)
+
+## Third Party Software
+[Third-Party](https://github.com/nagadomi/waifu2x/wiki/Third-Party)
 
 ## Dependencies
 
