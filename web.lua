@@ -1,3 +1,4 @@
+_G.TURBO_SSL = true
 local turbo = require 'turbo'
 local uuid = require 'uuid'
 local ffi = require 'ffi'
