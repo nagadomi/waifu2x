@@ -1,4 +1,5 @@
-require 'torch'
+require './lib/portable'
+require 'image'
 local settings = require './lib/settings'
 local image_loader = require './lib/image_loader'
 
@@ -13,15 +14,21 @@ local function count_lines(file)
    return count
 end
 
+local function crop_4x(x)
+   local w = x:size(3) % 4
+   local h = x:size(2) % 4
+   return image.crop(x, 0, 0, x:size(3) - w, x:size(2) - h)
+end
+
 local function load_images(list)
    local count = count_lines(list)
    local fp = io.open(list, "r")
    local x = {}
    local c = 0
    for line in fp:lines() do
-      local im = image_loader.load_byte(line)
+      local im = crop_4x(image_loader.load_byte(line))
       if im then
-	 if im:size(2) > settings.crop_size * 2 and im:size(3) > settings.crop_size * 2 then
+	 if im:size(2) >= settings.crop_size * 2 and im:size(3) >= settings.crop_size * 2 then
 	    table.insert(x, im)
 	 end
       else

@@ -1,37 +1,34 @@
-local ROOT = '/home/ubuntu/waifu2x'
-
-_G.TURBO_SSL = true -- Enable SSL
 local turbo = require 'turbo'
 local uuid = require 'uuid'
 local ffi = require 'ffi'
 local md5 = require 'md5'
-require 'torch'
-require 'cudnn'
 require 'pl'
 
 torch.setdefaulttensortype('torch.FloatTensor')
 torch.setnumthreads(4)
 
-package.path = package.path .. ";" .. path.join(ROOT, 'lib', '?.lua')
+require './lib/portable'
+require './lib/LeakyReLU'
 
-require 'LeakyReLU'
-local iproc = require 'iproc'
-local reconstruct = require 'reconstruct'
-local image_loader = require 'image_loader'
+local iproc = require './lib/iproc'
+local reconstruct = require './lib/reconstruct'
+local image_loader = require './lib/image_loader'
 
-local noise1_model = torch.load(path.join(ROOT, "models", "noise1_model.t7"), "ascii")
-local noise2_model = torch.load(path.join(ROOT, "models", "noise2_model.t7"), "ascii")
-local scale20_model = torch.load(path.join(ROOT, "models", "scale2.0x_model.t7"), "ascii")
+local MODEL_DIR = "./models/anime_style_art"
+
+local noise1_model = torch.load(path.join(MODEL_DIR, "noise1_model.t7"), "ascii")
+local noise2_model = torch.load(path.join(MODEL_DIR, "noise2_model.t7"), "ascii")
+local scale20_model = torch.load(path.join(MODEL_DIR, "scale2.0x_model.t7"), "ascii")
 
 local USE_CACHE = true
-local CACHE_DIR = path.join(ROOT, "cache")
+local CACHE_DIR = "./cache"
 local MAX_NOISE_IMAGE = 2560 * 2560
 local MAX_SCALE_IMAGE = 1280 * 1280
 local CURL_OPTIONS = {
-   request_timeout = 10,
-   connect_timeout = 5,
+   request_timeout = 15,
+   connect_timeout = 10,
    allow_redirects = true,
-   max_redirects = 1
+   max_redirects = 2
 }
 local CURL_MAX_SIZE = 2 * 1024 * 1024
 local BLOCK_OFFSET = 7 -- see srcnn.lua
@@ -171,8 +168,8 @@ function APIHandler:post()
    collectgarbage()
 end
 local FormHandler = class("FormHandler", turbo.web.RequestHandler)
-local index_ja = file.read(path.join(ROOT, "assets/index.ja.html"))
-local index_en = file.read(path.join(ROOT, "assets/index.html"))
+local index_ja = file.read("./assets/index.ja.html")
+local index_en = file.read("./assets/index.html")
 function FormHandler:get()
    local lang = self.request.headers:get("Accept-Language")
    if lang then
@@ -193,8 +190,8 @@ end
 local app = turbo.web.Application:new(
    {
       {"^/$", FormHandler},
-      {"^/index.html", turbo.web.StaticFileHandler, path.join(ROOT, "assets", "index.html")},
-      {"^/index.ja.html", turbo.web.StaticFileHandler, path.join(ROOT, "assets", "index.ja.html")},
+      {"^/index.html", turbo.web.StaticFileHandler, path.join("./assets", "index.html")},
+      {"^/index.ja.html", turbo.web.StaticFileHandler, path.join("./assets", "index.ja.html")},
       {"^/api$", APIHandler},
    }
 )

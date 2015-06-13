@@ -1,7 +1,7 @@
 require 'image'
 local iproc = require './iproc'
 
-local function reconstruct_layer(model, x, block_size, offset)
+local function reconstruct_layer(model, x, offset, block_size)
    if x:dim() == 2 then
       x = x:reshape(1, x:size(1), x:size(2))
    end
@@ -42,7 +42,7 @@ function reconstruct.image(model, x, offset, block_size)
    local pad_h2 = (h - offset) - x:size(2)
    local pad_w2 = (w - offset) - x:size(3)
    local yuv = image.rgb2yuv(iproc.padding(x, pad_w1, pad_w2, pad_h1, pad_h2))
-   local y = reconstruct_layer(model, yuv[1], block_size, offset)
+   local y = reconstruct_layer(model, yuv[1], offset, block_size)
    y[torch.lt(y, 0)] = 0
    y[torch.gt(y, 1)] = 1
    yuv[1]:copy(y)
@@ -74,7 +74,7 @@ function reconstruct.scale(model, scale, x, offset, block_size)
    local pad_w2 = (w - offset) - x:size(3)
    local yuv_nn = image.rgb2yuv(iproc.padding(x, pad_w1, pad_w2, pad_h1, pad_h2))
    local yuv_jinc = image.rgb2yuv(iproc.padding(x_jinc, pad_w1, pad_w2, pad_h1, pad_h2))
-   local y = reconstruct_layer(model, yuv_nn[1], block_size, offset)
+   local y = reconstruct_layer(model, yuv_nn[1], offset, block_size)
    y[torch.lt(y, 0)] = 0
    y[torch.gt(y, 1)] = 1
    yuv_jinc[1]:copy(y)

@@ -1,5 +1,4 @@
-require 'cutorch'
-require 'cunn'
+require './lib/portable'
 require 'optim'
 require 'xlua'
 require 'pl'
@@ -7,7 +6,6 @@ require 'pl'
 local settings = require './lib/settings'
 local minibatch_adam = require './lib/minibatch_adam'
 local iproc = require './lib/iproc'
-local create_model = require './lib/srcnn'
 local reconstruct = require './lib/reconstruct'
 local pairwise_transform = require './lib/pairwise_transform'
 local image_loader = require './lib/image_loader'
@@ -61,10 +59,11 @@ local function validate(model, criterion, data)
 end
 
 local function train()
-   local model, offset = create_model()
+   local model, offset = settings.create_model()
    assert(offset == settings.block_offset)
    local criterion = nn.MSECriterion():cuda()
    local x = torch.load(settings.images)
+   local lrd_count = 0
    local train_x, valid_x = split_data(x,
 				       math.floor(settings.validation_ratio * #x),
 				       settings.validation_crops)
@@ -78,16 +77,23 @@ local function train()
       if settings.method == "scale" then
 	 return pairwise_transform.scale(x,
 					 settings.scale,
-					 settings.crop_size,
-					 offset,
-					 {color_augment = not is_validation,
-					  noise = false,
-					  denoise_model = nil
-					 })
+					 settings.crop_size, offset,
+					 { color_augment = not is_validation,
+					   random_half = settings.random_half})
       elseif settings.method == "noise" then
-	 return pairwise_transform.jpeg(x, settings.noise_level,
+	 return pairwise_transform.jpeg(x,
+					settings.noise_level,
 					settings.crop_size, offset,
-					   not is_validation)
+					{ color_augment = not is_validation,
+					  random_half = settings.random_half})
+      elseif settings.method == "noise_scale" then
+	 return pairwise_transform.jpeg_scale(x,
+					      settings.scale,
+					      settings.noise_level,
+					      settings.crop_size, offset,
+					      { color_augment = not is_validation,
+						random_half = settings.random_half
+					      })
       end
    end
    local best_score = 100000.0
@@ -106,27 +112,38 @@ local function train()
 			   {1, settings.crop_size, settings.crop_size},
 			   {1, settings.crop_size - offset * 2, settings.crop_size - offset * 2}
 			  ))
-      if epoch % 1 == 0 then
-	 collectgarbage()
-	 model:evaluate()
-	 print("# validation")
-	 local score = validate(model, criterion, valid_xy)
-	 if score < best_score then
-	    best_score = score
-	    print("* update best model")
-	    torch.save(settings.model_file, model)
-	    if settings.method == "noise" then
-	       local log = path.join(settings.model_dir,
-				     ("noise%d_best.png"):format(settings.noise_level))
-	       save_test_jpeg(model, test, log)
-	    elseif settings.method == "scale" then
-	       local log = path.join(settings.model_dir,
-				     ("scale%.1f_best.png"):format(settings.scale))
-	       save_test_scale(model, test, log)
-	    end
+      model:evaluate()
+      print("# validation")
+      local score = validate(model, criterion, valid_xy)
+      if score < best_score then
+	 lrd_count = 0
+	 best_score = score
+	 print("* update best model")
+	 torch.save(settings.model_file, model)
+	 if settings.method == "noise" then
+	    local log = path.join(settings.model_dir,
+				  ("noise%d_best.png"):format(settings.noise_level))
+	    save_test_jpeg(model, test, log)
+	 elseif settings.method == "scale" then
+	    local log = path.join(settings.model_dir,
+				  ("scale%.1f_best.png"):format(settings.scale))
+	    save_test_scale(model, test, log)
+	 elseif settings.method == "noise_scale" then
+	    local log = path.join(settings.model_dir,
+				  ("noise%d_scale%.1f_best.png"):format(settings.noise_level,
+									settings.scale))
+	    save_test_scale(model, test, log)
 	 end
-	 print("current: " .. score .. ", best: " .. best_score)
+      else
+	 lrd_count = lrd_count + 1
+	 if lrd_count > 5 then
+	    lrd_count = 0
+	    adam_config.learningRate = adam_config.learningRate * 0.8
+	    print("* learning rate decay: " .. adam_config.learningRate)
+	 end
       end
+      print("current: " .. score .. ", best: " .. best_score)
+      collectgarbage()
    end
 end
 torch.manualSeed(settings.seed)
