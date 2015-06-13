@@ -1,5 +1,4 @@
-require 'cunn'
-require 'cudnn'
+require './lib/portable'
 require './lib/LeakyReLU'
 
 torch.setdefaulttensortype("torch.FloatTensor")

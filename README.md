@@ -23,23 +23,19 @@ waifu2x is inspired by SRCNN [1]. 2D character picture (HatsuneMiku) is licensed
 ## Dependencies
 
 ### Hardware
-- NVIDIA GPU (Compute Capability 3.0 or later)
+- NVIDIA GPU
 
 ### Platform
 - [Torch7](http://torch.ch/)
 - [NVIDIA CUDA](https://developer.nvidia.com/cuda-toolkit)
-- [NVIDIA cuDNN](https://developer.nvidia.com/cuDNN)
 
 ### Packages (luarocks)
 - cutorch
 - cunn
-- [cudnn](https://github.com/soumith/cudnn.torch)
 - [graphicsmagick](https://github.com/clementfarabet/graphicsmagick)
 - [turbo](https://github.com/kernelsauce/turbo)
 - md5
 - uuid
-
-NOTE: Turbo 1.1.3 has bug in file uploading. Please install from the master branch on github.
 
 ## Installation
 
@@ -54,16 +50,15 @@ curl -s https://raw.githubusercontent.com/torch/ezinstall/master/install-all | s
 ```
 see [Torch (easy) install](https://github.com/torch/ezinstall)
 
-#### Install CUDA and cuDNN.
+#### Install CUDA
 
-Google! Search keyword is "install cuda ubuntu" and "install cudnn ubuntu"
+Google! Search keyword: "install cuda ubuntu"
 
 #### Install packages
 
 ```
 sudo luarocks install cutorch
 sudo luarocks install cunn
-sudo luarocks install cudnn
 sudo apt-get install graphicsmagick libgraphicsmagick-dev
 sudo luarocks install graphicsmagick
 ```
@@ -91,21 +86,10 @@ Install luarocks packages.
 ```
 sudo luarocks install md5
 sudo luarocks install uuid
-```
-
-Install turbo.
-```
-git clone https://github.com/kernelsauce/turbo.git
-cd turbo
-sudo luarocks make rockspecs/turbo-dev-1.rockspec 
+sudo luarocks install turbo
 ```
 
 ## Web Application
-
-Please edit the first line in `web.lua`.
-```
-local ROOT = '/path/to/waifu2x/dir'
-```
 Run.
 ```
 th web.lua
@@ -173,7 +157,7 @@ Genrating a file list.
 ```
 find /path/to/image/dir -name "*.png" > data/image_list.txt
 ```
-(You should use PNG! In my case, waifu2x is trained with 3000 high-resolution-beautiful-PNG images.)
+(You should use PNG! In my case, waifu2x is trained with 3000 high-resolution-noise-free-PNG images.)
 
 Converting training data.
 ```
@@ -183,23 +167,30 @@ th convert_data.lua
 ### Training a Noise Reduction(level1) model
 
 ```
-th train.lua -method noise -noise_level 1 -test images/miku_noisy.png
-th cleanup_model.lua -model models/noise1_model.t7 -oformat ascii
+mkdir models/my_model
+th train.lua -model_dir models/my_model -method noise -noise_level 1 -test images/miku_noisy.png
+th cleanup_model.lua -model models/my_model/noise1_model.t7 -oformat ascii
+# usage
+th waifu2x.lua -model_dir models/my_model -m noise -noise_level 1 -i images/miku_noisy.png -o output.png
 ```
-You can check the performance of model with `models/noise1_best.png`.
+You can check the performance of model with `models/my_model/noise1_best.png`.
 
 ### Training a Noise Reduction(level2) model
 
 ```
-th train.lua -method noise -noise_level 2 -test images/miku_noisy.png
-th cleanup_model.lua -model models/noise2_model.t7 -oformat ascii
+th train.lua -model_dir models/my_model -method noise -noise_level 2 -test images/miku_noisy.png
+th cleanup_model.lua -model models/my_model/noise2_model.t7 -oformat ascii
+# usage
+th waifu2x.lua -model_dir models/my_model -m noise -noise_level 2 -i images/miku_noisy.png -o output.png
 ```
-You can check the performance of model with `models/noise2_best.png`.
+You can check the performance of model with `models/my_model/noise2_best.png`.
 
 ### Training a 2x UpScaling model
 
 ```
-th train.lua -method scale -scale 2 -test images/miku_small.png
-th cleanup_model.lua -model models/scale2.0x_model.t7 -oformat ascii
+th train.lua -model_dir models/my_model -method scale -scale 2 -test images/miku_small.png
+th cleanup_model.lua -model models/my_model/scale2.0x_model.t7 -oformat ascii
+# usage
+th waifu2x.lua -model_dir models/my_model -m scale -scale 2 -i images/miku_small.png -o output.png
 ```
-You can check the performance of model with `models/scale2.0x_best.png`.
+You can check the performance of model with `models/my_model/scale2.0x_best.png`.

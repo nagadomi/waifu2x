@@ -1,4 +1,4 @@
-require 'cudnn'
+require './lib/portable'
 require 'sys'
 require 'pl'
 require './lib/LeakyReLU'
@@ -24,18 +24,18 @@ local function convert_image(opt)
    if opt.m == "noise" then
       local model = torch.load(path.join(opt.model_dir, ("noise%d_model.t7"):format(opt.noise_level)), "ascii")
       model:evaluate()
-      new_x = reconstruct.image(model, x, BLOCK_OFFSET)
+      new_x = reconstruct.image(model, x, BLOCK_OFFSET, opt.crop_size)
    elseif opt.m == "scale" then
       local model = torch.load(path.join(opt.model_dir, ("scale%.1fx_model.t7"):format(opt.scale)), "ascii")
       model:evaluate()
-      new_x = reconstruct.scale(model, opt.scale, x, BLOCK_OFFSET)
+      new_x = reconstruct.scale(model, opt.scale, x, BLOCK_OFFSET, opt.crop_size)
    elseif opt.m == "noise_scale" then
       local noise_model = torch.load(path.join(opt.model_dir, ("noise%d_model.t7"):format(opt.noise_level)), "ascii")
       local scale_model = torch.load(path.join(opt.model_dir, ("scale%.1fx_model.t7"):format(opt.scale)), "ascii")
       noise_model:evaluate()
       scale_model:evaluate()
       x = reconstruct.image(noise_model, x, BLOCK_OFFSET)
-      new_x = reconstruct.scale(scale_model, opt.scale, x, BLOCK_OFFSET)
+      new_x = reconstruct.scale(scale_model, opt.scale, x, BLOCK_OFFSET, opt.crop_size)
    else
       error("undefined method:" .. opt.method)
    end
@@ -63,17 +63,17 @@ local function convert_frames(opt)
 	      local x = image_loader.load_float(lines[i])
 	      local new_x = nil
 	      if opt.m == "noise" and opt.noise_level == 1 then
-		 new_x = reconstruct.image(noise1_model, x, BLOCK_OFFSET)
+		 new_x = reconstruct.image(noise1_model, x, BLOCK_OFFSET, opt.crop_size)
 	      elseif opt.m == "noise" and opt.noise_level == 2 then
 		 new_x = reconstruct.image(noise2_model, x, BLOCK_OFFSET)
 	      elseif opt.m == "scale" then
-		 new_x = reconstruct.scale(scale_model, opt.scale, x, BLOCK_OFFSET)
+		 new_x = reconstruct.scale(scale_model, opt.scale, x, BLOCK_OFFSET, opt.crop_size)
 	      elseif opt.m == "noise_scale" and opt.noise_level == 1 then
 		 x = reconstruct.image(noise1_model, x, BLOCK_OFFSET)
-		 new_x = reconstruct.scale(scale_model, opt.scale, x, BLOCK_OFFSET)
+		 new_x = reconstruct.scale(scale_model, opt.scale, x, BLOCK_OFFSET, opt.crop_size)
 	      elseif opt.m == "noise_scale" and opt.noise_level == 2 then
 		 x = reconstruct.image(noise2_model, x, BLOCK_OFFSET)
-		 new_x = reconstruct.scale(scale_model, opt.scale, x, BLOCK_OFFSET)
+		 new_x = reconstruct.scale(scale_model, opt.scale, x, BLOCK_OFFSET, opt.crop_size)
 	      else
 		 error("undefined method:" .. opt.method)
 	      end
@@ -106,7 +106,7 @@ local function waifu2x()
    cmd:option("-l", "", 'path of the image-list')
    cmd:option("-scale", 2, 'scale factor')
    cmd:option("-o", "(auto)", 'path of the output file')
-   cmd:option("-model_dir", "./models", 'model directory')
+   cmd:option("-model_dir", "./models/anime_style_art", 'model directory')
    cmd:option("-m", "noise_scale", 'method (noise|scale|noise_scale)')
    cmd:option("-noise_level", 1, '(1|2)')
    cmd:option("-crop_size", 128, 'patch size per process')
