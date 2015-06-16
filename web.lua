@@ -47,10 +47,10 @@ local function get_image(req)
    local url = req:get_argument("url", "")
    local blob = nil
    local img = nil
-   
+   local alpha = nil
    if file and file:len() > 0 then
       blob = file
-      img = image_loader.decode_float(blob)
+      img, alpha = image_loader.decode_float(blob)
    elseif url and url:len() > 0 then
       local res = coroutine.yield(
 	 turbo.async.HTTPClient({verify_ca=false},
@@ -64,11 +64,11 @@ local function get_image(req)
 	 end
 	 if content_type and content_type:find("image") then
 	    blob = res.body
-	    img = image_loader.decode_float(blob)
+	    img, alpha = image_loader.decode_float(blob)
 	 end
       end
    end
-   return img, blob
+   return img, blob, alpha
 end
 
 local function apply_denoise1(x)
@@ -104,7 +104,7 @@ function APIHandler:post()
       self:write("client disconnected")
       return
    end
-   local x, src = get_image(self)
+   local x, src, alpha = get_image(self)
    local scale = tonumber(self:get_argument("scale", "0"))
    local noise = tonumber(self:get_argument("noise", "0"))
    if x and valid_size(x, scale) then
@@ -151,7 +151,7 @@ function APIHandler:post()
 	 end
       end
       local name = uuid() .. ".png"
-      local blob, len = image_loader.encode_png(x)
+      local blob, len = image_loader.encode_png(x, alpha)
       
       self:set_header("Content-Disposition", string.format('filename="%s"', name))
       self:set_header("Content-Type", "image/png")
