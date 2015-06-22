@@ -6,10 +6,22 @@ function nn.SpatialConvolutionMM:reset(stdv)
    self.bias:fill(0)
 end
 local srcnn = {}
-function srcnn.waifu2x()
+function srcnn.waifu2x(color)
    local model = nn.Sequential()
+   local ch = nil
+   if color == "rgb" then
+      ch = 3
+   elseif color == "y" then
+      ch = 1
+   else
+      if color then
+	 error("unknown color: " .. color)
+      else
+	 error("unknown color: nil")
+      end
+   end
    
-   model:add(nn.SpatialConvolutionMM(1, 32, 3, 3, 1, 1, 0, 0))
+   model:add(nn.SpatialConvolutionMM(ch, 32, 3, 3, 1, 1, 0, 0))
    model:add(nn.LeakyReLU(0.1))
    model:add(nn.SpatialConvolutionMM(32, 32, 3, 3, 1, 1, 0, 0))
    model:add(nn.LeakyReLU(0.1))
@@ -21,7 +33,7 @@ function srcnn.waifu2x()
    model:add(nn.LeakyReLU(0.1))
    model:add(nn.SpatialConvolutionMM(128, 128, 3, 3, 1, 1, 0, 0))
    model:add(nn.LeakyReLU(0.1))
-   model:add(nn.SpatialConvolutionMM(128, 1, 3, 3, 1, 1, 0, 0))
+   model:add(nn.SpatialConvolutionMM(128, ch, 3, 3, 1, 1, 0, 0))
    model:add(nn.View(-1):setNumInputDims(3))
 --model:cuda()
 --print(model:forward(torch.Tensor(32, 1, 92, 92):uniform():cuda()):size())
@@ -30,10 +42,19 @@ function srcnn.waifu2x()
 end
 
 -- current 4x is worse then 2x * 2
-function srcnn.waifu4x()
+function srcnn.waifu4x(color)
    local model = nn.Sequential()
+
+   local ch = nil
+   if color == "rgb" then
+      ch = 3
+   elseif color == "y" then
+      ch = 1
+   else
+      error("unknown color: " .. color)
+   end
    
-   model:add(nn.SpatialConvolutionMM(1, 32, 9, 9, 1, 1, 0, 0))
+   model:add(nn.SpatialConvolutionMM(ch, 32, 9, 9, 1, 1, 0, 0))
    model:add(nn.LeakyReLU(0.1))
    model:add(nn.SpatialConvolutionMM(32, 32, 3, 3, 1, 1, 0, 0))
    model:add(nn.LeakyReLU(0.1))
@@ -45,7 +66,7 @@ function srcnn.waifu4x()
    model:add(nn.LeakyReLU(0.1))
    model:add(nn.SpatialConvolutionMM(128, 128, 3, 3, 1, 1, 0, 0))
    model:add(nn.LeakyReLU(0.1))
-   model:add(nn.SpatialConvolutionMM(128, 1, 5, 5, 1, 1, 0, 0))
+   model:add(nn.SpatialConvolutionMM(128, ch, 5, 5, 1, 1, 0, 0))
    model:add(nn.View(-1):setNumInputDims(3))
    
    return model, 13
