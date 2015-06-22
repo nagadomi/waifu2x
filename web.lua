@@ -4,12 +4,20 @@ local uuid = require 'uuid'
 local ffi = require 'ffi'
 local md5 = require 'md5'
 require 'pl'
-
-torch.setdefaulttensortype('torch.FloatTensor')
-torch.setnumthreads(4)
-
 require './lib/portable'
 require './lib/LeakyReLU'
+
+local cmd = torch.CmdLine()
+cmd:text()
+cmd:text("waifu2x-api")
+cmd:text("Options:")
+cmd:option("-port", 8812, 'listen port')
+cmd:option("-gpu", 1, 'Device ID')
+cmd:option("-core", 2, 'number of CPU cores')
+local opt = cmd:parse(arg)
+cutorch.setDevice(opt.gpu)
+torch.setdefaulttensortype('torch.FloatTensor')
+torch.setnumthreads(opt.core)
 
 local iproc = require './lib/iproc'
 local reconstruct = require './lib/reconstruct'
@@ -196,5 +204,5 @@ local app = turbo.web.Application:new(
       {"^/api$", APIHandler},
    }
 )
-app:listen(8812, "0.0.0.0", {max_body_size = CURL_MAX_SIZE})
+app:listen(opt.port, "0.0.0.0", {max_body_size = CURL_MAX_SIZE})
 turbo.ioloop.instance():start()
