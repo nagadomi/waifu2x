@@ -22,6 +22,7 @@ cmd:option("-test", "images/miku_small.png", 'test image file')
 cmd:option("-model_dir", "./models", 'model directory')
 cmd:option("-method", "scale", '(noise|scale|noise_scale)')
 cmd:option("-noise_level", 1, '(1|2)')
+cmd:option("-color", 'rgb', '(y|rgb)')
 cmd:option("-scale", 2.0, 'scale')
 cmd:option("-learning_rate", 0.00025, 'learning rate for adam')
 cmd:option("-random_half", 1, 'enable data augmentation using half resolution image')
@@ -45,6 +46,9 @@ elseif settings.method == "noise_scale" then
 				       settings.model_dir, settings.noise_level, settings.scale)
 else
    error("unknown method: " .. settings.method)
+end
+if not (settings.color == "rgb" or settings.color == "y") then
+   error("color must be y or rgb")
 end
 if not (settings.scale == math.floor(settings.scale) and settings.scale % 2 == 0) then
    error("scale must be mod-2")

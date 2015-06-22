@@ -52,7 +52,7 @@ local function flip_augment(x, y)
 end
 local INTERPOLATION_PADDING = 16
 function pairwise_transform.scale(src, scale, size, offset, options)
-   options = options or {color_augment = true, random_half = true}
+   options = options or {color_augment = true, random_half = true, rgb = true}
    if options.random_half then
       src = random_half(src)
    end
@@ -81,8 +81,12 @@ function pairwise_transform.scale(src, scale, size, offset, options)
    x = iproc.scale(x, y:size(3), y:size(2))
    y = y:float():div(255)
    x = x:float():div(255)
-   y = image.rgb2yuv(y)[1]:reshape(1, y:size(2), y:size(3))
-   x = image.rgb2yuv(x)[1]:reshape(1, x:size(2), x:size(3))
+
+   if options.rgb then
+   else
+      y = image.rgb2yuv(y)[1]:reshape(1, y:size(2), y:size(3))
+      x = image.rgb2yuv(x)[1]:reshape(1, x:size(2), x:size(3))
+   end
 
    y = image.crop(y, INTERPOLATION_PADDING + offset, INTERPOLATION_PADDING + offset, y:size(3) - offset -	INTERPOLATION_PADDING, y:size(2) - offset - INTERPOLATION_PADDING)
    x = image.crop(x, INTERPOLATION_PADDING, INTERPOLATION_PADDING, x:size(3) - INTERPOLATION_PADDING, x:size(2) - INTERPOLATION_PADDING)
@@ -90,7 +94,7 @@ function pairwise_transform.scale(src, scale, size, offset, options)
    return x, y
 end
 function pairwise_transform.jpeg_(src, quality, size, offset, options)
-   options = options or {color_augment = true, random_half = true}
+   options = options or {color_augment = true, random_half = true, rgb = true}
    if options.random_half then
       src = random_half(src)
    end
@@ -106,6 +110,7 @@ function pairwise_transform.jpeg_(src, quality, size, offset, options)
    for i = 1, #quality do
       x = gm.Image(x, "RGB", "DHW")
       x:format("jpeg")
+      x:samplingFactors({1.0, 1.0, 1.0})
       local blob, len = x:toBlob(quality[i])
       x:fromBlob(blob, len)
       x = x:toTensor("byte", "RGB", "DHW")
@@ -117,9 +122,12 @@ function pairwise_transform.jpeg_(src, quality, size, offset, options)
    x = x:float():div(255)
    x, y = flip_augment(x, y)
    
-   y = image.rgb2yuv(y)[1]:reshape(1, y:size(2), y:size(3))
-   x = image.rgb2yuv(x)[1]:reshape(1, x:size(2), x:size(3))
-
+   if options.rgb then
+   else
+      y = image.rgb2yuv(y)[1]:reshape(1, y:size(2), y:size(3))
+      x = image.rgb2yuv(x)[1]:reshape(1, x:size(2), x:size(3))
+   end
+   
    return x, image.crop(y, offset, offset, size - offset, size - offset)
 end
 function pairwise_transform.jpeg(src, level, size, offset, options)
@@ -159,12 +167,12 @@ function pairwise_transform.jpeg_scale_(src, scale, quality, size, offset, optio
    local down_scale = 1.0 / scale
    local filters = {
       "Box",        -- 0.012756949974688
-      --"Blackman",   -- 0.013191924552285
+      "Blackman",   -- 0.013191924552285
       --"Cartom",     -- 0.013753536746706
       --"Hanning",    -- 0.013761314529647
       --"Hermite",    -- 0.013850225205266
-      --"SincFast",   -- 0.014095824314306
-      --"Jinc",       -- 0.014244299255442
+      "SincFast",   -- 0.014095824314306
+      "Jinc",       -- 0.014244299255442
    }
    local downscale_filter = filters[torch.random(1, #filters)]
    local yi = torch.random(INTERPOLATION_PADDING, src:size(2) - size - INTERPOLATION_PADDING)
@@ -180,6 +188,7 @@ function pairwise_transform.jpeg_scale_(src, scale, quality, size, offset, optio
    for i = 1, #quality do
       x = gm.Image(x, "RGB", "DHW")
       x:format("jpeg")
+      x:samplingFactors({1.0, 1.0, 1.0})
       local blob, len = x:toBlob(quality[i])
       x:fromBlob(blob, len)
       x = x:toTensor("byte", "RGB", "DHW")
@@ -194,10 +203,13 @@ function pairwise_transform.jpeg_scale_(src, scale, quality, size, offset, optio
    x = x:float():div(255)
    y = y:float():div(255)
    x, y = flip_augment(x, y)
-   
-   y = image.rgb2yuv(y)[1]:reshape(1, y:size(2), y:size(3))
-   x = image.rgb2yuv(x)[1]:reshape(1, x:size(2), x:size(3))
 
+   if options.rgb then
+   else
+      y = image.rgb2yuv(y)[1]:reshape(1, y:size(2), y:size(3))
+      x = image.rgb2yuv(x)[1]:reshape(1, x:size(2), x:size(3))
+   end
+   
    return x, image.crop(y, offset, offset, size - offset, size - offset)
 end
 function pairwise_transform.jpeg_scale(src, scale, level, size, offset, options)
@@ -247,7 +259,7 @@ local function test_scale()
    local loader = require './image_loader'
    local src = loader.load_byte("../images/miku_CC_BY-NC.jpg")   
    for i = 1, 9 do
-      local y, x = pairwise_transform.scale(src, 2.0, 128, 7, {color_augment = true, random_half = true})
+      local y, x = pairwise_transform.scale(src, 2.0, 128, 7, {color_augment = true, random_half = true, rgb = true})
       image.display({image = y, legend = "y:" .. (i * 10), min = 0, max = 1})
       image.display({image = x, legend = "x:" .. (i * 10), min = 0, max = 1})
       print(y:size(), x:size())
@@ -272,8 +284,8 @@ local function test_jpeg_scale()
       --print(x:mean(), y:mean())
    end
 end
---test_jpeg()
 --test_scale()
+--test_jpeg()
 --test_jpeg_scale()
 
 return pairwise_transform

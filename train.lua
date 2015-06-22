@@ -59,7 +59,7 @@ local function validate(model, criterion, data)
 end
 
 local function train()
-   local model, offset = settings.create_model()
+   local model, offset = settings.create_model(settings.color)
    assert(offset == settings.block_offset)
    local criterion = nn.MSECriterion():cuda()
    local x = torch.load(settings.images)
@@ -72,6 +72,12 @@ local function train()
       learningRate = settings.learning_rate,
       xBatchSize = settings.batch_size,
    }
+   local ch = nil
+   if settings.color == "y" then
+      ch = 1
+   elseif settings.color == "rgb" then
+      ch = 3
+   end
    local transformer = function(x, is_validation)
       if is_validation == nil then is_validation = false end
       if settings.method == "scale" then
@@ -79,20 +85,25 @@ local function train()
 					 settings.scale,
 					 settings.crop_size, offset,
 					 { color_augment = not is_validation,
-					   random_half = settings.random_half})
+					   random_half = settings.random_half,
+					   rgb = (settings.color == "rgb")
+					 })
       elseif settings.method == "noise" then
 	 return pairwise_transform.jpeg(x,
 					settings.noise_level,
 					settings.crop_size, offset,
 					{ color_augment = not is_validation,
-					  random_half = settings.random_half})
+					  random_half = settings.random_half,
+					  rgb = (settings.color == "rgb")
+					})
       elseif settings.method == "noise_scale" then
 	 return pairwise_transform.jpeg_scale(x,
 					      settings.scale,
 					      settings.noise_level,
 					      settings.crop_size, offset,
 					      { color_augment = not is_validation,
-						random_half = settings.random_half
+						random_half = settings.random_half,
+						rgb = (settings.color == "rgb")
 					      })
       end
    end
@@ -109,8 +120,8 @@ local function train()
       print("# " .. epoch)
       print(minibatch_adam(model, criterion, train_x, adam_config,
 			   transformer,
-			   {1, settings.crop_size, settings.crop_size},
-			   {1, settings.crop_size - offset * 2, settings.crop_size - offset * 2}
+			   {ch, settings.crop_size, settings.crop_size},
+			   {ch, settings.crop_size - offset * 2, settings.crop_size - offset * 2}
 			  ))
       model:evaluate()
       print("# validation")
