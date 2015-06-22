@@ -2,15 +2,6 @@ local gm = require 'graphicsmagick'
 local image = require 'image'
 local iproc = {}
 
-function iproc.sample(src, width, height)
-   local t = "float"
-   if src:type() == "torch.ByteTensor" then
-      t = "byte"
-   end
-   local im = gm.Image(src, "RGB", "DHW")
-   im:sample(math.ceil(width), math.ceil(height))
-   return im:toTensor(t, "RGB", "DHW")
-end
 function iproc.scale(src, width, height, filter)
    local t = "float"
    if src:type() == "torch.ByteTensor" then

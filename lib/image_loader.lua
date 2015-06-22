@@ -73,12 +73,18 @@ function image_loader.decode_byte(blob)
 end
 function image_loader.load_float(file)
    local fp = io.open(file, "rb")
+   if not fp then
+      error(file .. ": failed to load image")
+   end
    local buff = fp:read("*a")
    fp:close()
    return image_loader.decode_float(buff)
 end
 function image_loader.load_byte(file)
    local fp = io.open(file, "rb")
+   if not fp then
+      error(file .. ": failed to load image")
+   end
    local buff = fp:read("*a")
    fp:close()
    return image_loader.decode_byte(buff)

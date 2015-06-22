@@ -23,7 +23,7 @@ local iproc = require './lib/iproc'
 local reconstruct = require './lib/reconstruct'
 local image_loader = require './lib/image_loader'
 
-local MODEL_DIR = "./models/anime_style_art"
+local MODEL_DIR = "./models/anime_style_art_rgb"
 
 local noise1_model = torch.load(path.join(MODEL_DIR, "noise1_model.t7"), "ascii")
 local noise2_model = torch.load(path.join(MODEL_DIR, "noise2_model.t7"), "ascii")

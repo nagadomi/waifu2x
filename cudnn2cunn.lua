@@ -5,7 +5,7 @@ require './lib/LeakyReLU'
 local srcnn = require 'lib/srcnn'
 
 local function cudnn2cunn(cudnn_model)
-   local cunn_model = srcnn.waifu2x()
+   local cunn_model = srcnn.waifu2x("y")
    local from_seq = cudnn_model:findModules("cudnn.SpatialConvolution")
    local to_seq = cunn_model:findModules("nn.SpatialConvolutionMM")
 
