@@ -21,7 +21,7 @@ cmd:option("-data_dir", "./data", 'data directory')
 cmd:option("-test", "images/miku_small.png", 'test image file')
 cmd:option("-model_dir", "./models", 'model directory')
 cmd:option("-method", "scale", '(noise|scale|noise_scale)')
-cmd:option("-noise_level", 1, '(1|2)')
+cmd:option("-noise_level", 1, '(0|1|2)')
 cmd:option("-color", 'rgb', '(y|rgb)')
 cmd:option("-scale", 2.0, 'scale')
 cmd:option("-learning_rate", 0.00025, 'learning rate for adam')
@@ -64,7 +64,7 @@ settings.images = string.format("%s/images.t7", settings.data_dir)
 settings.image_list = string.format("%s/image_list.txt", settings.data_dir)
 
 settings.validation_ratio = 0.1
-settings.validation_crops = 40
+settings.validation_crops = 20
 
 local srcnn = require './srcnn'
 if (settings.method == "scale" or settings.method == "noise_scale") and settings.scale == 4 then

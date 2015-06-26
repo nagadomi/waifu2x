@@ -109,7 +109,7 @@ local function train()
    end
    local best_score = 100000.0
    print("# make validation-set")
-   local valid_xy = make_validation_set(valid_x, transformer, 20)
+   local valid_xy = make_validation_set(valid_x, transformer, settings.validation_crop)
    valid_x = nil
    
    collectgarbage()
