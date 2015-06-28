@@ -195,7 +195,14 @@ function FormHandler:get()
       self:write(index_en)
    end
 end
-
+turbo.log.categories = {
+   ["success"] = true,
+   ["notice"] = false,
+   ["warning"] = true,
+   ["error"] = true,
+   ["debug"] = false,
+   ["development"] = false
+}
 local app = turbo.web.Application:new(
    {
       {"^/$", FormHandler},
