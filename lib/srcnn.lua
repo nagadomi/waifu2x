@@ -1,10 +1,13 @@
 require './LeakyReLU'
 
+-- ref: http://arxiv.org/abs/1502.01852
 function nn.SpatialConvolutionMM:reset(stdv)
-   stdv = math.sqrt(2 / ( self.kW * self.kH * self.nOutputPlane))
+   stdv = math.sqrt(2 / ((1.0 + 0.1 * 0.1) * self.kW * self.kH * self.nOutputPlane))
    self.weight:normal(0, stdv)
-   self.bias:fill(0)
+   self.bias:zero()
 end
+
+-- ref: http://arxiv.org/abs/1501.00092
 local srcnn = {}
 function srcnn.waifu2x(color)
    local model = nn.Sequential()
@@ -20,7 +23,7 @@ function srcnn.waifu2x(color)
 	 error("unknown color: nil")
       end
    end
-   
+   -- very deep model
    model:add(nn.SpatialConvolutionMM(ch, 32, 3, 3, 1, 1, 0, 0))
    model:add(nn.LeakyReLU(0.1))
    model:add(nn.SpatialConvolutionMM(32, 32, 3, 3, 1, 1, 0, 0))
