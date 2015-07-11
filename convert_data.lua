@@ -21,6 +21,7 @@ local function crop_4x(x)
 end
 
 local function load_images(list)
+   local MARGIN = 32
    local count = count_lines(list)
    local fp = io.open(list, "r")
    local x = {}
@@ -28,7 +29,7 @@ local function load_images(list)
    for line in fp:lines() do
       local im = crop_4x(image_loader.load_byte(line))
       if im then
-	 if im:size(2) >= settings.crop_size * 2 and im:size(3) >= settings.crop_size * 2 then
+	 if im:size(2) > (settings.crop_size * 2 + MARGIN) and im:size(3) > (settings.crop_size * 2 + MARGIN) then
 	    table.insert(x, im)
 	 end
       else
