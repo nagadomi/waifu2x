@@ -13,14 +13,29 @@ local function random_half(src, p, min_size)
       return src
    end
 end
-local function color_augment(x)
-   local color_scale = torch.Tensor(3):uniform(0.8, 1.2)
-   x = x:float():div(255)
+local function pcacov(x)
+   local mean = torch.mean(x, 1)
+   local xm = x - torch.ger(torch.ones(x:size(1)), mean:squeeze())
+   local c = torch.mm(xm:t(), xm)
+   c:div(x:size(1) - 1)
+   local ce, cv = torch.symeig(c, 'V')
+   return ce, cv
+end
+local function color_noise(src)
+   local p = 0.1
+   src = src:float():div(255)
+   local src_t = src:reshape(src:size(1), src:nElement() / src:size(1)):t():contiguous()
+   local ce, cv = pcacov(src_t)
+   local color_scale = torch.Tensor(3):uniform(1 / (1 + p), 1 + p)
+   
+   pca_space = torch.mm(src_t, cv):t():contiguous()
    for i = 1, 3 do
-      x[i]:mul(color_scale[i])
+      pca_space[i]:mul(color_scale[i])
    end
+   x = torch.mm(pca_space:t(), cv:t()):t():contiguous():resizeAs(src)
    x[torch.lt(x, 0.0)] = 0.0
    x[torch.gt(x, 1.0)] = 1.0
+   
    return x:mul(255):byte()
 end
 local function flip_augment(x, y)
@@ -52,7 +67,7 @@ local function flip_augment(x, y)
 end
 local INTERPOLATION_PADDING = 16
 function pairwise_transform.scale(src, scale, size, offset, options)
-   options = options or {color_augment = true, random_half = true, rgb = true}
+   options = options or {color_noise = false, random_half = true, rgb = true}
    if options.random_half then
       src = random_half(src)
    end
@@ -74,8 +89,8 @@ function pairwise_transform.scale(src, scale, size, offset, options)
    local downscale_filter = filters[torch.random(1, #filters)]
    
    y = flip_augment(y)
-   if options.color_augment then
-      y = color_augment(y)
+   if options.color_noise then
+      y = color_noise(y)
    end
    local x = iproc.scale(y, y:size(3) * down_scale, y:size(2) * down_scale, downscale_filter)
    x = iproc.scale(x, y:size(3), y:size(2))
@@ -94,7 +109,7 @@ function pairwise_transform.scale(src, scale, size, offset, options)
    return x, y
 end
 function pairwise_transform.jpeg_(src, quality, size, offset, options)
-   options = options or {color_augment = true, random_half = true, rgb = true}
+   options = options or {color_noise = false, random_half = true, rgb = true}
    if options.random_half then
       src = random_half(src)
    end
@@ -103,8 +118,8 @@ function pairwise_transform.jpeg_(src, quality, size, offset, options)
    local y = src
    local x
 
-   if options.color_augment then
-      y = color_augment(y)
+   if options.color_noise then
+      y = color_noise(y)
    end
    x = y
    for i = 1, #quality do
@@ -130,34 +145,54 @@ function pairwise_transform.jpeg_(src, quality, size, offset, options)
    
    return x, image.crop(y, offset, offset, size - offset, size - offset)
 end
-function pairwise_transform.jpeg(src, level, size, offset, options)
-   if level == 1 then
-      return pairwise_transform.jpeg_(src, {torch.random(65, 85)},
-				      size, offset,
-				      options)
-   elseif level == 2 then
-      local r = torch.uniform()
-      if r > 0.6 then
-	 return pairwise_transform.jpeg_(src, {torch.random(27, 70)},
+function pairwise_transform.jpeg(src, category, level, size, offset, options)
+   if category == "anime_style_art" then
+      if level == 1 then
+	 return pairwise_transform.jpeg_(src, {torch.random(65, 85)},
 					 size, offset,
 					 options)
-      elseif r > 0.3 then
-	 local quality1 = torch.random(37, 70)
-	 local quality2 = quality1 - torch.random(5, 10)
-	 return pairwise_transform.jpeg_(src, {quality1, quality2},
+      elseif level == 2 then
+	 local r = torch.uniform()
+	 if r > 0.6 then
+	    return pairwise_transform.jpeg_(src, {torch.random(27, 70)},
 					    size, offset,
 					    options)
+	 elseif r > 0.3 then
+	    local quality1 = torch.random(37, 70)
+	    local quality2 = quality1 - torch.random(5, 10)
+	    return pairwise_transform.jpeg_(src, {quality1, quality2},
+					    size, offset,
+					    options)
+	 else
+	    local quality1 = torch.random(52, 70)
+	    return pairwise_transform.jpeg_(src,
+					    {quality1,
+					     quality1 - torch.random(5, 15),
+					     quality1 - torch.random(15, 25)},
+					    size, offset,
+					    options)
+	 end
       else
-	 local quality1 = torch.random(52, 70)
-	 return pairwise_transform.jpeg_(src,
-					 {quality1,
-					  quality1 - torch.random(5, 15),
-					  quality1 - torch.random(15, 25)},
+	 error("unknown noise level: " .. level)
+      end
+   elseif category == "photo" then
+      if level == 1 then
+	 if torch.uniform() > 0.75 then
+	    return pairwise_transform.jpeg_(src, {},
+					    size, offset,
+					    options)
+	 else
+	    return pairwise_transform.jpeg_(src, {torch.random(80, 95)},
+					    size, offset,
+					    options)
+	 end
+      elseif level == 2 then
+	 return pairwise_transform.jpeg_(src, {torch.random(70, 85)},
 					 size, offset,
 					 options)
       end
    else
-      error("unknown noise level: " .. level)
+      error("unknown category: " .. category)
    end
 end
 function pairwise_transform.jpeg_scale_(src, scale, quality, size, offset, options)
@@ -180,8 +215,8 @@ function pairwise_transform.jpeg_scale_(src, scale, quality, size, offset, optio
    local y = src
    local x
    
-   if options.color_augment then
-      y = color_augment(y)
+   if options.color_noise then
+      y = color_noise(y)
    end
    x = y
    x = iproc.scale(x, y:size(3) * down_scale, y:size(2) * down_scale, downscale_filter)
@@ -212,31 +247,50 @@ function pairwise_transform.jpeg_scale_(src, scale, quality, size, offset, optio
    
    return x, image.crop(y, offset, offset, size - offset, size - offset)
 end
-function pairwise_transform.jpeg_scale(src, scale, level, size, offset, options)
-   options = options or {color_augment = true, random_half = true}
-   if level == 1 then
-      return pairwise_transform.jpeg_scale_(src, scale, {torch.random(65, 85)},
-					    size, offset, options)
-   elseif level == 2 then
-      local r = torch.uniform()
-      if r > 0.6 then
-	 return pairwise_transform.jpeg_scale_(src, scale, {torch.random(27, 70)},
+function pairwise_transform.jpeg_scale(src, scale, category, level, size, offset, options)
+   options = options or {color_noise = false, random_half = true}
+   if category == "anime_style_art" then
+      if level == 1 then
+	 return pairwise_transform.jpeg_scale_(src, scale, {torch.random(65, 85)},
 					       size, offset, options)
-      elseif r > 0.3 then
-	 local quality1 = torch.random(37, 70)
-	 local quality2 = quality1 - torch.random(5, 10)
-	 return pairwise_transform.jpeg_scale_(src, scale, {quality1, quality2},
+      elseif level == 2 then
+	 local r = torch.uniform()
+	 if r > 0.6 then
+	    return pairwise_transform.jpeg_scale_(src, scale, {torch.random(27, 70)},
 					       size, offset, options)
-      else
-	 local quality1 = torch.random(52, 70)
+	 elseif r > 0.3 then
+	    local quality1 = torch.random(37, 70)
+	    local quality2 = quality1 - torch.random(5, 10)
+	    return pairwise_transform.jpeg_scale_(src, scale, {quality1, quality2},
+						  size, offset, options)
+	 else
+	    local quality1 = torch.random(52, 70)
 	    return pairwise_transform.jpeg_scale_(src, scale,
 						  {quality1,
 						   quality1 - torch.random(5, 15),
 						   quality1 - torch.random(15, 25)},
 						  size, offset, options)
+	 end
+      else
+	 error("unknown noise level: " .. level)
+      end
+   elseif category == "photo" then
+      if level == 1 then
+	 if torch.uniform() > 0.75 then
+	    return pairwise_transform.jpeg_scale_(src, scale, {},
+						  size, offset, options)
+	 else
+	 return pairwise_transform.jpeg_scale_(src, scale, {torch.random(80, 95)},
+					       size, offset, options)
+	 end
+      elseif level == 2 then
+	 return pairwise_transform.jpeg_scale_(src, scale, {torch.random(70, 85)},
+					       size, offset, options)
+      else
+	 error("unknown noise level: " .. level)
       end
    else
-      error("unknown noise level: " .. level)
+      error("unknown category: " .. category)
    end
 end
 
@@ -248,7 +302,7 @@ local function test_jpeg()
    image.display({image = x, legend = "x:0"})
    for i = 2, 9 do
       local y, x = pairwise_transform.jpeg_(pairwise_transform.random_half(src),
-					    {i * 10}, 128, 0, {color_augment = false, random_half = true})
+					    {i * 10}, 128, 0, {color_noise = false, random_half = true})
       image.display({image = y, legend = "y:" .. (i * 10), max=1,min=0})
       image.display({image = x, legend = "x:" .. (i * 10),max=1,min=0})
       --print(x:mean(), y:mean())
@@ -256,10 +310,11 @@ local function test_jpeg()
 end
 
 local function test_scale()
+   torch.setdefaulttensortype('torch.FloatTensor')
    local loader = require './image_loader'
-   local src = loader.load_byte("../images/miku_CC_BY-NC.jpg")   
+   local src = loader.load_byte("../images/miku_CC_BY-NC.jpg")
    for i = 1, 9 do
-      local y, x = pairwise_transform.scale(src, 2.0, 128, 7, {color_augment = true, random_half = true, rgb = true})
+      local y, x = pairwise_transform.scale(src, 2.0, 128, 7, {color_noise = true, random_half = true, rgb = true})
       image.display({image = y, legend = "y:" .. (i * 10), min = 0, max = 1})
       image.display({image = x, legend = "x:" .. (i * 10), min = 0, max = 1})
       print(y:size(), x:size())
@@ -267,25 +322,35 @@ local function test_scale()
    end
 end
 local function test_jpeg_scale()
+   torch.setdefaulttensortype('torch.FloatTensor')
    local loader = require './image_loader'
    local src = loader.load_byte("../images/miku_CC_BY-NC.jpg")   
    for i = 1, 9 do
-      local y, x = pairwise_transform.jpeg_scale(src, 2.0, 1, 128, 7, {color_augment = true, random_half = true})
+      local y, x = pairwise_transform.jpeg_scale(src, 2.0, 1, 128, 7, {color_noise = true, random_half = true})
       image.display({image = y, legend = "y1:" .. (i * 10), min = 0, max = 1})
       image.display({image = x, legend = "x1:" .. (i * 10), min = 0, max = 1})
       print(y:size(), x:size())
       --print(x:mean(), y:mean())
    end
    for i = 1, 9 do
-      local y, x = pairwise_transform.jpeg_scale(src, 2.0, 2, 128, 7, {color_augment = true, random_half = true})
+      local y, x = pairwise_transform.jpeg_scale(src, 2.0, 2, 128, 7, {color_noise = true, random_half = true})
       image.display({image = y, legend = "y2:" .. (i * 10), min = 0, max = 1})
       image.display({image = x, legend = "x2:" .. (i * 10), min = 0, max = 1})
       print(y:size(), x:size())
       --print(x:mean(), y:mean())
    end
 end
+local function test_color_noise()
+   torch.setdefaulttensortype('torch.FloatTensor')
+   local loader = require './image_loader'
+   local src = loader.load_byte("../images/miku_CC_BY-NC.jpg")
+   for i = 1, 10 do
+      image.display(color_noise(src))
+   end
+end
 --test_scale()
 --test_jpeg()
 --test_jpeg_scale()
+--test_color_noise()
 
 return pairwise_transform

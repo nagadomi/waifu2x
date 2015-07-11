@@ -65,8 +65,7 @@ local function train()
    local x = torch.load(settings.images)
    local lrd_count = 0
    local train_x, valid_x = split_data(x,
-				       math.floor(settings.validation_ratio * #x),
-				       settings.validation_crops)
+				       math.floor(settings.validation_ratio * #x))
    local test = image_loader.load_float(settings.test)
    local adam_config = {
       learningRate = settings.learning_rate,
@@ -80,28 +79,31 @@ local function train()
    end
    local transformer = function(x, is_validation)
       if is_validation == nil then is_validation = false end
+      local color_noise = (not is_validation) and settings.color_noise
       if settings.method == "scale" then
 	 return pairwise_transform.scale(x,
 					 settings.scale,
 					 settings.crop_size, offset,
-					 { color_augment = not is_validation,
+					 { color_noise = color_noise,
 					   random_half = settings.random_half,
 					   rgb = (settings.color == "rgb")
 					 })
       elseif settings.method == "noise" then
 	 return pairwise_transform.jpeg(x,
+					settings.category,
 					settings.noise_level,
 					settings.crop_size, offset,
-					{ color_augment = not is_validation,
+					{ color_noise = color_noise,
 					  random_half = settings.random_half,
 					  rgb = (settings.color == "rgb")
 					})
       elseif settings.method == "noise_scale" then
 	 return pairwise_transform.jpeg_scale(x,
 					      settings.scale,
+					      settings.category,
 					      settings.noise_level,
 					      settings.crop_size, offset,
-					      { color_augment = not is_validation,
+					      { color_noise = color_noise,
 						random_half = settings.random_half,
 						rgb = (settings.color == "rgb")
 					      })
@@ -109,7 +111,7 @@ local function train()
    end
    local best_score = 100000.0
    print("# make validation-set")
-   local valid_xy = make_validation_set(valid_x, transformer, settings.validation_crop)
+   local valid_xy = make_validation_set(valid_x, transformer, settings.validation_crops)
    valid_x = nil
    
    collectgarbage()
@@ -149,7 +151,7 @@ local function train()
 	 lrd_count = lrd_count + 1
 	 if lrd_count > 5 then
 	    lrd_count = 0
-	    adam_config.learningRate = adam_config.learningRate * 0.8
+	    adam_config.learningRate = adam_config.learningRate * 0.9
 	    print("* learning rate decay: " .. adam_config.learningRate)
 	 end
       end
