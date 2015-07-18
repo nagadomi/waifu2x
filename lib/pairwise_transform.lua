@@ -148,36 +148,48 @@ end
 function pairwise_transform.jpeg(src, category, level, size, offset, options)
    if category == "anime_style_art" then
       if level == 1 then
-	 return pairwise_transform.jpeg_(src, {torch.random(65, 85)},
-					 size, offset,
-					 options)
-      elseif level == 2 then
-	 local r = torch.uniform()
-	 if r > 0.6 then
-	    return pairwise_transform.jpeg_(src, {torch.random(27, 70)},
-					    size, offset,
-					    options)
-	 elseif r > 0.3 then
-	    local quality1 = torch.random(37, 70)
-	    local quality2 = quality1 - torch.random(5, 10)
-	    return pairwise_transform.jpeg_(src, {quality1, quality2},
+	 if torch.uniform() > 0.7 then
+	    return pairwise_transform.jpeg_(src, {},
 					    size, offset,
 					    options)
 	 else
-	    local quality1 = torch.random(52, 70)
-	    return pairwise_transform.jpeg_(src,
-					    {quality1,
-					     quality1 - torch.random(5, 15),
-					     quality1 - torch.random(15, 25)},
+	    return pairwise_transform.jpeg_(src, {torch.random(65, 85)},
 					    size, offset,
 					    options)
+	 end
+      elseif level == 2 then
+	 if torch.uniform() > 0.7 then	 
+	    return pairwise_transform.jpeg_(src, {},
+					    size, offset,
+					    options)
+	 else
+	    local r = torch.uniform()
+	    if r > 0.6 then
+	       return pairwise_transform.jpeg_(src, {torch.random(27, 70)},
+					       size, offset,
+					    options)
+	    elseif r > 0.3 then
+	       local quality1 = torch.random(37, 70)
+	       local quality2 = quality1 - torch.random(5, 10)
+	       return pairwise_transform.jpeg_(src, {quality1, quality2},
+					    size, offset,
+					    options)
+	    else
+	       local quality1 = torch.random(52, 70)
+	       return pairwise_transform.jpeg_(src,
+					       {quality1,
+						quality1 - torch.random(5, 15),
+						quality1 - torch.random(15, 25)},
+					       size, offset,
+					       options)
+	    end
 	 end
       else
 	 error("unknown noise level: " .. level)
       end
    elseif category == "photo" then
       if level == 1 then
-	 if torch.uniform() > 0.75 then
+	 if torch.uniform() > 0.7 then
 	    return pairwise_transform.jpeg_(src, {},
 					    size, offset,
 					    options)
@@ -187,9 +199,15 @@ function pairwise_transform.jpeg(src, category, level, size, offset, options)
 					    options)
 	 end
       elseif level == 2 then
-	 return pairwise_transform.jpeg_(src, {torch.random(70, 85)},
-					 size, offset,
-					 options)
+	 if torch.uniform() > 0.7 then
+	    return pairwise_transform.jpeg_(src, {},
+					    size, offset,
+					    options)
+	 else
+	    return pairwise_transform.jpeg_(src, {torch.random(65, 85)},
+					    size, offset,
+					    options)
+	 end
       end
    else
       error("unknown category: " .. category)
@@ -251,32 +269,42 @@ function pairwise_transform.jpeg_scale(src, scale, category, level, size, offset
    options = options or {color_noise = false, random_half = true}
    if category == "anime_style_art" then
       if level == 1 then
-	 return pairwise_transform.jpeg_scale_(src, scale, {torch.random(65, 85)},
-					       size, offset, options)
-      elseif level == 2 then
-	 local r = torch.uniform()
-	 if r > 0.6 then
-	    return pairwise_transform.jpeg_scale_(src, scale, {torch.random(27, 70)},
-					       size, offset, options)
-	 elseif r > 0.3 then
-	    local quality1 = torch.random(37, 70)
-	    local quality2 = quality1 - torch.random(5, 10)
-	    return pairwise_transform.jpeg_scale_(src, scale, {quality1, quality2},
+	 if torch.uniform() > 0.7 then
+	    return pairwise_transform.jpeg_scale_(src, scale, {},
 						  size, offset, options)
 	 else
-	    local quality1 = torch.random(52, 70)
-	    return pairwise_transform.jpeg_scale_(src, scale,
-						  {quality1,
-						   quality1 - torch.random(5, 15),
-						   quality1 - torch.random(15, 25)},
+	    return pairwise_transform.jpeg_scale_(src, scale, {torch.random(65, 85)},
 						  size, offset, options)
+	 end
+      elseif level == 2 then
+	 if torch.uniform() > 0.7 then
+	    return pairwise_transform.jpeg_scale_(src, scale, {},
+						  size, offset, options)
+	 else
+	    local r = torch.uniform()
+	    if r > 0.6 then
+	       return pairwise_transform.jpeg_scale_(src, scale, {torch.random(27, 70)},
+						     size, offset, options)
+	    elseif r > 0.3 then
+	       local quality1 = torch.random(37, 70)
+	       local quality2 = quality1 - torch.random(5, 10)
+	       return pairwise_transform.jpeg_scale_(src, scale, {quality1, quality2},
+						     size, offset, options)
+	    else
+	       local quality1 = torch.random(52, 70)
+	       return pairwise_transform.jpeg_scale_(src, scale,
+						     {quality1,
+						      quality1 - torch.random(5, 15),
+						      quality1 - torch.random(15, 25)},
+						     size, offset, options)
+	    end
 	 end
       else
 	 error("unknown noise level: " .. level)
       end
    elseif category == "photo" then
       if level == 1 then
-	 if torch.uniform() > 0.75 then
+	 if torch.uniform() > 0.7 then
 	    return pairwise_transform.jpeg_scale_(src, scale, {},
 						  size, offset, options)
 	 else
