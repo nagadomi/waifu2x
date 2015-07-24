@@ -26,11 +26,11 @@ function image_loader.encode_png(rgb, alpha)
       rgba[4]:copy(alpha)
       local im = gm.Image():fromTensor(rgba, "RGBA", "DHW")
       im:format("png")
-      return im:toBlob(92) -- I don't know why is 92 best compression ratio.
+      return im:toBlob(9)
    else
       local im = gm.Image(rgb, "RGB", "DHW")
       im:format("png")
-      return im:toBlob(92)
+      return im:toBlob(9)
    end
 end
 function image_loader.save_png(filename, rgb, alpha)
