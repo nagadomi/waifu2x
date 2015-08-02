@@ -80,11 +80,13 @@ local function train()
    local transformer = function(x, is_validation)
       if is_validation == nil then is_validation = false end
       local color_noise = (not is_validation) and settings.color_noise
+      local overlay = (not is_validation) and settings.overlay
       if settings.method == "scale" then
 	 return pairwise_transform.scale(x,
 					 settings.scale,
 					 settings.crop_size, offset,
 					 { color_noise = color_noise,
+					   overlay = overlay,
 					   random_half = settings.random_half,
 					   rgb = (settings.color == "rgb")
 					 })
@@ -94,6 +96,7 @@ local function train()
 					settings.noise_level,
 					settings.crop_size, offset,
 					{ color_noise = color_noise,
+					  overlay = overlay,
 					  random_half = settings.random_half,
 					  rgb = (settings.color == "rgb")
 					})
@@ -104,6 +107,7 @@ local function train()
 					      settings.noise_level,
 					      settings.crop_size, offset,
 					      { color_noise = color_noise,
+						overlay = overlay,
 						random_half = settings.random_half,
 						rgb = (settings.color == "rgb")
 					      })

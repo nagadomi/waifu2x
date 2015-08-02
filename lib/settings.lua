@@ -25,6 +25,7 @@ cmd:option("-noise_level", 1, '(1|2)')
 cmd:option("-category", "anime_style_art", '(anime_style_art|photo)')
 cmd:option("-color", 'rgb', '(y|rgb)')
 cmd:option("-color_noise", 0, 'enable data augmentation using color noise (1|0)')
+cmd:option("-overlay", 0, 'enable data augmentation using overlay (1|0)')
 cmd:option("-scale", 2.0, 'scale')
 cmd:option("-learning_rate", 0.00025, 'learning rate for adam')
 cmd:option("-random_half", 1, 'enable data augmentation using half resolution image (0|1)')
@@ -69,6 +70,12 @@ if settings.color_noise == 1 then
 else
    settings.color_noise = false
 end
+if settings.overlay == 1 then
+   settings.overlay = true
+else
+   settings.overlay = false
+end
+
 torch.setnumthreads(settings.core)
 
 settings.images = string.format("%s/images.t7", settings.data_dir)
