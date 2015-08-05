@@ -1,7 +1,8 @@
+require 'nn'
+
 local function load_cuda()
    require 'cunn'
 end
-
 if pcall(load_cuda) then
    require 'cunn'
 else
