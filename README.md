@@ -52,18 +52,24 @@ Created at: 2015-08-12
 
 ### Setting Up the Command Line Tool Environment
  (on Ubuntu 14.04)
- 
+
 #### Install Torch7
 
 ```
 sudo apt-get install curl
-curl -s https://raw.githubusercontent.com/torch/ezinstall/master/install-all | sudo bash 
+curl -s https://raw.githubusercontent.com/torch/ezinstall/master/install-all | sudo bash
 ```
 see [Torch (easy) install](https://github.com/torch/ezinstall)
 
 #### Install CUDA
 
-Google! Search keyword: "install cuda ubuntu"
+Download [Cuda](http://developer.nvidia.com/cuda-downloads)
+
+```
+sudo dpkg -i cuda-repo-ubuntu1404_7.0-28_amd64.deb
+sudo apt-get update
+sudo apt-get install cuda
+```
 
 #### Install packages
 
@@ -74,7 +80,7 @@ sudo apt-get install graphicsmagick libgraphicsmagick-dev
 sudo luarocks install graphicsmagick
 ```
 
-Test the waifu2x command line tool. 
+Test the waifu2x command line tool.
 ```
 th waifu2x.lua
 ```
