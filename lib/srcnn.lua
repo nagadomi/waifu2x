@@ -41,7 +41,7 @@ function srcnn.waifu2x(color)
    return model, 7
 end
 
--- current 4x is worse then 2x * 2
+-- current 4x is worse than 2x * 2
 function srcnn.waifu4x(color)
    local model = nn.Sequential()
 
