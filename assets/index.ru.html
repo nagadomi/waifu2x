@@ -1,0 +1,90 @@
+<!DOCTYPE html> 
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <link rel="canonical" href="http://waifu2x.udp.jp/">
+    <title>waifu2x</title>
+    <style type="text/css">
+    body {
+      margin: 1em 2em 1em 2em;
+      background: LightGray;
+      width: 640px;
+    }
+    fieldset {
+      margin-top: 1em;
+      margin-bottom: 1em;
+    }
+    .about {
+      position: relative;
+      display: inline-block;
+      font-size: 0.9em;
+      padding: 1em 5px 0.2em 0;
+    }
+    .help {
+      font-size: 0.85em;
+      margin: 1em 0 0 0;
+    }
+    </style>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script type="text/javascript">
+    function clear_file() {
+      var new_file = $("#file").clone();
+      new_file.change(clear_url);
+      $("#file").replaceWith(new_file);
+    }
+    function clear_url() {
+      $("#url").val("")
+    }
+    $(function (){
+      $("#url").change(clear_file);
+      $("#file").change(clear_url);
+    })
+    </script>
+  </head>
+  <body>
+    <h1>waifu2x</h1>
+    <div class="header">
+      <div style="position:absolute; display:block; top:0; left:540px; max-height:140px;">
+        <img style="position:absolute; display:block; left:0; top:0; width:149px; height:149px; border:0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png">
+        <a href="https://github.com/nagadomi/waifu2x" target="_blank" style="position:absolute; display:block; left:0; top:0; width:149px; height:130px;"></a>
+      </div>
+      <a href="index.html">en</a>/<a href="index.ja.html">ja</a>/<a href="index.ru.html">ru</a>
+    </div>
+    <div class="about">
+      <div>Увеличение в 4 раза рисованных изображений, например, аниме или фан-арт, а также для устранения артефактов сжатия (преимущественно JPEG), см. <a href="https://raw.githubusercontent.com/nagadomi/waifu2x/master/images/slide.png" target="_blank">демонстрацию и сравнения</a></div>
+    </div>
+    <form action="/api" method="POST" enctype="multipart/form-data" target="_blank">
+      <fieldset>
+        <legend>Выбор изображения</legend>
+        <div>
+          Указать URL: <input id="url" type="text" name="url" style="width:400px">
+        </div>
+        <div>
+          Или загрузить файл: <input id="file" type="file" name="file">
+        </div>
+        <div class="help">
+          Макс. размер файла — 2MB, устранение шума — макс. 2560x2560px, апскейл — 1280x1280px
+        </div>
+      </fieldset>
+      <fieldset>
+      <legend>Устранение шума (артефактов JPEG)</legend>
+        <label><input type="radio" name="noise" value="0"> Нет</label>
+        <label><input type="radio" name="noise" value="1" checked="checked"> Средне</label>
+        <label><input type="radio" name="noise" value="2"> Агрессивно (не рекомендуется)</label>
+        <div class="help">Внимание! Устранение шума нужно использовать только в случае, если на картинке действительно есть шум, иначе это испортит качество изображения. Также не рекомендуется агрессивное устранение шума, оно даёт выгоду только в редких случаях, когда картинка изначально была сильно испорчена.</div>
+      </fieldset>
+      <fieldset>
+        <legend>Апскейл (увеличение размера)</legend>
+        <label><input type="radio" name="scale" value="0" checked="checked"> Нет</label>
+        <label><input type="radio" name="scale" value="1"> 1.6x</label>
+        <label><input type="radio" name="scale" value="2"> 2x</label>
+      </fieldset>
+      <input type="submit"/>
+    </form>
+    <div class="help">
+      <ul style="padding-left: 15px;">
+        <li>Если Вы используете Firefox, для сохранения изображения Вам придётся нажать Ctrl+S (опция в меню "Сохранить изображение" работать не будет!)
+      </ul>
+    </div>
+  </body>
+</html>
