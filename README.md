@@ -40,30 +40,21 @@ Created at: 2015-08-12
 - [Torch7](http://torch.ch/)
 - [NVIDIA CUDA](https://developer.nvidia.com/cuda-toolkit)
 
-### Packages (luarocks)
-- cutorch
-- cunn
-- [graphicsmagick](https://github.com/clementfarabet/graphicsmagick)
-- [turbo](https://github.com/kernelsauce/turbo)
+### lualocks packages (excludes torch7's default packages)
 - md5
 - uuid
+- [turbo](https://github.com/kernelsauce/turbo)
 
 ## Installation
 
 ### Setting Up the Command Line Tool Environment
  (on Ubuntu 14.04)
 
-#### Install Torch7
-
-```
-sudo apt-get install curl
-curl -s https://raw.githubusercontent.com/torch/ezinstall/master/install-all | sudo bash
-```
-see [Torch (easy) install](https://github.com/torch/ezinstall)
-
 #### Install CUDA
 
-Download [Cuda](http://developer.nvidia.com/cuda-downloads)
+See: [NVIDIA CUDA Getting Started Guide for Linux](http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-linux/#ubuntu-installation)
+
+Download [CUDA](http://developer.nvidia.com/cuda-downloads)
 
 ```
 sudo dpkg -i cuda-repo-ubuntu1404_7.0-28_amd64.deb
@@ -71,14 +62,11 @@ sudo apt-get update
 sudo apt-get install cuda
 ```
 
-#### Install packages
+#### Install Torch7
 
-```
-sudo luarocks install cutorch
-sudo luarocks install cunn
-sudo apt-get install graphicsmagick libgraphicsmagick-dev
-sudo luarocks install graphicsmagick
-```
+See: [Getting started with Torch](http://torch.ch/docs/getting-started.html)
+
+#### Validation
 
 Test the waifu2x command line tool.
 ```
@@ -87,23 +75,12 @@ th waifu2x.lua
 
 ### Setting Up the Web Application Environment (if you needed)
 
-#### Install luajit 2.0.4
-
-```
-curl -O http://luajit.org/download/LuaJIT-2.0.4.tar.gz
-tar -xzvf LuaJIT-2.0.4.tar.gz
-cd LuaJIT-2.0.4
-make
-sudo make install
-```
-
 #### Install packages
 
-Install luarocks packages.
 ```
-sudo luarocks install md5
-sudo luarocks install uuid
-sudo luarocks install turbo
+luarocks install md5
+luarocks install uuid
+PREFIX=$HOME/torch/install luarocks install turbo
 ```
 
 ## Web Application
