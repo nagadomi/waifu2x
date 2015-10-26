@@ -1,3 +1,7 @@
+# v1.0 branch
+
+This branch is under construction. This would break backwards compatibility sometimes.
+
 # waifu2x
 
 Image Super-Resolution for anime-style-art using Deep Convolutional Neural Networks.
