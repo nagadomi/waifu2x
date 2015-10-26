@@ -177,6 +177,7 @@ function APIHandler:post()
 end
 local FormHandler = class("FormHandler", turbo.web.RequestHandler)
 local index_ja = file.read("./assets/index.ja.html")
+local index_ru = file.read("./assets/index.ru.html")
 local index_en = file.read("./assets/index.html")
 function FormHandler:get()
    local lang = self.request.headers:get("Accept-Language")
@@ -187,6 +188,8 @@ function FormHandler:get()
       end
       if langs[1] == "ja" then
 	 self:write(index_ja)
+      elseif langs[1] == "ru" then
+	 self:write(index_ru)
       else
 	 self:write(index_en)
       end
@@ -194,12 +197,20 @@ function FormHandler:get()
       self:write(index_en)
    end
 end
-
+turbo.log.categories = {
+   ["success"] = true,
+   ["notice"] = false,
+   ["warning"] = true,
+   ["error"] = true,
+   ["debug"] = false,
+   ["development"] = false
+}
 local app = turbo.web.Application:new(
    {
       {"^/$", FormHandler},
       {"^/index.html", turbo.web.StaticFileHandler, path.join("./assets", "index.html")},
       {"^/index.ja.html", turbo.web.StaticFileHandler, path.join("./assets", "index.ja.html")},
+      {"^/index.ru.html", turbo.web.StaticFileHandler, path.join("./assets", "index.ru.html")},
       {"^/api$", APIHandler},
    }
 )

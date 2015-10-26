@@ -18,7 +18,15 @@ waifu2x is inspired by SRCNN [1]. 2D character picture (HatsuneMiku) is licensed
 - [2] "For Creators", http://piapro.net/en_for_creators.html
 
 ## Public AMI
-(maintenance)
+```
+AMI ID: ami-0be01e4f
+AMI NAME: waifu2x-server
+Instance Type: g2.2xlarge
+Region: US West (N.California)
+OS: Ubuntu 14.04
+User: ubuntu
+Created at: 2015-08-12
+```
 
 ## Third Party Software
 [Third-Party](https://github.com/nagadomi/waifu2x/wiki/Third-Party)
@@ -32,64 +40,47 @@ waifu2x is inspired by SRCNN [1]. 2D character picture (HatsuneMiku) is licensed
 - [Torch7](http://torch.ch/)
 - [NVIDIA CUDA](https://developer.nvidia.com/cuda-toolkit)
 
-### Packages (luarocks)
-- cutorch
-- cunn
-- [graphicsmagick](https://github.com/clementfarabet/graphicsmagick)
-- [turbo](https://github.com/kernelsauce/turbo)
+### lualocks packages (excludes torch7's default packages)
 - md5
 - uuid
+- [turbo](https://github.com/kernelsauce/turbo)
 
 ## Installation
 
 ### Setting Up the Command Line Tool Environment
  (on Ubuntu 14.04)
- 
-#### Install Torch7
-
-```
-sudo apt-get install curl
-curl -s https://raw.githubusercontent.com/torch/ezinstall/master/install-all | sudo bash 
-```
-see [Torch (easy) install](https://github.com/torch/ezinstall)
 
 #### Install CUDA
 
-Google! Search keyword: "install cuda ubuntu"
+See: [NVIDIA CUDA Getting Started Guide for Linux](http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-linux/#ubuntu-installation)
 
-#### Install packages
+Download [CUDA](http://developer.nvidia.com/cuda-downloads)
 
 ```
-sudo luarocks install cutorch
-sudo luarocks install cunn
-sudo apt-get install graphicsmagick libgraphicsmagick-dev
-sudo luarocks install graphicsmagick
+sudo dpkg -i cuda-repo-ubuntu1404_7.0-28_amd64.deb
+sudo apt-get update
+sudo apt-get install cuda
 ```
 
-Test the waifu2x command line tool. 
+#### Install Torch7
+
+See: [Getting started with Torch](http://torch.ch/docs/getting-started.html)
+
+#### Validation
+
+Test the waifu2x command line tool.
 ```
 th waifu2x.lua
 ```
 
 ### Setting Up the Web Application Environment (if you needed)
 
-#### Install luajit 2.0.4
-
-```
-curl -O http://luajit.org/download/LuaJIT-2.0.4.tar.gz
-tar -xzvf LuaJIT-2.0.4.tar.gz
-cd LuaJIT-2.0.4
-make
-sudo make install
-```
-
 #### Install packages
 
-Install luarocks packages.
 ```
-sudo luarocks install md5
-sudo luarocks install uuid
-sudo luarocks install turbo
+luarocks install md5
+luarocks install uuid
+PREFIX=$HOME/torch/install luarocks install turbo
 ```
 
 ## Web Application
