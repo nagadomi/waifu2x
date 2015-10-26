@@ -13,7 +13,7 @@ function image_loader.decode_float(blob)
 end
 function image_loader.encode_png(rgb, alpha)
    if rgb:type() == "torch.ByteTensor" then
-      error("expect FloatTensor")
+      rgb = rgb:float():div(255)
    end
    if alpha then
       if not (alpha:size(2) == rgb:size(2) and  alpha:size(3) == rgb:size(3)) then
@@ -26,11 +26,11 @@ function image_loader.encode_png(rgb, alpha)
       rgba[4]:copy(alpha)
       local im = gm.Image():fromTensor(rgba, "RGBA", "DHW")
       im:format("png")
-      return im:toBlob()
+      return im:toBlob(9)
    else
       local im = gm.Image(rgb, "RGB", "DHW")
       im:format("png")
-      return im:toBlob()
+      return im:toBlob(9)
    end
 end
 function image_loader.save_png(filename, rgb, alpha)
@@ -64,6 +64,7 @@ function image_loader.decode_byte(blob)
       end
       return {im, alpha}
    end
+   load_image()
    local state, ret = pcall(load_image)
    if state then
       return ret[1], ret[2]

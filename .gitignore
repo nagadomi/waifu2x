@@ -1,4 +1,8 @@
 *~
+/*.png
+/*.mp4
+/*.jpg
 cache/*.png
 models/*.png
+models/*/*.png
 waifu2x.log

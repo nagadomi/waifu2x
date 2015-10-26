@@ -1,8 +1,8 @@
-if mynn.LeakyReLU then
-   return mynn.LeakyReLU
+if nn.LeakyReLU then
+   return nn.LeakyReLU
 end
 
-local LeakyReLU, parent = torch.class('mynn.LeakyReLU','nn.Module')
+local LeakyReLU, parent = torch.class('nn.LeakyReLU','nn.Module')
  
 function LeakyReLU:__init(negative_scale)
    parent.__init(self)

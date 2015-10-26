@@ -4,8 +4,8 @@ local uuid = require 'uuid'
 local ffi = require 'ffi'
 local md5 = require 'md5'
 require 'pl'
-require './lib/portable'
-require './lib/LeakyReLU'
+require 'lib.portable'
+require 'lib.mynn'
 
 local cmd = torch.CmdLine()
 cmd:text()
@@ -23,7 +23,7 @@ local iproc = require './lib/iproc'
 local reconstruct = require './lib/reconstruct'
 local image_loader = require './lib/image_loader'
 
-local MODEL_DIR = "./models/anime_style_art_rgb"
+local MODEL_DIR = "./models/anime_style_art_rgb3"
 
 local noise1_model = torch.load(path.join(MODEL_DIR, "noise1_model.t7"), "ascii")
 local noise2_model = torch.load(path.join(MODEL_DIR, "noise2_model.t7"), "ascii")
@@ -40,7 +40,6 @@ local CURL_OPTIONS = {
    max_redirects = 2
 }
 local CURL_MAX_SIZE = 2 * 1024 * 1024
-local BLOCK_OFFSET = 7 -- see srcnn.lua
 
 local function valid_size(x, scale)
    if scale == 0 then
@@ -80,13 +79,13 @@ local function get_image(req)
 end
 
 local function apply_denoise1(x)
-   return reconstruct.image(noise1_model, x, BLOCK_OFFSET)
+   return reconstruct.image(noise1_model, x)
 end
 local function apply_denoise2(x)
-   return reconstruct.image(noise2_model, x, BLOCK_OFFSET)
+   return reconstruct.image(noise2_model, x)
 end
 local function apply_scale2x(x)
-   return reconstruct.scale(scale20_model, 2.0, x, BLOCK_OFFSET)
+   return reconstruct.scale(scale20_model, 2.0, x)
 end
 local function cache_do(cache, x, func)
    if path.exists(cache) then

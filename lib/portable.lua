@@ -1,9 +1,13 @@
 local function load_cuda()
+   require 'nn'
    require 'cunn'
+end
+local function load_cudnn()
+   require 'cudnn'
+   --cudnn.fastest = true
 end
 
 if pcall(load_cuda) then
-   require 'cunn'
 else
    --[[ TODO: fakecuda does not work.
       
@@ -12,4 +16,6 @@ else
    require 'nn'
    require('fakecuda').init(true)
    --]]
+end
+if pcall(load_cudnn) then
 end

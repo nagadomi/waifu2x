@@ -48,7 +48,8 @@ local function reconstruct_rgb(model, x, offset, block_size)
    end
    return new_x
 end
-function model_is_rgb(model)
+local reconstruct = {}
+function reconstruct.is_rgb(model)
    if model:get(model:size() - 1).weight:size(1) == 3 then
       -- 3ch RGB
       return true
@@ -57,8 +58,23 @@ function model_is_rgb(model)
       return false
    end
 end
-
-local reconstruct = {}
+function reconstruct.offset_size(model)
+   local conv = model:findModules("nn.SpatialConvolutionMM")
+   if #conv > 0 then
+      local offset = 0
+      for i = 1, #conv do
+	 offset = offset + (conv[i].kW - 1) / 2
+      end
+      return math.floor(offset)
+   else
+      conv = model:findModules("cudnn.SpatialConvolution")
+      local offset = 0
+      for i = 1, #conv do
+	 offset = offset + (conv[i].kW - 1) / 2
+      end
+      return math.floor(offset)
+   end
+end
 function reconstruct.image_y(model, x, offset, block_size)
    block_size = block_size or 128
    local output_size = block_size - offset * 2
@@ -172,18 +188,22 @@ function reconstruct.scale_rgb(model, scale, x, offset, block_size)
    return output
 end
 
-function reconstruct.image(model, x, offset, block_size)
-   if model_is_rgb(model) then
-      return reconstruct.image_rgb(model, x, offset, block_size)
+function reconstruct.image(model, x, block_size)
+   if reconstruct.is_rgb(model) then
+      return reconstruct.image_rgb(model, x,
+				   reconstruct.offset_size(model), block_size)
    else
-      return reconstruct.image_y(model, x, offset, block_size)
+      return reconstruct.image_y(model, x,
+				 reconstruct.offset_size(model), block_size)
    end
 end
-function reconstruct.scale(model, scale, x, offset, block_size)
-   if model_is_rgb(model) then
-      return reconstruct.scale_rgb(model, scale, x, offset, block_size)
+function reconstruct.scale(model, scale, x, block_size)
+   if reconstruct.is_rgb(model) then
+      return reconstruct.scale_rgb(model, scale, x,
+				   reconstruct.offset_size(model), block_size)
    else
-      return reconstruct.scale_y(model, scale, x, offset, block_size)
+      return reconstruct.scale_y(model, scale, x,
+				 reconstruct.offset_size(model), block_size)
    end
 end
 

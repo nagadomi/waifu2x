@@ -1,12 +1,11 @@
 require './lib/portable'
 require 'sys'
 require 'pl'
-require './lib/LeakyReLU'
+require './lib/mynn'
 
 local iproc = require './lib/iproc'
 local reconstruct = require './lib/reconstruct'
 local image_loader = require './lib/image_loader'
-local BLOCK_OFFSET = 7
 
 torch.setdefaulttensortype('torch.FloatTensor')
 
@@ -22,19 +21,21 @@ local function convert_image(opt)
    end
    if opt.m == "noise" then
       local model = torch.load(path.join(opt.model_dir, ("noise%d_model.t7"):format(opt.noise_level)), "ascii")
+      --local srcnn = require 'lib/srcnn'
+      --local model = srcnn.waifu2x("rgb"):cuda()
       model:evaluate()
-      new_x = reconstruct.image(model, x, BLOCK_OFFSET, opt.crop_size)
+      new_x = reconstruct.image(model, x, opt.crop_size)
    elseif opt.m == "scale" then
       local model = torch.load(path.join(opt.model_dir, ("scale%.1fx_model.t7"):format(opt.scale)), "ascii")
       model:evaluate()
-      new_x = reconstruct.scale(model, opt.scale, x, BLOCK_OFFSET, opt.crop_size)
+      new_x = reconstruct.scale(model, opt.scale, x, opt.crop_size)
    elseif opt.m == "noise_scale" then
       local noise_model = torch.load(path.join(opt.model_dir, ("noise%d_model.t7"):format(opt.noise_level)), "ascii")
       local scale_model = torch.load(path.join(opt.model_dir, ("scale%.1fx_model.t7"):format(opt.scale)), "ascii")
       noise_model:evaluate()
       scale_model:evaluate()
-      x = reconstruct.image(noise_model, x, BLOCK_OFFSET)
-      new_x = reconstruct.scale(scale_model, opt.scale, x, BLOCK_OFFSET, opt.crop_size)
+      x = reconstruct.image(noise_model, x)
+      new_x = reconstruct.scale(scale_model, opt.scale, x, opt.crop_size)
    else
       error("undefined method:" .. opt.method)
    end
@@ -62,17 +63,17 @@ local function convert_frames(opt)
 	 local x, alpha = image_loader.load_float(lines[i])
 	 local new_x = nil
 	 if opt.m == "noise" and opt.noise_level == 1 then
-	    new_x = reconstruct.image(noise1_model, x, BLOCK_OFFSET, opt.crop_size)
+	    new_x = reconstruct.image(noise1_model, x, opt.crop_size)
 	 elseif opt.m == "noise" and opt.noise_level == 2 then
-	    new_x = reconstruct.image(noise2_model, x, BLOCK_OFFSET)
+	    new_x = reconstruct.image(noise2_model, x)
 	 elseif opt.m == "scale" then
-	    new_x = reconstruct.scale(scale_model, opt.scale, x, BLOCK_OFFSET, opt.crop_size)
+	    new_x = reconstruct.scale(scale_model, opt.scale, x, opt.crop_size)
 	 elseif opt.m == "noise_scale" and opt.noise_level == 1 then
-	    x = reconstruct.image(noise1_model, x, BLOCK_OFFSET)
-	    new_x = reconstruct.scale(scale_model, opt.scale, x, BLOCK_OFFSET, opt.crop_size)
+	    x = reconstruct.image(noise1_model, x)
+	    new_x = reconstruct.scale(scale_model, opt.scale, x, opt.crop_size)
 	 elseif opt.m == "noise_scale" and opt.noise_level == 2 then
-	    x = reconstruct.image(noise2_model, x, BLOCK_OFFSET)
-	    new_x = reconstruct.scale(scale_model, opt.scale, x, BLOCK_OFFSET, opt.crop_size)
+	    x = reconstruct.image(noise2_model, x)
+	    new_x = reconstruct.scale(scale_model, opt.scale, x, opt.crop_size)
 	 else
 	    error("undefined method:" .. opt.method)
 	 end

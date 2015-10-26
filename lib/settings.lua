@@ -1,5 +1,6 @@
 require 'xlua'
 require 'pl'
+require 'trepl'
 
 -- global settings
 
@@ -18,6 +19,7 @@ cmd:text("waifu2x")
 cmd:text("Options:")
 cmd:option("-seed", 11, 'fixed input seed')
 cmd:option("-data_dir", "./data", 'data directory')
+-- cmd:option("-backend", "cunn", '(cunn|cudnn)') -- cudnn is slow than cunn
 cmd:option("-test", "images/miku_small.png", 'test image file')
 cmd:option("-model_dir", "./models", 'model directory')
 cmd:option("-method", "scale", '(noise|scale|noise_scale)')
@@ -30,9 +32,15 @@ cmd:option("-scale", 2.0, 'scale')
 cmd:option("-learning_rate", 0.00025, 'learning rate for adam')
 cmd:option("-random_half", 1, 'enable data augmentation using half resolution image (0|1)')
 cmd:option("-crop_size", 128, 'crop size')
+cmd:option("-max_size", -1, 'crop if image size larger then this value.')
 cmd:option("-batch_size", 2, 'mini batch size')
 cmd:option("-epoch", 200, 'epoch')
 cmd:option("-core", 2, 'cpu core')
+cmd:option("-jpeg_sampling_factors", 444, '(444|422)')
+cmd:option("-validation_ratio", 0.1, 'validation ratio')
+cmd:option("-validation_crops", 40, 'number of crop region in validation')
+cmd:option("-active_cropping_rate", 0.5, 'active cropping rate')
+cmd:option("-active_cropping_tries", 20, 'active cropping tries')
 
 local opt = cmd:parse(arg)
 for k, v in pairs(opt) do
@@ -81,16 +89,6 @@ torch.setnumthreads(settings.core)
 settings.images = string.format("%s/images.t7", settings.data_dir)
 settings.image_list = string.format("%s/image_list.txt", settings.data_dir)
 
-settings.validation_ratio = 0.1
-settings.validation_crops = 30
-
-local srcnn = require './srcnn'
-if (settings.method == "scale" or settings.method == "noise_scale") and settings.scale == 4 then
-   settings.create_model = srcnn.waifu4x
-   settings.block_offset = 13
-else
-   settings.create_model = srcnn.waifu2x
-   settings.block_offset = 7
-end
+settings.backend = "cunn"
 
 return settings

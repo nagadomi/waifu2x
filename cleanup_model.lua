@@ -1,5 +1,5 @@
 require './lib/portable'
-require './lib/LeakyReLU'
+require './lib/mynn'
 
 torch.setdefaulttensortype("torch.FloatTensor")
 
