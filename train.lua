@@ -1,17 +1,18 @@
-require './lib/portable'
-require './lib/mynn'
+local __FILE__ = (function() return string.gsub(debug.getinfo(2, 'S').source, "^@", "") end)()
+package.path = path.join(path.dirname(__FILE__), "lib", "?.lua;") .. package.path
 require 'optim'
 require 'xlua'
 require 'pl'
-require 'snappy'
 
-local settings = require './lib/settings'
-local srcnn = require './lib/srcnn'
-local minibatch_adam = require './lib/minibatch_adam'
-local iproc = require './lib/iproc'
-local reconstruct = require './lib/reconstruct'
-local pairwise_transform = require './lib/pairwise_transform'
-local image_loader = require './lib/image_loader'
+require 'w2nn'
+local settings = require 'settings'
+local srcnn = require 'srcnn'
+local minibatch_adam = require 'minibatch_adam'
+local iproc = require 'iproc'
+local reconstruct = require 'reconstruct'
+local compression = require 'compression'
+local pairwise_transform = require 'pairwise_transform'
+local image_loader = require 'image_loader'
 
 local function save_test_scale(model, rgb, file)
    local up = reconstruct.scale(model, settings.scale, rgb)
@@ -73,17 +74,13 @@ local function create_criterion(model)
       weight[1]:fill(0.299 * 3) -- R
       weight[2]:fill(0.587 * 3) -- G
       weight[3]:fill(0.114 * 3) -- B
-      return mynn.RGBWeightedMSECriterion(weight):cuda()
+      return w2nn.WeightedMSECriterion(weight):cuda()
    else
       return nn.MSECriterion():cuda()
    end
 end
 local function transformer(x, is_validation, n, offset)
-   local size = x[1]
-   local dec = snappy.decompress(x[2]:string())
-   x = torch.ByteTensor(size[1], size[2], size[3])
-   x:storage():string(dec)
-   
+   x = compression.decompress(x)
    n = n or settings.batch_size;
    if is_validation == nil then is_validation = false end
    local color_noise = nil 

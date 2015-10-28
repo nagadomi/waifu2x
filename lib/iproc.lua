@@ -22,5 +22,4 @@ function iproc.padding(img, w1, w2, h1, h2)
    flow[2]:add(-w1)
    return image.warp(img, flow, "simple", false, "clamp")
 end
-
 return iproc

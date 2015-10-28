@@ -17,7 +17,7 @@ function image_loader.encode_png(rgb, alpha)
    end
    if alpha then
       if not (alpha:size(2) == rgb:size(2) and  alpha:size(3) == rgb:size(3)) then
-	 alpha = gm.Image(alpha, "I", "DHW"):size(rgb:size(3), rgb:size(2), "Sinc"):toTensor("float", "I", "DHW")
+	 alpha = gm.Image(alpha, "I", "DHW"):size(rgb:size(3), rgb:size(2), "SincFast"):toTensor("float", "I", "DHW")
       end
       local rgba = torch.Tensor(4, rgb:size(2), rgb:size(3))
       rgba[1]:copy(rgb[1])
@@ -50,8 +50,8 @@ function image_loader.decode_byte(blob)
       if blob:sub(1, 4) == "\x89PNG" or blob:sub(1, 3) == "GIF" then
 	 -- split alpha channel
 	 im = im:toTensor('float', 'RGBA', 'DHW')
-	 local sum_alpha = (im[4] - 1):sum()
-	 if sum_alpha > 0 or sum_alpha < 0 then
+	 local sum_alpha = (im[4] - 1.0):sum()
+	 if sum_alpha < 0 then
 	    alpha = im[4]:reshape(1, im:size(2), im:size(3))
 	 end
 	 local new_im = torch.FloatTensor(3, im:size(2), im:size(3))

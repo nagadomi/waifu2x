@@ -1,7 +1,7 @@
 require 'image'
 local gm = require 'graphicsmagick'
-local iproc = require './iproc'
-local reconstruct = require './reconstruct'
+local iproc = require 'iproc'
+local reconstruct = require 'reconstruct'
 local pairwise_transform = {}
 
 local function random_half(src, p)
@@ -81,6 +81,11 @@ local function color_noise(src)
    
    return x:mul(255):byte()
 end
+local function shift_1px(src)
+   -- reducing the even/odd issue in nearest neighbor.
+   local r = torch.random(1, 4)
+   
+end
 local function flip_augment(x, y)
    local flip = torch.random(1, 4)
    if y then
@@ -138,17 +143,16 @@ local function data_augment(y, options)
    return y
 end
 
-
 local INTERPOLATION_PADDING = 16
 function pairwise_transform.scale(src, scale, size, offset, n, options)
    local filters = {
-      "Box","Box","Box",  -- 0.012756949974688
+      "Box","Box",  -- 0.012756949974688
       "Blackman",   -- 0.013191924552285
       --"Cartom",     -- 0.013753536746706
       --"Hanning",    -- 0.013761314529647
       --"Hermite",    -- 0.013850225205266
       "SincFast",   -- 0.014095824314306
-      "Jinc",       -- 0.014244299255442
+      --"Jinc",       -- 0.014244299255442
    }
    if options.random_half then
       src = random_half(src)
@@ -176,26 +180,14 @@ function pairwise_transform.scale(src, scale, size, offset, n, options)
    return batch
 end
 function pairwise_transform.jpeg_(src, quality, size, offset, n, options)
-   if options.random_half then
-      src = random_half(src)
-   end
-   src = crop_if_large(src, math.max(size * 4, 512))
-   local y = src
-   local x
-
-   if options.color_noise then
-      y = color_noise(y)
-   end
-   if options.overlay then
-      y = overlay_augment(y)
-   end
-   x = y
+   local y = data_augment(crop_if_large(src, math.max(size * 4, 512)), options)   
+   local x = y
    for i = 1, #quality do
       x = gm.Image(x, "RGB", "DHW")
       x:format("jpeg")
       if options.jpeg_sampling_factors == 444 then
 	 x:samplingFactors({1.0, 1.0, 1.0})
-      else -- 422
+      else -- 420
 	 x:samplingFactors({2.0, 1.0, 1.0})
       end
       local blob, len = x:toBlob(quality[i])

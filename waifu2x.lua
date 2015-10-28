@@ -1,11 +1,11 @@
-require './lib/portable'
+local __FILE__ = (function() return string.gsub(debug.getinfo(2, 'S').source, "^@", "") end)()
+package.path = path.join(path.dirname(__FILE__), "lib", "?.lua;") .. package.path
 require 'sys'
 require 'pl'
-require './lib/mynn'
-
-local iproc = require './lib/iproc'
-local reconstruct = require './lib/reconstruct'
-local image_loader = require './lib/image_loader'
+require 'w2nn'
+local iproc = require 'iproc'
+local reconstruct = require 'reconstruct'
+local image_loader = require 'image_loader'
 
 torch.setdefaulttensortype('torch.FloatTensor')
 
@@ -111,8 +111,12 @@ local function waifu2x()
    cmd:option("-noise_level", 1, '(1|2)')
    cmd:option("-crop_size", 128, 'patch size per process')
    cmd:option("-resume", 0, "skip existing files (0|1)")
-   
+   cmd:option("-thread", -1, "number of CPU threads")
+
    local opt = cmd:parse(arg)
+   if opt.thread > 0 then
+      torch.setnumthreads(opt.thread)
+   end
    if string.len(opt.l) == 0 then
       convert_image(opt)
    else

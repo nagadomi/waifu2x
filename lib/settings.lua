@@ -35,7 +35,7 @@ cmd:option("-crop_size", 128, 'crop size')
 cmd:option("-max_size", -1, 'crop if image size larger then this value.')
 cmd:option("-batch_size", 2, 'mini batch size')
 cmd:option("-epoch", 200, 'epoch')
-cmd:option("-core", 2, 'cpu core')
+cmd:option("-thread", -1, 'number of CPU threads')
 cmd:option("-jpeg_sampling_factors", 444, '(444|422)')
 cmd:option("-validation_ratio", 0.1, 'validation ratio')
 cmd:option("-validation_crops", 40, 'number of crop region in validation')
@@ -84,7 +84,9 @@ else
    settings.overlay = false
 end
 
-torch.setnumthreads(settings.core)
+if settings.thread > 0 then
+   torch.setnumthreads(tonumber(settings.thread))
+end
 
 settings.images = string.format("%s/images.t7", settings.data_dir)
 settings.image_list = string.format("%s/image_list.txt", settings.data_dir)

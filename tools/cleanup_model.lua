@@ -1,6 +1,7 @@
-require './lib/portable'
-require './lib/mynn'
+local __FILE__ = (function() return string.gsub(debug.getinfo(2, 'S').source, "^@", "") end)()
+package.path = path.join(path.dirname(__FILE__), "..", "lib", "?.lua;") .. package.path
 
+require 'w2nn'
 torch.setdefaulttensortype("torch.FloatTensor")
 
 -- ref: https://github.com/torch/nn/issues/112#issuecomment-64427049
@@ -27,7 +28,7 @@ local function cleanupModel(node)
    if node.finput ~= nil then
       node.finput = zeroDataSize(node.finput)
    end
-   if tostring(node) == "nn.LeakyReLU" then
+   if tostring(node) == "nn.LeakyReLU" or tostring(node) == "w2nn.LeakyReLU" then
       if node.negative ~= nil then
 	 node.negative = zeroDataSize(node.negative)
       end

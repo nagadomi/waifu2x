@@ -1,11 +1,16 @@
+local __FILE__ = (function() return string.gsub(debug.getinfo(2, 'S').source, "^@", "") end)()
+package.path = path.join(path.dirname(__FILE__), "lib", "?.lua;") .. package.path
 _G.TURBO_SSL = true
+
+require 'pl'
+require 'w2nn'
 local turbo = require 'turbo'
 local uuid = require 'uuid'
 local ffi = require 'ffi'
 local md5 = require 'md5'
-require 'pl'
-require 'lib.portable'
-require 'lib.mynn'
+local iproc = require 'iproc'
+local reconstruct = require 'reconstruct'
+local image_loader = require 'image_loader'
 
 local cmd = torch.CmdLine()
 cmd:text()
@@ -13,18 +18,15 @@ cmd:text("waifu2x-api")
 cmd:text("Options:")
 cmd:option("-port", 8812, 'listen port')
 cmd:option("-gpu", 1, 'Device ID')
-cmd:option("-core", 2, 'number of CPU cores')
+cmd:option("-thread", -1, 'number of CPU threads')
 local opt = cmd:parse(arg)
 cutorch.setDevice(opt.gpu)
 torch.setdefaulttensortype('torch.FloatTensor')
-torch.setnumthreads(opt.core)
+if opt.thread > 0 then
+   torch.setnumthreads(opt.thread)
+end
 
-local iproc = require './lib/iproc'
-local reconstruct = require './lib/reconstruct'
-local image_loader = require './lib/image_loader'
-
-local MODEL_DIR = "./models/anime_style_art_rgb3"
-
+local MODEL_DIR = "./models/anime_style_art_rgb"
 local noise1_model = torch.load(path.join(MODEL_DIR, "noise1_model.t7"), "ascii")
 local noise2_model = torch.load(path.join(MODEL_DIR, "noise2_model.t7"), "ascii")
 local scale20_model = torch.load(path.join(MODEL_DIR, "scale2.0x_model.t7"), "ascii")

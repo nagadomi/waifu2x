@@ -1,7 +1,7 @@
-if mynn.DepthExpand2x then
-   return mynn.DepthExpand2x
+if w2nn.DepthExpand2x then
+   return w2nn.DepthExpand2x
 end
-local DepthExpand2x, parent = torch.class('mynn.DepthExpand2x','nn.Module')
+local DepthExpand2x, parent = torch.class('w2nn.DepthExpand2x','nn.Module')
  
 function DepthExpand2x:__init()
    parent:__init()
@@ -67,9 +67,11 @@ function DepthExpand2x.test()
    end
    show(x)
    
-   local de2x = mynn.DepthExpand2x()
+   local de2x = w2nn.DepthExpand2x()
    out = de2x:forward(x)
    show(out)
    out = de2x:updateGradInput(x, out)
    show(out)
 end
+
+return DepthExpand2x

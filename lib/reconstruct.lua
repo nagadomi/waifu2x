@@ -1,5 +1,5 @@
 require 'image'
-local iproc = require './iproc'
+local iproc = require 'iproc'
 
 local function reconstruct_y(model, x, offset, block_size)
    if x:dim() == 2 then

@@ -1,13 +1,13 @@
-local RGBWeightedMSECriterion, parent = torch.class('mynn.RGBWeightedMSECriterion','nn.Criterion')
+local WeightedMSECriterion, parent = torch.class('w2nn.WeightedMSECriterion','nn.Criterion')
 
-function RGBWeightedMSECriterion:__init(w)
+function WeightedMSECriterion:__init(w)
    parent.__init(self)
    self.weight = w:clone()
    self.diff = torch.Tensor()
    self.loss = torch.Tensor()
 end
 
-function RGBWeightedMSECriterion:updateOutput(input, target)
+function WeightedMSECriterion:updateOutput(input, target)
    self.diff:resizeAs(input):copy(input)
    for i = 1, input:size(1) do
       self.diff[i]:add(-1, target[i]):cmul(self.weight)
@@ -18,8 +18,7 @@ function RGBWeightedMSECriterion:updateOutput(input, target)
    return self.output
 end
 
-function RGBWeightedMSECriterion:updateGradInput(input, target)
+function WeightedMSECriterion:updateGradInput(input, target)
    self.gradInput:resizeAs(input):copy(self.diff)
    return self.gradInput
 end
-
