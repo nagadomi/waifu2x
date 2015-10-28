@@ -15,14 +15,14 @@ local settings = {}
 
 local cmd = torch.CmdLine()
 cmd:text()
-cmd:text("waifu2x")
+cmd:text("waifu2x-training")
 cmd:text("Options:")
 cmd:option("-seed", 11, 'fixed input seed')
 cmd:option("-data_dir", "./data", 'data directory')
--- cmd:option("-backend", "cunn", '(cunn|cudnn)') -- cudnn is slow than cunn
+-- cmd:option("-backend", "cunn", '(cunn|cudnn)') -- cudnn is slower than cunn
 cmd:option("-test", "images/miku_small.png", 'test image file')
 cmd:option("-model_dir", "./models", 'model directory')
-cmd:option("-method", "scale", '(noise|scale|noise_scale)')
+cmd:option("-method", "scale", '(noise|scale)')
 cmd:option("-noise_level", 1, '(1|2)')
 cmd:option("-category", "anime_style_art", '(anime_style_art|photo)')
 cmd:option("-color", 'rgb', '(y|rgb)')

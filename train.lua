@@ -126,19 +126,6 @@ local function transformer(x, is_validation, n, offset)
 				       jpeg_sampling_factors = settings.jpeg_sampling_factors,
 				       rgb = (settings.color == "rgb")
 				     })
-   elseif settings.method == "noise_scale" then
-      return pairwise_transform.jpeg_scale(x,
-					   settings.scale,
-					   settings.category,
-					   settings.noise_level,
-					   settings.crop_size, offset,
-					   n,
-					   { color_noise = color_noise,
-					     overlay = overlay,
-					     jpeg_sampling_factors = settings.jpeg_sampling_factors,
-					     random_half = settings.random_half,
-					     rgb = (settings.color == "rgb")
-					   })
    end
 end
 
@@ -194,11 +181,6 @@ local function train()
 	 elseif settings.method == "scale" then
 	    local log = path.join(settings.model_dir,
 				  ("scale%.1f_best.png"):format(settings.scale))
-	    save_test_scale(model, test_image, log)
-	 elseif settings.method == "noise_scale" then
-	    local log = path.join(settings.model_dir,
-				  ("noise%d_scale%.1f_best.png"):format(settings.noise_level,
-									settings.scale))
 	    save_test_scale(model, test_image, log)
 	 end
       else
