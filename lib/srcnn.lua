@@ -3,6 +3,9 @@ require 'w2nn'
 -- ref: http://arxiv.org/abs/1502.01852
 -- ref: http://arxiv.org/abs/1501.00092
 local srcnn = {}
+function srcnn.channels(model)
+   return model:get(model:size() - 1).weight:size(1)
+end
 function srcnn.waifu2x_cunn(ch)
    local model = nn.Sequential()
    model:add(nn.SpatialConvolutionMM(ch, 32, 3, 3, 1, 1, 0, 0))
