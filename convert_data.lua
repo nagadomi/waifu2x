@@ -6,25 +6,7 @@ require 'image'
 local compression = require 'compression'
 local settings = require 'settings'
 local image_loader = require 'image_loader'
-
-local MAX_SIZE = 1440
-
-local function crop_if_large(src, max_size)
-   if max_size > 0 and (src:size(2) > max_size or src:size(3) > max_size) then
-      local sx = torch.random(0, src:size(3) - math.min(max_size, src:size(3)))
-      local sy = torch.random(0, src:size(2) - math.min(max_size, src:size(2)))
-      return image.crop(src, sx, sy,
-			math.min(sx + max_size, src:size(3)),
-			math.min(sy + max_size, src:size(2)))
-   else
-      return src
-   end
-end
-local function crop_4x(x)
-   local w = x:size(3) % 4
-   local h = x:size(2) % 4
-   return image.crop(x, 0, 0, x:size(3) - w, x:size(2) - h)
-end
+local iproc = require 'iproc'
 
 local function load_images(list)
    local MARGIN = 32
@@ -36,8 +18,7 @@ local function load_images(list)
       if alpha then
 	 io.stderr:write(string.format("\n%s: skip: image has alpha channel.\n", line))
       else
-	 im = crop_if_large(im, settings.max_size)
-	 im = crop_4x(im)
+	 im = iproc.crop_mod4(im)
 	 local scale = 1.0
 	 if settings.random_half then
 	    scale = 2.0

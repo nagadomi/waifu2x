@@ -117,16 +117,11 @@ local function benchmark(color_weight, x, input_func, v1_noise, v2_noise)
    end
    io.stdout:write("\n")
 end
-local function crop_4x(x)
-   local w = x:size(3) % 4
-   local h = x:size(2) % 4
-   return image.crop(x, 0, 0, x:size(3) - w, x:size(2) - h)
-end
 local function load_data(test_dir)
    local test_x = {}
    local files = dir.getfiles(test_dir, "*.*")
    for i = 1, #files do
-      table.insert(test_x, crop_4x(image_loader.load_byte(files[i])))
+      table.insert(test_x, iproc.crop_mod4(image_loader.load_byte(files[i])))
       xlua.progress(i, #files)
    end
    return test_x
