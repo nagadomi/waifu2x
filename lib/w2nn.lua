@@ -8,7 +8,7 @@ local function load_cunn()
 end
 local function load_cudnn()
    require 'cudnn'
-   cudnn.fastest = true
+   cudnn.benchmark = true
 end
 if w2nn then
    return w2nn
@@ -20,5 +20,6 @@ else
    require 'LeakyReLU_deprecated'
    require 'DepthExpand2x'
    require 'WeightedMSECriterion'
+   require 'WeightedHuberCriterion'
    return w2nn
 end
