@@ -19,7 +19,7 @@ cmd:text("waifu2x-training")
 cmd:text("Options:")
 cmd:option("-seed", 11, 'fixed input seed')
 cmd:option("-data_dir", "./data", 'data directory')
--- cmd:option("-backend", "cunn", '(cunn|cudnn)') -- cudnn is slower than cunn
+cmd:option("-backend", "cunn", '(cunn|cudnn)')
 cmd:option("-test", "images/miku_small.png", 'test image file')
 cmd:option("-model_dir", "./models", 'model directory')
 cmd:option("-method", "scale", '(noise|scale)')
@@ -90,7 +90,5 @@ end
 
 settings.images = string.format("%s/images.t7", settings.data_dir)
 settings.image_list = string.format("%s/image_list.txt", settings.data_dir)
-
-settings.backend = "cunn"
 
 return settings
