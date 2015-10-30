@@ -19,6 +19,7 @@ function WeightedMSECriterion:updateOutput(input, target)
 end
 
 function WeightedMSECriterion:updateGradInput(input, target)
-   self.gradInput:resizeAs(input):copy(self.diff)
+   local norm = 2.0 / input:nElement()
+   self.gradInput:resizeAs(input):copy(self.diff):mul(norm)
    return self.gradInput
 end
