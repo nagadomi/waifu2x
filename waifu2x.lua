@@ -112,11 +112,16 @@ local function waifu2x()
    cmd:option("-crop_size", 128, 'patch size per process')
    cmd:option("-resume", 0, "skip existing files (0|1)")
    cmd:option("-thread", -1, "number of CPU threads")
-
+   
    local opt = cmd:parse(arg)
    if opt.thread > 0 then
       torch.setnumthreads(opt.thread)
    end
+   if cudnn then
+      cudnn.fastest = true
+      cudnn.benchmark = false
+   end
+   
    if string.len(opt.l) == 0 then
       convert_image(opt)
    else

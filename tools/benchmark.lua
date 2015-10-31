@@ -27,6 +27,11 @@ cmd:option("-jpeg_quality_down", 5, 'value of jpeg quality to decrease each time
 
 local opt = cmd:parse(arg)
 torch.setdefaulttensortype('torch.FloatTensor')
+if cudnn then
+   cudnn.fastest = true
+   cudnn.benchmark = false
+end
+
 
 local function MSE(x1, x2)
    return (x1 - x2):pow(2):mean()

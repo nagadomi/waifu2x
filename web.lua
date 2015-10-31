@@ -25,6 +25,10 @@ torch.setdefaulttensortype('torch.FloatTensor')
 if opt.thread > 0 then
    torch.setnumthreads(opt.thread)
 end
+if cudnn then
+   cudnn.fastest = true
+   cudnn.benchmark = false
+end
 
 local MODEL_DIR = "./models/anime_style_art_rgb"
 local noise1_model = torch.load(path.join(MODEL_DIR, "noise1_model.t7"), "ascii")
