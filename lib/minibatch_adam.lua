@@ -21,7 +21,6 @@ local function minibatch_adam(model, criterion,
 			       input_size[1], input_size[2], input_size[3])
    local targets_tmp = torch.Tensor(batch_size,
 				    target_size[1] * target_size[2] * target_size[3])
-   
    for t = 1, #train_x do
       xlua.progress(t, #train_x)
       local xy = transformer(train_x[shuffle[t]], false, batch_size)
@@ -31,7 +30,6 @@ local function minibatch_adam(model, criterion,
       end
       inputs:copy(inputs_tmp)
       targets:copy(targets_tmp)
-      
       local feval = function(x)
 	 if x ~= parameters then
 	    parameters:copy(x)
@@ -53,7 +51,7 @@ local function minibatch_adam(model, criterion,
    end
    xlua.progress(#train_x, #train_x)
    
-   return { mse = sum_loss / count_loss}
+   return { loss = sum_loss / count_loss}
 end
 
 return minibatch_adam
