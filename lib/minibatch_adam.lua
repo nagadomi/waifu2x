@@ -45,7 +45,7 @@ local function minibatch_adam(model, criterion,
       optim.adam(feval, parameters, config)
       
       c = c + 1
-      if c % 10 == 0 then
+      if c % 20 == 0 then
 	 collectgarbage()
       end
    end

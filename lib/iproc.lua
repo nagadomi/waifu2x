@@ -1,5 +1,6 @@
 local gm = require 'graphicsmagick'
 local image = require 'image'
+
 local iproc = {}
 
 function iproc.crop_mod4(src)
@@ -13,6 +14,15 @@ function iproc.crop(src, w1, h1, w2, h2)
       dest = src[{{}, { h1 + 1, h2 }, { w1 + 1, w2 }}]:clone()
    else -- dim == 2
       dest = src[{{ h1 + 1, h2 }, { w1 + 1, w2 }}]:clone()
+   end
+   return dest
+end
+function iproc.crop_nocopy(src, w1, h1, w2, h2)
+   local dest
+   if src:dim() == 3 then
+      dest = src[{{}, { h1 + 1, h2 }, { w1 + 1, w2 }}]
+   else -- dim == 2
+      dest = src[{{ h1 + 1, h2 }, { w1 + 1, w2 }}]
    end
    return dest
 end
@@ -54,5 +64,6 @@ function iproc.padding(img, w1, w2, h1, h2)
    flow[2]:add(-w1)
    return image.warp(img, flow, "simple", false, "clamp")
 end
+
 
 return iproc

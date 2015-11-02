@@ -91,7 +91,7 @@ local function transformer(x, is_validation, n, offset)
    local active_cropping_tries = nil
    
    if is_validation then
-      active_cropping_rate = 0.0
+      active_cropping_rate = 0
       active_cropping_tries = 0
       color_noise = false
       overlay = false
@@ -110,6 +110,7 @@ local function transformer(x, is_validation, n, offset)
 				      { color_noise = color_noise,
 					overlay = overlay,
 					random_half = settings.random_half,
+					max_size = settings.max_size,
 					active_cropping_rate = active_cropping_rate,
 					active_cropping_tries = active_cropping_tries,
 					rgb = (settings.color == "rgb")
@@ -122,10 +123,11 @@ local function transformer(x, is_validation, n, offset)
 				     n,
 				     { color_noise = color_noise,
 				       overlay = overlay,
+				       random_half = settings.random_half,
+				       max_size = settings.max_size,
+				       jpeg_sampling_factors = settings.jpeg_sampling_factors,
 				       active_cropping_rate = active_cropping_rate,
 				       active_cropping_tries = active_cropping_tries,
-				       random_half = settings.random_half,
-				       jpeg_sampling_factors = settings.jpeg_sampling_factors,
 				       rgb = (settings.color == "rgb")
 				     })
    end
