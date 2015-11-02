@@ -1,6 +1,6 @@
-# v1.0 branch
+# dev branch
 
-This branch is under construction. This would break backwards compatibility sometimes.
+This branch is work in progress.
 
 # waifu2x
 
@@ -45,6 +45,7 @@ Created at: 2015-08-12
 - [NVIDIA CUDA](https://developer.nvidia.com/cuda-toolkit)
 
 ### lualocks packages (excludes torch7's default packages)
+- lua-csnappy
 - md5
 - uuid
 - [turbo](https://github.com/kernelsauce/turbo)
@@ -66,9 +67,23 @@ sudo apt-get update
 sudo apt-get install cuda
 ```
 
+#### Install Package
+
+```
+sudo apt-get install libsnappy-dev
+```
+
 #### Install Torch7
 
 See: [Getting started with Torch](http://torch.ch/docs/getting-started.html)
+
+And install luarocks packages.
+```
+luarocks install lua-csnappy
+luarocks install md5
+luarocks install uuid
+PREFIX=$HOME/torch/install luarocks install turbo # if you need web application
+``
 
 #### Validation
 
@@ -77,18 +92,7 @@ Test the waifu2x command line tool.
 th waifu2x.lua
 ```
 
-### Setting Up the Web Application Environment (if you needed)
-
-#### Install packages
-
-```
-luarocks install md5
-luarocks install uuid
-PREFIX=$HOME/torch/install luarocks install turbo
-```
-
 ## Web Application
-Run.
 ```
 th web.lua
 ```
