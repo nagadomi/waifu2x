@@ -46,6 +46,9 @@ function image_loader.decode_byte(blob)
       local alpha = nil
       
       im:fromBlob(blob, #blob)
+      if im:colorspace() == "CMYK" then
+	 im:colorspace("RGB")
+      end
       -- FIXME: How to detect that a image has an alpha channel?
       if blob:sub(1, 4) == "\x89PNG" or blob:sub(1, 3) == "GIF" then
 	 -- split alpha channel
