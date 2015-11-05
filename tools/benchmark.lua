@@ -37,17 +37,8 @@ local function MSE(x1, x2)
    return (x1 - x2):pow(2):mean()
 end
 local function YMSE(x1, x2)
-   local x1_2 = x1:clone()
-   local x2_2 = x2:clone()
-
-   x1_2[1]:mul(0.299 * 3)
-   x1_2[2]:mul(0.587 * 3)
-   x1_2[3]:mul(0.114 * 3)
-   
-   x2_2[1]:mul(0.299 * 3)
-   x2_2[2]:mul(0.587 * 3)
-   x2_2[3]:mul(0.114 * 3)
-   
+   local x1_2 = image.rgb2y(x1)
+   local x2_2 = image.rgb2y(x2)
    return (x1_2 - x2_2):pow(2):mean()
 end
 local function PSNR(x1, x2)
@@ -56,7 +47,7 @@ local function PSNR(x1, x2)
 end
 local function YPSNR(x1, x2)
    local mse = YMSE(x1, x2)
-   return 20 * (math.log((0.587 * 3) / math.sqrt(mse)) / math.log(10))
+   return 20 * (math.log(1.0 / math.sqrt(mse)) / math.log(10))
 end
 
 local function transform_jpeg(x)
