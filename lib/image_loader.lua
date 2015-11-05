@@ -36,6 +36,9 @@ end
 function image_loader.save_png(filename, rgb, alpha)
    local blob, len = image_loader.encode_png(rgb, alpha)
    local fp = io.open(filename, "wb")
+   if not fp then
+      error("IO error: " .. filename)
+   end
    fp:write(ffi.string(blob, len))
    fp:close()
    return true
@@ -44,10 +47,16 @@ function image_loader.decode_byte(blob)
    local load_image = function()
       local im = gm.Image()
       local alpha = nil
+      local gamma_lcd = 0.454545
       
       im:fromBlob(blob, #blob)
+      
       if im:colorspace() == "CMYK" then
 	 im:colorspace("RGB")
+      end
+      local gamma = math.floor(im:gamma() * 1000000) / 1000000
+      if gamma ~= 0 and gamma ~= gamma_lcd then
+	 im:gammaCorrection(gamma / gamma_lcd)
       end
       -- FIXME: How to detect that a image has an alpha channel?
       if blob:sub(1, 4) == "\x89PNG" or blob:sub(1, 3) == "GIF" then
