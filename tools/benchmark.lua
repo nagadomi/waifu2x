@@ -32,7 +32,6 @@ if cudnn then
    cudnn.benchmark = false
 end
 
-
 local function MSE(x1, x2)
    return (x1 - x2):pow(2):mean()
 end
@@ -43,11 +42,11 @@ local function YMSE(x1, x2)
 end
 local function PSNR(x1, x2)
    local mse = MSE(x1, x2)
-   return 20 * (math.log(1.0 / math.sqrt(mse)) / math.log(10))
+   return 10 * math.log10(1.0 / mse)
 end
 local function YPSNR(x1, x2)
    local mse = YMSE(x1, x2)
-   return 20 * (math.log(1.0 / math.sqrt(mse)) / math.log(10))
+   return 10 * math.log10(1.0 / mse)
 end
 
 local function transform_jpeg(x)
