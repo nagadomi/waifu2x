@@ -1,6 +1,7 @@
 *~
 work/
 cache/*.png
+cache/url_*
 data/
 !data/.gitkeep
 

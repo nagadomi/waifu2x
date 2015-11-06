@@ -55,35 +55,6 @@ local function valid_size(x, scale)
    end
 end
 
-local function get_image(req)
-   local file = req:get_argument("file", "")
-   local url = req:get_argument("url", "")
-   local blob = nil
-   local img = nil
-   local alpha = nil
-   if file and file:len() > 0 then
-      blob = file
-      img, alpha = image_loader.decode_float(blob)
-   elseif url and url:len() > 0 then
-      local res = coroutine.yield(
-	 turbo.async.HTTPClient({verify_ca=false},
-				nil,
-				CURL_MAX_SIZE):fetch(url, CURL_OPTIONS)
-      )
-      if res.code == 200 then
-	 local content_type = res.headers:get("Content-Type", true)
-	 if type(content_type) == "table" then
-	    content_type = content_type[1]
-	 end
-	 if content_type and content_type:find("image") then
-	    blob = res.body
-	    img, alpha = image_loader.decode_float(blob)
-	 end
-      end
-   end
-   return img, blob, alpha
-end
-
 local function apply_denoise1(x)
    return reconstruct.image(noise1_model, x)
 end
@@ -93,6 +64,33 @@ end
 local function apply_scale2x(x)
    return reconstruct.scale(scale20_model, 2.0, x)
 end
+local function cache_url(url)
+   local hash = md5.sumhexa(url)
+   local cache_file = path.join(CACHE_DIR, "url_" .. hash)
+   if path.exists(cache_file) then
+      return image_loader.load_float(cache_file)
+   else
+      local res = coroutine.yield(
+	 turbo.async.HTTPClient({verify_ca=false},
+	    nil,
+	    CURL_MAX_SIZE):fetch(url, CURL_OPTIONS)
+      )
+      if res.code == 200 then
+	 local content_type = res.headers:get("Content-Type", true)
+	 if type(content_type) == "table" then
+	    content_type = content_type[1]
+	 end
+	 if content_type and content_type:find("image") then
+	    local fp = io.open(cache_file, "wb")
+	    local blob = res.body
+	    fp:write(blob)
+	    fp:close()
+	    return image_loader.decode_float(blob)
+	 end
+      end
+   end
+   return nil, nil, nil
+end
 local function cache_do(cache, x, func)
    if path.exists(cache) then
       return image.load(cache)
@@ -101,6 +99,20 @@ local function cache_do(cache, x, func)
       image.save(cache, x)
       return x
    end
+end
+local function get_image(req)
+   local file = req:get_argument("file", "")
+   local url = req:get_argument("url", "")
+   local blob = nil
+   local img = nil
+   local alpha = nil
+   if file and file:len() > 0 then
+      blob = file
+      return image_loader.decode_float(blob)
+   elseif url and url:len() > 0 then
+      return cache_url(url)
+   end
+   return nil, nil, nil
 end
 
 local function client_disconnected(handler)
@@ -117,7 +129,7 @@ function APIHandler:post()
       self:write("client disconnected")
       return
    end
-   local x, src, alpha = get_image(self)
+   local x, alpha, src = get_image(self)
    local scale = tonumber(self:get_argument("scale", "0"))
    local noise = tonumber(self:get_argument("noise", "0"))
    if x and valid_size(x, scale) then

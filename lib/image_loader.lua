@@ -9,7 +9,7 @@ function image_loader.decode_float(blob)
    if im then
       im = im:float():div(255)
    end
-   return im, alpha
+   return im, alpha, blob
 end
 function image_loader.encode_png(rgb, alpha)
    if rgb:type() == "torch.ByteTensor" then
@@ -74,14 +74,14 @@ function image_loader.decode_byte(blob)
       else
 	 im = im:toTensor('byte', 'RGB', 'DHW')
       end
-      return {im, alpha}
+      return {im, alpha, blob}
    end
    load_image()
    local state, ret = pcall(load_image)
    if state then
-      return ret[1], ret[2]
+      return ret[1], ret[2], ret[3]
    else
-      return nil
+      return nil, nil, nil
    end
 end
 function image_loader.load_float(file)
