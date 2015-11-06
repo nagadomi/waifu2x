@@ -129,7 +129,7 @@ function pairwise_transform.jpeg_(src, quality, size, offset, n, options)
 
    for i = 1, #quality do
       x = gm.Image(x, "RGB", "DHW")
-      x:format("jpeg")
+      x:format("jpeg"):depth(8)
       if options.jpeg_sampling_factors == 444 then
 	 x:samplingFactors({1.0, 1.0, 1.0})
       else -- 420
