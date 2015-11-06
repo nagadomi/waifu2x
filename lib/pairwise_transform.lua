@@ -152,7 +152,7 @@ function pairwise_transform.jpeg_(src, quality, size, offset, n, options)
 	 xc = image.rgb2yuv(xc)[1]:reshape(1, xc:size(2), xc:size(3))
       end
       if torch.uniform() < options.nr_rate then
-	 -- reductiong noise
+	 -- reducing noise
 	 table.insert(batch, {xc, iproc.crop(yc, offset, offset, size - offset, size - offset)})
       else
 	 -- ratain useful details
