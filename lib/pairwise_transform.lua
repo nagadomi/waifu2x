@@ -158,68 +158,52 @@ function pairwise_transform.jpeg_(src, quality, size, offset, n, options)
 	 yc = image.rgb2yuv(yc)[1]:reshape(1, yc:size(2), yc:size(3))
 	 xc = image.rgb2yuv(xc)[1]:reshape(1, xc:size(2), xc:size(3))
       end
-      table.insert(batch, {xc, iproc.crop(yc, offset, offset, size - offset, size - offset)})
+      if torch.uniform() < options.nr_rate then
+	 -- reductiong noise
+	 table.insert(batch, {xc, iproc.crop(yc, offset, offset, size - offset, size - offset)})
+      else
+	 -- ratain useful details
+	 table.insert(batch, {yc, iproc.crop(yc, offset, offset, size - offset, size - offset)})
+      end
    end
    return batch
 end
 function pairwise_transform.jpeg(src, style, level, size, offset, n, options)
    if style == "art" then
       if level == 1 then
-	 if torch.uniform() > 0.8 then
-	    return pairwise_transform.jpeg_(src, {},
-					    size, offset, n, options)
-	 else
-	    return pairwise_transform.jpeg_(src, {torch.random(65, 85)},
-					    size, offset, n, options)
-	 end
+	 return pairwise_transform.jpeg_(src, {torch.random(65, 85)},
+					 size, offset, n, options)
       elseif level == 2 then
 	 local r = torch.uniform()
-	 if torch.uniform() > 0.9 then
-	    return pairwise_transform.jpeg_(src, {},
+	 if r > 0.6 then
+	    return pairwise_transform.jpeg_(src, {torch.random(27, 70)},
+					    size, offset, n, options)
+	 elseif r > 0.3 then
+	    local quality1 = torch.random(37, 70)
+	    local quality2 = quality1 - torch.random(5, 10)
+	    return pairwise_transform.jpeg_(src, {quality1, quality2},
 					    size, offset, n, options)
 	 else
-	    if r > 0.6 then
-	       return pairwise_transform.jpeg_(src, {torch.random(27, 70)},
-					       size, offset, n, options)
-	    elseif r > 0.3 then
-	       local quality1 = torch.random(37, 70)
-	       local quality2 = quality1 - torch.random(5, 10)
-	       return pairwise_transform.jpeg_(src, {quality1, quality2},
-					       size, offset, n, options)
-	    else
-	       local quality1 = torch.random(52, 70)
-	       local quality2 = quality1 - torch.random(5, 15)
-	       local quality3 = quality1 - torch.random(15, 25)
-	       
-	       return pairwise_transform.jpeg_(src, 
-					       {quality1, quality2, quality3},
-					       size, offset, n, options)
-	    end
+	    local quality1 = torch.random(52, 70)
+	    local quality2 = quality1 - torch.random(5, 15)
+	    local quality3 = quality1 - torch.random(15, 25)
+	    
+	    return pairwise_transform.jpeg_(src, 
+					    {quality1, quality2, quality3},
+					    size, offset, n, options)
 	 end
       else
 	 error("unknown noise level: " .. level)
       end
    elseif style == "photo" then
       if level == 1 then
-	 if torch.uniform() > 0.7 then
-	    return pairwise_transform.jpeg_(src, {},
-					    size, offset, n,
-					    options)
-	 else
-	    return pairwise_transform.jpeg_(src, {torch.random(80, 95)},
-					    size, offset, n,
-					    options)
-	 end
+	 return pairwise_transform.jpeg_(src, {torch.random(80, 95)},
+					 size, offset, n,
+					 options)
       elseif level == 2 then
-	 if torch.uniform() > 0.7 then
-	    return pairwise_transform.jpeg_(src, {},
-					    size, offset, n,
-					    options)
-	 else
-	    return pairwise_transform.jpeg_(src, {torch.random(65, 85)},
-					    size, offset, n,
-					    options)
-	 end
+	 return pairwise_transform.jpeg_(src, {torch.random(65, 85)},
+					 size, offset, n,
+					 options)
       else
 	 error("unknown noise level: " .. level)
       end

@@ -89,7 +89,6 @@ local function transformer(x, is_validation, n, offset)
    local overlay = nil
    local active_cropping_rate = nil
    local active_cropping_tries = nil
-   
    if is_validation then
       active_cropping_rate = 0
       active_cropping_tries = 0
@@ -128,6 +127,7 @@ local function transformer(x, is_validation, n, offset)
 				       jpeg_sampling_factors = settings.jpeg_sampling_factors,
 				       active_cropping_rate = active_cropping_rate,
 				       active_cropping_tries = active_cropping_tries,
+				       nr_rate = settings.nr_rate,
 				       rgb = (settings.color == "rgb")
 				     })
    end
