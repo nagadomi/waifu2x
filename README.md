@@ -83,7 +83,7 @@ luarocks install lua-csnappy
 luarocks install md5
 luarocks install uuid
 PREFIX=$HOME/torch/install luarocks install turbo # if you need web application
-``
+```
 
 #### Validation
 
