@@ -11,25 +11,44 @@ local function pcacov(x)
    local ce, cv = torch.symeig(c, 'V')
    return ce, cv
 end
-function data_augmentation.color_noise(src, factor)
+function data_augmentation.color_noise(src, p, factor)
    factor = factor or 0.1
-   local src, conversion = iproc.byte2float(src)
-   local src_t = src:reshape(src:size(1), src:nElement() / src:size(1)):t():contiguous()
-   local ce, cv = pcacov(src_t)
-   local color_scale = torch.Tensor(3):uniform(1 / (1 + factor), 1 + factor)
-   
-   pca_space = torch.mm(src_t, cv):t():contiguous()
-   for i = 1, 3 do
-      pca_space[i]:mul(color_scale[i])
-   end
-   local dest = torch.mm(pca_space:t(), cv:t()):t():contiguous():resizeAs(src)
-   dest[torch.lt(dest, 0.0)] = 0.0
-   dest[torch.gt(dest, 1.0)] = 1.0
+   if torch.uniform() < p then
+      local src, conversion = iproc.byte2float(src)
+      local src_t = src:reshape(src:size(1), src:nElement() / src:size(1)):t():contiguous()
+      local ce, cv = pcacov(src_t)
+      local color_scale = torch.Tensor(3):uniform(1 / (1 + factor), 1 + factor)
+      
+      pca_space = torch.mm(src_t, cv):t():contiguous()
+      for i = 1, 3 do
+	 pca_space[i]:mul(color_scale[i])
+      end
+      local dest = torch.mm(pca_space:t(), cv:t()):t():contiguous():resizeAs(src)
+      dest[torch.lt(dest, 0.0)] = 0.0
+      dest[torch.gt(dest, 1.0)] = 1.0
 
-   if conversion then
-      dest = iproc.float2byte(dest)
+      if conversion then
+	 dest = iproc.float2byte(dest)
+      end
+      return dest
+   else
+      return src
    end
-   return dest
+end
+function data_augmentation.overlay(src, p)
+   if torch.uniform() < p then
+      local r = torch.uniform()
+      local src, conversion = iproc.byte2float(src)
+      src = src:contiguous()
+      local flip = data_augmentation.flip(src)
+      flip:mul(r):add(src * (1.0 - r))
+      if conversion then
+	 flip = iproc.float2byte(flip)
+      end
+      return flip
+   else
+      return src
+   end
 end
 function data_augmentation.shift_1px(src)
    -- reducing the even/odd issue in nearest neighbor scaler.
@@ -75,21 +94,5 @@ function data_augmentation.flip(src)
       dest = iproc.float2byte(dest)
    end
    return dest
-end
-function data_augmentation.overlay(src, p)
-   p = p or 0.25
-   if torch.uniform() < p then
-      local r = torch.uniform(0.2, 0.8)
-      local src, conversion = iproc.byte2float(src)
-      src = src:contiguous()
-      local flip = data_augmentation.flip(src)
-      flip:mul(r):add(src * (1.0 - r))
-      if conversion then
-	 flip = iproc.float2byte(flip)
-      end
-      return flip
-   else
-      return src
-   end
 end
 return data_augmentation

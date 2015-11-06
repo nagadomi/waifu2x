@@ -85,20 +85,20 @@ local function transformer(x, is_validation, n, offset)
    x = compression.decompress(x)
    n = n or settings.batch_size;
    if is_validation == nil then is_validation = false end
-   local color_noise = nil 
-   local overlay = nil
+   local random_color_noise_rate = nil 
+   local random_overlay_rate = nil
    local active_cropping_rate = nil
    local active_cropping_tries = nil
    if is_validation then
       active_cropping_rate = 0
       active_cropping_tries = 0
-      color_noise = false
-      overlay = false
+      random_color_noise_rate = 0.0
+      random_overlay_rate = 0.0
    else
       active_cropping_rate = settings.active_cropping_rate
       active_cropping_tries = settings.active_cropping_tries
-      color_noise = settings.color_noise
-      overlay = settings.overlay
+      random_color_noise_rate = settings.random_color_noise_rate
+      random_overlay_rate = settings.random_overlay_rate
    end
    
    if settings.method == "scale" then
@@ -106,13 +106,14 @@ local function transformer(x, is_validation, n, offset)
 				      settings.scale,
 				      settings.crop_size, offset,
 				      n,
-				      { color_noise = color_noise,
-					overlay = overlay,
-					random_half = settings.random_half,
-					max_size = settings.max_size,
-					active_cropping_rate = active_cropping_rate,
-					active_cropping_tries = active_cropping_tries,
-					rgb = (settings.color == "rgb")
+				      {
+					 random_half_rate = settings.random_half_rate,
+					 random_color_noise_rate = random_color_noise_rate,
+					 random_overlay_rate = random_overlay_rate,
+					 max_size = settings.max_size,
+					 active_cropping_rate = active_cropping_rate,
+					 active_cropping_tries = active_cropping_tries,
+					 rgb = (settings.color == "rgb")
 				      })
    elseif settings.method == "noise" then
       return pairwise_transform.jpeg(x,
@@ -120,15 +121,16 @@ local function transformer(x, is_validation, n, offset)
 				     settings.noise_level,
 				     settings.crop_size, offset,
 				     n,
-				     { color_noise = color_noise,
-				       overlay = overlay,
-				       random_half = settings.random_half,
-				       max_size = settings.max_size,
-				       jpeg_sampling_factors = settings.jpeg_sampling_factors,
-				       active_cropping_rate = active_cropping_rate,
-				       active_cropping_tries = active_cropping_tries,
-				       nr_rate = settings.nr_rate,
-				       rgb = (settings.color == "rgb")
+				     {
+					random_half_rate = settings.random_half_rate,
+					random_color_noise_rate = random_color_noise_rate,
+					random_overlay_rate = random_overlay_rate,
+					max_size = settings.max_size,
+					jpeg_sampling_factors = settings.jpeg_sampling_factors,
+					active_cropping_rate = active_cropping_rate,
+					active_cropping_tries = active_cropping_tries,
+					nr_rate = settings.nr_rate,
+					rgb = (settings.color == "rgb")
 				     })
    end
 end

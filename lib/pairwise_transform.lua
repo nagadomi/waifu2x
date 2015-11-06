@@ -6,9 +6,8 @@ local data_augmentation = require 'data_augmentation'
 local pairwise_transform = {}
 
 local function random_half(src, p)
-   p = p or 0.25
-   local filter = ({"Box","Box","Blackman","SincFast","Jinc"})[torch.random(1, 5)]
-   if p < torch.uniform() and (src:size(2) > 768 and src:size(3) > 1024) then
+   if torch.uniform() < p then
+      local filter = ({"Box","Box","Blackman","SincFast","Jinc"})[torch.random(1, 5)]
       return iproc.scale(src, src:size(3) * 0.5, src:size(2) * 0.5, filter)
    else
       return src
@@ -34,17 +33,11 @@ local function crop_if_large(src, max_size)
 end
 local function preprocess(src, crop_size, options)
    local dest = src
-   if options.random_half then
-      dest = random_half(dest)
-   end
+   dest = random_half(dest, options.random_half_rate)
    dest = crop_if_large(dest, math.max(crop_size * 2, options.max_size))
    dest = data_augmentation.flip(dest)
-   if options.color_noise then
-      dest = data_augmentation.color_noise(dest)
-   end
-   if options.overlay then
-      dest = data_augmentation.overlay(dest)
-   end
+   dest = data_augmentation.color_noise(dest, options.random_color_noise_rate)
+   dest = data_augmentation.overlay(dest, options.random_overlay_rate)
    dest = data_augmentation.shift_1px(dest)
    
    return dest
