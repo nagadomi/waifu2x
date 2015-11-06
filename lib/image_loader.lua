@@ -78,7 +78,6 @@ function image_loader.decode_byte(blob)
       end
       return {im, alpha, blob}
    end
-   load_image()
    local state, ret = pcall(load_image)
    if state then
       return ret[1], ret[2], ret[3]
