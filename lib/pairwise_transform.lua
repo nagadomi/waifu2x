@@ -7,8 +7,7 @@ local pairwise_transform = {}
 
 local function random_half(src, p)
    p = p or 0.25
-   --local filter = ({"Box","Blackman", "SincFast", "Jinc"})[torch.random(1, 4)]
-   local filter = "Box"
+   local filter = ({"Box","Box","Blackman","SincFast","Jinc"})[torch.random(1, 5)]
    if p < torch.uniform() and (src:size(2) > 768 and src:size(3) > 1024) then
       return iproc.scale(src, src:size(3) * 0.5, src:size(2) * 0.5, filter)
    else
@@ -163,8 +162,8 @@ function pairwise_transform.jpeg_(src, quality, size, offset, n, options)
    end
    return batch
 end
-function pairwise_transform.jpeg(src, category, level, size, offset, n, options)
-   if category == "anime_style_art" then
+function pairwise_transform.jpeg(src, style, level, size, offset, n, options)
+   if style == "art" then
       if level == 1 then
 	 if torch.uniform() > 0.8 then
 	    return pairwise_transform.jpeg_(src, {},
@@ -200,7 +199,7 @@ function pairwise_transform.jpeg(src, category, level, size, offset, n, options)
       else
 	 error("unknown noise level: " .. level)
       end
-   elseif category == "photo" then
+   elseif style == "photo" then
       if level == 1 then
 	 if torch.uniform() > 0.7 then
 	    return pairwise_transform.jpeg_(src, {},
@@ -225,7 +224,7 @@ function pairwise_transform.jpeg(src, category, level, size, offset, n, options)
 	 error("unknown noise level: " .. level)
       end
    else
-      error("unknown category: " .. category)
+      error("unknown style: " .. style)
    end
 end
 
@@ -239,7 +238,7 @@ function pairwise_transform.test_jpeg(src)
    }
    for i = 1, 9 do
       local xy = pairwise_transform.jpeg(src,
-					 "anime_style_art",
+					 "art",
 					 torch.random(1, 2),
 					 128, 7, 1, options)
       image.display({image = xy[1][1], legend = "y:" .. (i * 10), min=0, max=1})

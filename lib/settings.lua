@@ -17,30 +17,30 @@ local cmd = torch.CmdLine()
 cmd:text()
 cmd:text("waifu2x-training")
 cmd:text("Options:")
-cmd:option("-seed", 11, 'fixed input seed')
-cmd:option("-data_dir", "./data", 'data directory')
+cmd:option("-seed", 11, 'RNG seed')
+cmd:option("-data_dir", "./data", 'path to data directory')
 cmd:option("-backend", "cunn", '(cunn|cudnn)')
-cmd:option("-test", "images/miku_small.png", 'test image file')
+cmd:option("-test", "images/miku_small.png", 'path to test image')
 cmd:option("-model_dir", "./models", 'model directory')
-cmd:option("-method", "scale", '(noise|scale)')
+cmd:option("-method", "scale", 'method to training (noise|scale)')
 cmd:option("-noise_level", 1, '(1|2)')
-cmd:option("-category", "anime_style_art", '(anime_style_art|photo)')
+cmd:option("-style", "art", '(art|photo)')
 cmd:option("-color", 'rgb', '(y|rgb)')
-cmd:option("-color_noise", 0, 'enable data augmentation using color noise (1|0)')
-cmd:option("-overlay", 0, 'enable data augmentation using overlay (1|0)')
-cmd:option("-scale", 2.0, 'scale')
+cmd:option("-color_noise", 0, 'data augmentation using color noise (1|0)')
+cmd:option("-overlay", 0, 'data augmentation using overlay (1|0)')
+cmd:option("-scale", 2.0, 'scale factor (2)')
 cmd:option("-learning_rate", 0.00025, 'learning rate for adam')
-cmd:option("-random_half", 1, 'enable data augmentation using half resolution image (0|1)')
-cmd:option("-crop_size", 128, 'crop size')
-cmd:option("-max_size", 512, 'crop if image size larger then this value.')
-cmd:option("-batch_size", 2, 'mini batch size')
-cmd:option("-epoch", 200, 'epoch')
+cmd:option("-random_half", 0, 'data augmentation using half resolution image (0|1)')
+cmd:option("-crop_size", 46, 'crop size')
+cmd:option("-max_size", 256, 'if image is larger than max_size, image will be crop to max_size randomly')
+cmd:option("-batch_size", 8, 'mini batch size')
+cmd:option("-epoch", 200, 'number of total epochs to run')
 cmd:option("-thread", -1, 'number of CPU threads')
-cmd:option("-jpeg_sampling_factors", 444, '(444|422)')
-cmd:option("-validation_ratio", 0.1, 'validation ratio')
-cmd:option("-validation_crops", 40, 'number of crop region in validation')
+cmd:option("-jpeg_sampling_factors", 444, '(444|420)')
+cmd:option("-validation_rate", 0.05, 'validation-set rate of data')
+cmd:option("-validation_crops", 80, 'number of region per image in validation')
 cmd:option("-active_cropping_rate", 0.5, 'active cropping rate')
-cmd:option("-active_cropping_tries", 20, 'active cropping tries')
+cmd:option("-active_cropping_tries", 10, 'active cropping tries')
 
 local opt = cmd:parse(arg)
 for k, v in pairs(opt) do
@@ -64,9 +64,9 @@ end
 if not (settings.scale == math.floor(settings.scale) and settings.scale % 2 == 0) then
    error("scale must be mod-2")
 end
-if not (settings.category == "anime_style_art" or
-	settings.category == "photo") then
-   error(string.format("unknown category: %s", settings.category))
+if not (settings.style == "art" or
+	settings.style == "photo") then
+   error(string.format("unknown style: %s", settings.style))
 end
 if settings.random_half == 1 then
    settings.random_half = true

@@ -87,7 +87,7 @@ local function transformer(x, is_validation, n, offset)
    if is_validation == nil then is_validation = false end
    local color_noise = nil 
    local overlay = nil
-   local active_cropping_ratio = nil
+   local active_cropping_rate = nil
    local active_cropping_tries = nil
    
    if is_validation then
@@ -117,7 +117,7 @@ local function transformer(x, is_validation, n, offset)
 				      })
    elseif settings.method == "noise" then
       return pairwise_transform.jpeg(x,
-				     settings.category,
+				     settings.style,
 				     settings.noise_level,
 				     settings.crop_size, offset,
 				     n,
@@ -142,7 +142,7 @@ local function train()
    local criterion = create_criterion(model)
    local x = torch.load(settings.images)
    local lrd_count = 0
-   local train_x, valid_x = split_data(x, math.floor(settings.validation_ratio * #x))
+   local train_x, valid_x = split_data(x, math.floor(settings.validation_rate * #x))
    local adam_config = {
       learningRate = settings.learning_rate,
       xBatchSize = settings.batch_size,
