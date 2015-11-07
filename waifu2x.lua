@@ -50,7 +50,7 @@ local function convert_image(opt)
    else
       error("undefined method:" .. opt.method)
    end
-   image_loader.save_png(opt.o, new_x, alpha)
+   image_loader.save_png(opt.o, new_x, alpha, opt.depth)
    print(opt.o .. ": " .. (sys.clock() - t) .. " sec")
 end
 local function convert_frames(opt)
@@ -112,7 +112,7 @@ local function convert_frames(opt)
 	 else
 	    output = string.format(opt.o, i)
 	 end
-	 image_loader.save_png(output, new_x, alpha)
+	 image_loader.save_png(output, new_x, alpha, opt.depth)
 	 xlua.progress(i, #lines)
 	 if i % 10 == 0 then
 	    collectgarbage()
@@ -132,6 +132,7 @@ local function waifu2x()
    cmd:option("-l", "", 'path to image-list.txt')
    cmd:option("-scale", 2, 'scale factor')
    cmd:option("-o", "(auto)", 'path to output file')
+   cmd:option("-depth", 8, 'bit-depth of the output image (8|16)')
    cmd:option("-model_dir", "./models/anime_style_art_rgb", 'path to model directory')
    cmd:option("-m", "noise_scale", 'method (noise|scale|noise_scale)')
    cmd:option("-noise_level", 1, '(1|2)')
