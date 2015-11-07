@@ -14,13 +14,13 @@ cmd:text()
 cmd:text("waifu2x-benchmark")
 cmd:text("Options:")
 
-cmd:option("-seed", 11, 'fixed input seed')
 cmd:option("-dir", "./data/test", 'test image directory')
 cmd:option("-model1_dir", "./models/anime_style_art", 'model1 directory')
 cmd:option("-model2_dir", "./models/anime_style_art_rgb", 'model2 directory')
 cmd:option("-method", "scale", '(scale|noise)')
-cmd:option("-noise_level", 1, '(1|2)')
-cmd:option("-color_weight", "y", '(y|rgb)')
+cmd:option("-filter", "Box", "downscaling filter (Box|Jinc)")
+cmd:option("-color", "rgb", '(rgb|y)')
+cmd:option("-noise_level", 1, 'model noise level')
 cmd:option("-jpeg_quality", 75, 'jpeg quality')
 cmd:option("-jpeg_times", 1, 'jpeg compression times')
 cmd:option("-jpeg_quality_down", 5, 'value of jpeg quality to decrease each times')
@@ -49,7 +49,7 @@ local function YPSNR(x1, x2)
    return 10 * math.log10(1.0 / mse)
 end
 
-local function transform_jpeg(x)
+local function transform_jpeg(x, opt)
    for i = 1, opt.jpeg_times do
       jpeg = gm.Image(x, "RGB", "DHW")
       jpeg:format("jpeg")
@@ -60,52 +60,54 @@ local function transform_jpeg(x)
    end
    return x
 end
-local function transform_scale(x)
+local function transform_scale(x, opt)
    return iproc.scale(x,
 		      x:size(3) * 0.5,
 		      x:size(2) * 0.5,
-		      "Box")
+		      opt.filter)
 end
 
-local function benchmark(color_weight, x, input_func, v1_noise, v2_noise)
-   local v1_mse = 0
-   local v2_mse = 0
-   local v1_psnr = 0
-   local v2_psnr = 0
+local function benchmark(opt, x, input_func, model1, model2)
+   local model1_mse = 0
+   local model2_mse = 0
+   local model1_psnr = 0
+   local model2_psnr = 0
    
    for i = 1, #x do
       local ground_truth = x[i]
-      local input, v1_output, v2_output
+      local input, model1_output, model2_output
 
-      input = input_func(ground_truth)
+      input = input_func(ground_truth, opt)
       input = input:float():div(255)
       ground_truth = ground_truth:float():div(255)
       
       t = sys.clock()
       if input:size(3) == ground_truth:size(3) then
-	 v1_output = reconstruct.image(v1_noise, input)
-	 v2_output = reconstruct.image(v2_noise, input)
+	 model1_output = reconstruct.image(model1, input)
+	 model2_output = reconstruct.image(model2, input)
       else
-	 v1_output = reconstruct.scale(v1_noise, 2.0, input)
-	 v2_output = reconstruct.scale(v2_noise, 2.0, input)
+	 model1_output = reconstruct.scale(model1, 2.0, input)
+	 model2_output = reconstruct.scale(model2, 2.0, input)
       end
-      if color_weight == "y" then
-	 v1_mse = v1_mse + YMSE(ground_truth, v1_output)
-	 v1_psnr = v1_psnr + YPSNR(ground_truth, v1_output)
-	 v2_mse = v2_mse + YMSE(ground_truth, v2_output)
-	 v2_psnr = v2_psnr + YPSNR(ground_truth, v2_output)
-      elseif color_weight == "rgb" then
-	 v1_mse = v1_mse + MSE(ground_truth, v1_output)
-	 v1_psnr = v1_psnr + PSNR(ground_truth, v1_output)
-	 v2_mse = v2_mse + MSE(ground_truth, v2_output)
-	 v2_psnr = v2_psnr + PSNR(ground_truth, v2_output)
+      if opt.color == "y" then
+	 model1_mse = model1_mse + YMSE(ground_truth, model1_output)
+	 model1_psnr = model1_psnr + YPSNR(ground_truth, model1_output)
+	 model2_mse = model2_mse + YMSE(ground_truth, model2_output)
+	 model2_psnr = model2_psnr + YPSNR(ground_truth, model2_output)
+      elseif opt.color == "rgb" then
+	 model1_mse = model1_mse + MSE(ground_truth, model1_output)
+	 model1_psnr = model1_psnr + PSNR(ground_truth, model1_output)
+	 model2_mse = model2_mse + MSE(ground_truth, model2_output)
+	 model2_psnr = model2_psnr + PSNR(ground_truth, model2_output)
+      else
+	 error("Unknown color: " .. opt.color)
       end
       
       io.stdout:write(
-	 string.format("%d/%d; v1_mse=%f, v2_mse=%f, v1_psnr=%f, v2_psnr=%f \r",
+	 string.format("%d/%d; model1_mse=%f, model2_mse=%f, model1_psnr=%f, model2_psnr=%f \r",
 		       i, #x,
-		       v1_mse / i, v2_mse / i,
-		       v1_psnr / i, v2_psnr / i
+		       model1_mse / i, model2_mse / i,
+		       model1_psnr / i, model2_psnr / i
 	 )
       )
       io.stdout:flush()
@@ -123,16 +125,14 @@ local function load_data(test_dir)
 end
 
 print(opt)
-torch.manualSeed(opt.seed)
-cutorch.manualSeed(opt.seed)
 if opt.method == "scale" then
-   local v1 = torch.load(path.join(opt.model1_dir, "scale2.0x_model.t7"), "ascii")
-   local v2 = torch.load(path.join(opt.model2_dir, "scale2.0x_model.t7"), "ascii")
+   local model1 = torch.load(path.join(opt.model1_dir, "scale2.0x_model.t7"), "ascii")
+   local model2 = torch.load(path.join(opt.model2_dir, "scale2.0x_model.t7"), "ascii")
    local test_x = load_data(opt.dir)
-   benchmark(opt.color_weight, test_x, transform_scale, v1, v2)
+   benchmark(opt, test_x, transform_scale, model1, model2)
 elseif opt.method == "noise" then
-   local v1 = torch.load(path.join(opt.model1_dir, string.format("noise%d_model.t7", opt.noise_level)), "ascii")
-   local v2 = torch.load(path.join(opt.model2_dir, string.format("noise%d_model.t7", opt.noise_level)), "ascii")
+   local model1 = torch.load(path.join(opt.model1_dir, string.format("noise%d_model.t7", opt.noise_level)), "ascii")
+   local model2 = torch.load(path.join(opt.model2_dir, string.format("noise%d_model.t7", opt.noise_level)), "ascii")
    local test_x = load_data(opt.dir)
-   benchmark(opt.color_weight, test_x, transform_jpeg, v1, v2)
+   benchmark(opt, test_x, transform_jpeg, model1, model2)
 end
