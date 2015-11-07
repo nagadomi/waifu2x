@@ -40,7 +40,10 @@ function iproc.float2byte(src)
    local dest = src
    if src:type() == "torch.FloatTensor" then
       conversion = true
-      dest = (src * 255.0):byte()
+      dest = (src * 255.0)
+      dest[torch.lt(dest, 0.0)] = 0
+      dest[torch.gt(dest, 255.0)] = 255.0
+      dest = dest:byte()
    end
    return dest, conversion
 end
@@ -65,5 +68,19 @@ function iproc.padding(img, w1, w2, h1, h2)
    return image.warp(img, flow, "simple", false, "clamp")
 end
 
+local function test_conversion()
+   local x = torch.FloatTensor({{{0, 0.1}, {-0.1, 1.0}}, {{0.1234, 0.5}, {0.85, 1.2}}, {{0, 0.1}, {0.5, 0.8}}})
+   local im = gm.Image():fromTensor(x, "RGB", "DHW")
+   local a, b
+
+   a = iproc.float2byte(x):float()
+   b = im:toTensor("byte", "RGB", "DHW"):float()
+   assert((a - b):abs():sum() == 0)
+
+   a = iproc.byte2float(iproc.float2byte(x))
+   b = gm.Image():fromTensor(im:toTensor("byte", "RGB", "DHW"), "RGB", "DHW"):toTensor("float", "RGB", "DHW")
+   assert((a - b):abs():sum() == 0)
+end
+--test_conversion()
 
 return iproc
