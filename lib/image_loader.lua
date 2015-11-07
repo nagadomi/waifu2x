@@ -6,6 +6,7 @@ local image_loader = {}
 
 local clip_eta8 = (1.0 / 255.0) * 0.5 - (1.0e-7 * (1.0 / 255.0) * 0.5)
 local clip_eta16 = (1.0 / 65535.0) * 0.5 - (1.0e-7 * (1.0 / 65535.0) * 0.5)
+local background_color = 0.5
 
 function image_loader.decode_float(blob)
    local im, alpha = image_loader.decode_byte(blob)
@@ -87,6 +88,11 @@ function image_loader.decode_byte(blob)
 	 local sum_alpha = (im[4] - 1.0):sum()
 	 if sum_alpha < 0 then
 	    alpha = im[4]:reshape(1, im:size(2), im:size(3))
+	    -- drop full transparent background
+	    local mask = torch.le(alpha, 0.0)
+	    im[1][mask] = background_color
+	    im[2][mask] = background_color
+	    im[3][mask] = background_color
 	 end
 	 local new_im = torch.FloatTensor(3, im:size(2), im:size(3))
 	 new_im[1]:copy(im[1])
