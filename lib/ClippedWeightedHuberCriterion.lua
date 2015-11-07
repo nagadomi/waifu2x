@@ -1,8 +1,9 @@
 -- ref: https://en.wikipedia.org/wiki/Huber_loss
-local WeightedHuberCriterion, parent = torch.class('w2nn.WeightedHuberCriterion','nn.Criterion')
+local ClippedWeightedHuberCriterion, parent = torch.class('w2nn.ClippedWeightedHuberCriterion','nn.Criterion')
 
-function WeightedHuberCriterion:__init(w, gamma)
+function ClippedWeightedHuberCriterion:__init(w, gamma, clip)
    parent.__init(self)
+   self.clip = clip
    self.gamma = gamma or 1.0
    self.weight = w:clone()
    self.diff = torch.Tensor()
@@ -11,8 +12,10 @@ function WeightedHuberCriterion:__init(w, gamma)
    self.square_loss_buff = torch.Tensor()
    self.linear_loss_buff = torch.Tensor()
 end
-function WeightedHuberCriterion:updateOutput(input, target)
+function ClippedWeightedHuberCriterion:updateOutput(input, target)
    self.diff:resizeAs(input):copy(input)
+   self.diff[torch.lt(self.diff, self.clip[1])] = self.clip[1]
+   self.diff[torch.gt(self.diff, self.clip[2])] = self.clip[2]
    for i = 1, input:size(1) do
       self.diff[i]:add(-1, target[i]):cmul(self.weight)
    end
@@ -27,7 +30,7 @@ function WeightedHuberCriterion:updateOutput(input, target)
    self.output = (square_loss + linear_loss) / input:nElement()
    return self.output
 end
-function WeightedHuberCriterion:updateGradInput(input, target)
+function ClippedWeightedHuberCriterion:updateGradInput(input, target)
    local norm = 1.0 / input:nElement()
    self.gradInput:resizeAs(self.diff):copy(self.diff):mul(norm)
    local outlier = torch.ge(self.diff_abs, self.gamma)

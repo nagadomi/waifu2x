@@ -76,7 +76,7 @@ local function create_criterion(model)
       weight[1]:fill(0.29891 * 3) -- R
       weight[2]:fill(0.58661 * 3) -- G
       weight[3]:fill(0.11448 * 3) -- B
-      return w2nn.WeightedHuberCriterion(weight, 0.1):cuda()
+      return w2nn.ClippedWeightedHuberCriterion(weight, 0.1, {0.0, 1.0}):cuda()
    else
       return nn.MSECriterion():cuda()
    end

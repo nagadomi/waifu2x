@@ -4,6 +4,9 @@ require 'pl'
 
 local image_loader = {}
 
+local clip_eta8 = (1.0 / 255.0) * 0.5 - (1.0e-7 * (1.0 / 255.0) * 0.5)
+local clip_eta16 = (1.0 / 65535.0) * 0.5 - (1.0e-7 * (1.0 / 65535.0) * 0.5)
+
 function image_loader.decode_float(blob)
    local im, alpha = image_loader.decode_byte(blob)
    if im then
@@ -25,13 +28,30 @@ function image_loader.encode_png(rgb, alpha, depth)
       rgba[2]:copy(rgb[2])
       rgba[3]:copy(rgb[3])
       rgba[4]:copy(alpha)
+      
+      if depth < 16 then
+	 rgba:add(clip_eta8)
+	 rgba[torch.lt(rgba, 0.0)] = 0.0
+	 rgba[torch.gt(rgba, 1.0)] = 1.0
+      else
+	 rgba:add(clip_eta16)
+	 rgba[torch.lt(rgba, 0.0)] = 0.0
+	 rgba[torch.gt(rgba, 1.0)] = 1.0
+      end
       local im = gm.Image():fromTensor(rgba, "RGBA", "DHW")
-      im:format("png")
-      return im:depth(depth):toBlob(9)
+      return im:depth(depth):format("PNG"):toBlob(9)
    else
+      if depth < 16 then
+	 rgb = rgb:clone():add(clip_eta8)
+	 rgb[torch.lt(rgb, 0.0)] = 0.0
+	 rgb[torch.gt(rgb, 1.0)] = 1.0
+      else
+	 rgb = rgb:clone():add(clip_eta16)
+	 rgb[torch.lt(rgb, 0.0)] = 0.0
+	 rgb[torch.gt(rgb, 1.0)] = 1.0
+      end
       local im = gm.Image(rgb, "RGB", "DHW")
-      im:format("png")
-      return im:depth(depth):toBlob(9)
+      return im:depth(depth):format("PNG"):toBlob(9)
    end
 end
 function image_loader.save_png(filename, rgb, alpha, depth)
