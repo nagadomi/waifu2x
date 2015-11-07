@@ -1,0 +1,46 @@
+body {
+    margin: 1em 2em 1em 2em;
+    background: LightGray;
+    width: 640px;
+}
+fieldset {
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+.about {
+    position: relative;
+    display: inline-block;
+    font-size: 0.9em;
+    padding: 1em 5px 0.2em 0;
+}
+.help {
+    font-size: 0.85em;
+    margin: 1em 0 0 0;
+}
+.github-banner {
+    position:absolute;
+    display:block;
+    top:0;
+    left:540px;
+    max-height:140px;
+}
+.github-banner-image {
+    position: absolute;
+    display: block; 
+    left: 0;
+    top: 0;
+    width: 149px;
+    height: 149px;
+    border: 0;
+}
+.github-banner-link {
+    position: absolute;
+    display: block; 
+    left:0;
+    top:0; 
+    width:149px;
+    height:130px;
+}
+.padding-left {
+    padding-left: 15px;
+}

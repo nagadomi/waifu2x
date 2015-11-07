@@ -21,5 +21,6 @@ else
    require 'DepthExpand2x'
    require 'WeightedMSECriterion'
    require 'WeightedHuberCriterion'
+   require 'cleanup_model'
    return w2nn
 end

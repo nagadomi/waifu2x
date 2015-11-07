@@ -2,51 +2,17 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8">
-    <link rel="canonical" href="http://waifu2x.udp.jp/">
+    <link href="style.css" rel="stylesheet" type="text/css">
     <title>waifu2x</title>
-    <style type="text/css">
-    body {
-      margin: 1em 2em 1em 2em;
-      background: LightGray;
-      width: 640px;
-    }
-    fieldset {
-      margin-top: 1em;
-      margin-bottom: 1em;
-    }
-    .about {
-      position: relative;
-      display: inline-block;
-      font-size: 0.8em;
-      padding: 1em 5px 0.2em 0;
-    }
-    .help {
-      font-size: 0.8em;
-      margin: 1em 0 0 0;
-    }
-    </style>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-    <script type="text/javascript">
-    function clear_file() {
-      var new_file = $("#file").clone();
-      new_file.change(clear_url);
-      $("#file").replaceWith(new_file);
-    }
-    function clear_url() {
-      $("#url").val("")
-    }
-    $(function (){
-      $("#url").change(clear_file);
-      $("#file").change(clear_url);
-    })
-    </script>
+    <script type="text/javascript" src="ui.js"></script>    
   </head>
   <body>
     <h1>waifu2x</h1>
     <div class="header">
-      <div style="position:absolute; display:block; top:0; left:540px; max-height:140px;">
-        <img style="position:absolute; display:block; left:0; top:0; width:149px; height:149px; border:0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png">
-        <a href="https://github.com/nagadomi/waifu2x" target="_blank" style="position:absolute; display:block; left:0; top:0; width:149px; height:130px;"></a>
+      <div class="github-banner">
+        <img class="github-banner-image" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png">
+        <a class="github-banner-link" href="https://github.com/nagadomi/waifu2x" target="_blank"></a>
       </div>
       <a href="index.html">en</a>/<a href="index.ja.html">ja</a>/<a href="index.ru.html">ru</a>
     </div>
@@ -67,6 +33,11 @@
         </div>
       </fieldset>
       <fieldset>
+        <legend>スタイル</legend>
+	<label><input type="radio" name="style" value="art" checked>イラスト</label>
+	<label><input type="radio" name="style" value="photo">写真</label>
+      </fieldset>
+      <fieldset class="noise-field">
         <legend>ノイズ除去 (JPEGノイズを想定)</legend>
         <label><input type="radio" name="noise" value="0"> なし</label>
         <label><input type="radio" name="noise" value="1" checked="checked"> 弱</label>
@@ -81,7 +52,7 @@
       <input type="submit" value="実行"/>
     </form>
     <div class="help">
-      <ul style="padding-left: 15px;">
+      <ul class="padding-left">
         <li>なし/なしで入力画像を変換せずに出力する。ブラウザのタブで変換結果を比較したい人用。
         <li>Firefoxの方は、右クリから画像が保存できないようなので、CTRL+SキーかALTキー後 ファイル - ページを保存 で画像を保存してください。
       </ul>
