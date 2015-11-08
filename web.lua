@@ -163,10 +163,10 @@ function APIHandler:post()
 	       x = convert(x, {method = "scale", style = style, prefix = style .. "_scale_" .. hash})
 	    end
 	    if scale == 1 then
-	       x = iproc.scale(x,
-			       math.floor(x:size(3) * (1.6 / 2.0) + 0.5),
-			       math.floor(x:size(2) * (1.6 / 2.0) + 0.5),
-			       "Jinc")
+	       x = iproc.scale_with_gamma22(x,
+					    math.floor(x:size(3) * (1.6 / 2.0) + 0.5),
+					    math.floor(x:size(2) * (1.6 / 2.0) + 0.5),
+					    "Jinc")
 	    end
 	 end
       end

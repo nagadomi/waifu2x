@@ -57,6 +57,20 @@ function iproc.scale(src, width, height, filter)
    im:size(math.ceil(width), math.ceil(height), filter)
    return im:toTensor(t, "RGB", "DHW")
 end
+function iproc.scale_with_gamma22(src, width, height, filter)
+   local conversion
+   src, conversion = iproc.byte2float(src)
+   filter = filter or "Box"
+   local im = gm.Image(src, "RGB", "DHW")
+   im:gammaCorrection(1.0 / 2.2):
+      size(math.ceil(width), math.ceil(height), filter):
+      gammaCorrection(2.2)
+   local dest = im:toTensor("float", "RGB", "DHW")
+   if conversion then
+      dest = iproc.float2byte(dest)
+   end
+   return dest
+end
 function iproc.padding(img, w1, w2, h1, h2)
    local dst_height = img:size(2) + h1 + h2
    local dst_width = img:size(3) + w1 + w2
