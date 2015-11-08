@@ -53,7 +53,7 @@ local function convert_image(opt)
       if not scale_model then
 	 error("Load Error: " .. scale_model_path)
       end
-      x = image_f(noise_model, x)
+      x = image_f(noise_model, x, opt.crop_size)
       new_x = scale_f(scale_model, opt.scale, x, opt.crop_size)
    else
       error("undefined method:" .. opt.method)
@@ -126,11 +126,11 @@ local function convert_frames(opt)
 	 if opt.m == "noise" and opt.noise_level == 1 then
 	    new_x = image_f(noise1_model, x, opt.crop_size)
 	 elseif opt.m == "noise" and opt.noise_level == 2 then
-	    new_x = image_func(noise2_model, x)
+	    new_x = image_func(noise2_model, x, opt.crop_size)
 	 elseif opt.m == "scale" then
 	    new_x = scale_f(scale_model, opt.scale, x, opt.crop_size)
 	 elseif opt.m == "noise_scale" and opt.noise_level == 1 then
-	    x = image_f(noise1_model, x)
+	    x = image_f(noise1_model, x, opt.crop_size)
 	    new_x = scale_f(scale_model, opt.scale, x, opt.crop_size)
 	 elseif opt.m == "noise_scale" and opt.noise_level == 2 then
 	    x = image_f(noise2_model, x, opt.crop_size)
