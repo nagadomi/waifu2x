@@ -4,8 +4,8 @@ require 'pl'
 
 local image_loader = {}
 
-local clip_eta8 = (1.0 / 255.0) * 0.5 - (1.0e-7 * (1.0 / 255.0) * 0.5)
-local clip_eta16 = (1.0 / 65535.0) * 0.5 - (1.0e-7 * (1.0 / 65535.0) * 0.5)
+local clip_eps8 = (1.0 / 255.0) * 0.5 - (1.0e-7 * (1.0 / 255.0) * 0.5)
+local clip_eps16 = (1.0 / 65535.0) * 0.5 - (1.0e-7 * (1.0 / 65535.0) * 0.5)
 local background_color = 0.5
 
 function image_loader.decode_float(blob)
@@ -31,11 +31,11 @@ function image_loader.encode_png(rgb, alpha, depth)
       rgba[4]:copy(alpha)
       
       if depth < 16 then
-	 rgba:add(clip_eta8)
+	 rgba:add(clip_eps8)
 	 rgba[torch.lt(rgba, 0.0)] = 0.0
 	 rgba[torch.gt(rgba, 1.0)] = 1.0
       else
-	 rgba:add(clip_eta16)
+	 rgba:add(clip_eps16)
 	 rgba[torch.lt(rgba, 0.0)] = 0.0
 	 rgba[torch.gt(rgba, 1.0)] = 1.0
       end
@@ -43,11 +43,11 @@ function image_loader.encode_png(rgb, alpha, depth)
       return im:depth(depth):format("PNG"):toBlob(9)
    else
       if depth < 16 then
-	 rgb = rgb:clone():add(clip_eta8)
+	 rgb = rgb:clone():add(clip_eps8)
 	 rgb[torch.lt(rgb, 0.0)] = 0.0
 	 rgb[torch.gt(rgb, 1.0)] = 1.0
       else
-	 rgb = rgb:clone():add(clip_eta16)
+	 rgb = rgb:clone():add(clip_eps16)
 	 rgb[torch.lt(rgb, 0.0)] = 0.0
 	 rgb[torch.gt(rgb, 1.0)] = 1.0
       end
