@@ -17,6 +17,8 @@ local opt = cmd:parse(arg)
 local model = torch.load(opt.model, opt.iformat)
 if model then
    w2nn.cleanup_model(model)
+   model:cuda()
+   model:evaluate()
    torch.save(opt.model, model, opt.oformat)
 else
    error("model not found")
