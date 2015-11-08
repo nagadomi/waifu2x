@@ -1,11 +1,7 @@
+require 'pl'
 local __FILE__ = (function() return string.gsub(debug.getinfo(2, 'S').source, "^@", "") end)()
 package.path = path.join(path.dirname(__FILE__), "..", "lib", "?.lua;") .. package.path
 require 'os'
-require 'pl'
-require 'torch'
-require 'cutorch'
-require 'cunn'
-require 'cudnn'
 require 'w2nn'
 local srcnn = require 'srcnn'
 

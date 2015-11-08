@@ -1,5 +1,5 @@
-local __FILE__ = (function() return string.gsub(debug.getinfo(2, 'S').source, "^@", "") end)()
 require 'pl'
+local __FILE__ = (function() return string.gsub(debug.getinfo(2, 'S').source, "^@", "") end)()
 local ROOT = path.dirname(__FILE__)
 package.path = path.join(ROOT, "lib", "?.lua;") .. package.path
 _G.TURBO_SSL = true

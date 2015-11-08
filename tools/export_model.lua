@@ -1,4 +1,5 @@
 -- adapted from https://github.com/marcan/cl-waifu2x
+require 'pl'
 local __FILE__ = (function() return string.gsub(debug.getinfo(2, 'S').source, "^@", "") end)()
 package.path = path.join(path.dirname(__FILE__), "..", "lib", "?.lua;") .. package.path
 require 'w2nn'
