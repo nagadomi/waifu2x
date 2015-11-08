@@ -24,6 +24,11 @@ function export(model, output)
       }
       table.insert(jmodules, jmod)
    end
+   jmodules[1].color = "RGB"
+   jmodules[1].gamma = 0
+   jmodules[#jmodules].color = "RGB"
+   jmodules[#jmodules].gamma = 0
+   
    local fp = io.open(output, "w")
    if not fp then
       error("IO Error: " .. output)
