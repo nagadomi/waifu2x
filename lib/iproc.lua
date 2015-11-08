@@ -6,7 +6,7 @@ local iproc = {}
 function iproc.crop_mod4(src)
    local w = src:size(3) % 4
    local h = src:size(2) % 4
-   return image.crop(src, 0, 0, src:size(3) - w, src:size(2) - h)
+   return iproc.crop(src, 0, 0, src:size(3) - w, src:size(2) - h)
 end
 function iproc.crop(src, w1, h1, w2, h2)
    local dest

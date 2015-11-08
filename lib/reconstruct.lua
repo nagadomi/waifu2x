@@ -94,7 +94,7 @@ function reconstruct.image_y(model, x, offset, block_size)
    y[torch.lt(y, 0)] = 0
    y[torch.gt(y, 1)] = 1
    yuv[1]:copy(y)
-   local output = image.yuv2rgb(image.crop(yuv,
+   local output = image.yuv2rgb(iproc.crop(yuv,
 					   pad_w1, pad_h1,
 					   yuv:size(3) - pad_w2, yuv:size(2) - pad_h2))
    output[torch.lt(output, 0)] = 0
@@ -126,7 +126,7 @@ function reconstruct.scale_y(model, scale, x, offset, block_size)
    y[torch.lt(y, 0)] = 0
    y[torch.gt(y, 1)] = 1
    yuv_jinc[1]:copy(y)
-   local output = image.yuv2rgb(image.crop(yuv_jinc,
+   local output = image.yuv2rgb(iproc.crop(yuv_jinc,
 					   pad_w1, pad_h1,
 					   yuv_jinc:size(3) - pad_w2, yuv_jinc:size(2) - pad_h2))
    output[torch.lt(output, 0)] = 0
@@ -151,7 +151,7 @@ function reconstruct.image_rgb(model, x, offset, block_size)
    local pad_w2 = (w - offset) - x:size(3)
    local input = iproc.padding(x, pad_w1, pad_w2, pad_h1, pad_h2)
    local y = reconstruct_rgb(model, input, offset, block_size)
-   local output = image.crop(y,
+   local output = iproc.crop(y,
 			     pad_w1, pad_h1,
 			     y:size(3) - pad_w2, y:size(2) - pad_h2)
    collectgarbage()
@@ -178,7 +178,7 @@ function reconstruct.scale_rgb(model, scale, x, offset, block_size)
    local pad_w2 = (w - offset) - x:size(3)
    local input = iproc.padding(x, pad_w1, pad_w2, pad_h1, pad_h2)
    local y = reconstruct_rgb(model, input, offset, block_size)
-   local output = image.crop(y,
+   local output = iproc.crop(y,
 			     pad_w1, pad_h1,
 			     y:size(3) - pad_w2, y:size(2) - pad_h2)
    output[torch.lt(output, 0)] = 0
