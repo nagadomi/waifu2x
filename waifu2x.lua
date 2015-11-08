@@ -13,6 +13,14 @@ local function convert_image(opt)
    local x, alpha = image_loader.load_float(opt.i)
    local new_x = nil
    local t = sys.clock()
+   local scale_f, image_f
+   if opt.tta == 1 then
+      scale_f = reconstruct.scale_tta
+      image_f = reconstruct.image_tta
+   else
+      scale_f = reconstruct.scale
+      image_f = reconstruct.image
+   end
    if opt.o == "(auto)" then
       local name = path.basename(opt.i)
       local e = path.extension(name)
@@ -25,14 +33,14 @@ local function convert_image(opt)
       if not model then
 	 error("Load Error: " .. model_path)
       end
-      new_x = reconstruct.image(model, x, opt.crop_size)
+      new_x = image_f(model, x, opt.crop_size)
    elseif opt.m == "scale" then
       local model_path = path.join(opt.model_dir, ("scale%.1fx_model.t7"):format(opt.scale))
       local model = torch.load(model_path, "ascii")
       if not model then
 	 error("Load Error: " .. model_path)
       end
-      new_x = reconstruct.scale(model, opt.scale, x, opt.crop_size)
+      new_x = scale_f(model, opt.scale, x, opt.crop_size)
    elseif opt.m == "noise_scale" then
       local noise_model_path = path.join(opt.model_dir, ("noise%d_model.t7"):format(opt.noise_level))
       local noise_model = torch.load(noise_model_path, "ascii")
@@ -45,8 +53,8 @@ local function convert_image(opt)
       if not scale_model then
 	 error("Load Error: " .. scale_model_path)
       end
-      x = reconstruct.image(noise_model, x)
-      new_x = reconstruct.scale(scale_model, opt.scale, x, opt.crop_size)
+      x = image_f(noise_model, x)
+      new_x = scale_f(scale_model, opt.scale, x, opt.crop_size)
    else
       error("undefined method:" .. opt.method)
    end
@@ -54,24 +62,51 @@ local function convert_image(opt)
    print(opt.o .. ": " .. (sys.clock() - t) .. " sec")
 end
 local function convert_frames(opt)
-   local noise1_model, noise2_model, scale_model
+   local model_path, noise1_model, noise2_model, scale_model
+   local scale_f, image_f
+   if opt.tta == 1 then
+      scale_f = reconstruct.scale_tta
+      image_f = reconstruct.image_tta
+   else
+      scale_f = reconstruct.scale
+      image_f = reconstruct.image
+   end
    if opt.m == "scale" then
-      local model_path = path.join(opt.model_dir, ("scale%.1fx_model.t7"):format(opt.scale))
+      model_path = path.join(opt.model_dir, ("scale%.1fx_model.t7"):format(opt.scale))
       scale_model = torch.load(model_path, "ascii")
       if not scale_model then
 	 error("Load Error: " .. model_path)
       end
    elseif opt.m == "noise" and opt.noise_level == 1 then
-      local model_path = path.join(opt.model_dir, "noise1_model.t7")
+      model_path = path.join(opt.model_dir, "noise1_model.t7")
       noise1_model = torch.load(model_path, "ascii")
       if not noise1_model then
 	 error("Load Error: " .. model_path)
       end
    elseif opt.m == "noise" and opt.noise_level == 2 then
-      local model_path = path.join(opt.model_dir, "noise2_model.t7")
+      model_path = path.join(opt.model_dir, "noise2_model.t7")
       noise2_model = torch.load(model_path, "ascii")
       if not noise2_model then
 	 error("Load Error: " .. model_path)
+      end
+   elseif opt.m == "noise_scale" then
+      model_path = path.join(opt.model_dir, ("scale%.1fx_model.t7"):format(opt.scale))
+      scale_model = torch.load(model_path, "ascii")
+      if not scale_model then
+	 error("Load Error: " .. model_path)
+      end
+      if opt.noise_level == 1 then
+	 model_path = path.join(opt.model_dir, "noise1_model.t7")
+	 noise1_model = torch.load(model_path, "ascii")
+	 if not noise1_model then
+	    error("Load Error: " .. model_path)
+	 end
+      elseif opt.noise_level == 2 then
+	 model_path = path.join(opt.model_dir, "noise2_model.t7")
+	 noise2_model = torch.load(model_path, "ascii")
+	 if not noise2_model then
+	    error("Load Error: " .. model_path)
+	 end
       end
    end
    local fp = io.open(opt.l)
@@ -89,17 +124,17 @@ local function convert_frames(opt)
 	 local x, alpha = image_loader.load_float(lines[i])
 	 local new_x = nil
 	 if opt.m == "noise" and opt.noise_level == 1 then
-	    new_x = reconstruct.image(noise1_model, x, opt.crop_size)
+	    new_x = image_f(noise1_model, x, opt.crop_size)
 	 elseif opt.m == "noise" and opt.noise_level == 2 then
-	    new_x = reconstruct.image(noise2_model, x)
+	    new_x = image_func(noise2_model, x)
 	 elseif opt.m == "scale" then
-	    new_x = reconstruct.scale(scale_model, opt.scale, x, opt.crop_size)
+	    new_x = scale_f(scale_model, opt.scale, x, opt.crop_size)
 	 elseif opt.m == "noise_scale" and opt.noise_level == 1 then
-	    x = reconstruct.image(noise1_model, x)
-	    new_x = reconstruct.scale(scale_model, opt.scale, x, opt.crop_size)
+	    x = image_f(noise1_model, x)
+	    new_x = scale_f(scale_model, opt.scale, x, opt.crop_size)
 	 elseif opt.m == "noise_scale" and opt.noise_level == 2 then
-	    x = reconstruct.image(noise2_model, x)
-	    new_x = reconstruct.scale(scale_model, opt.scale, x, opt.crop_size)
+	    x = image_f(noise2_model, x, opt.crop_size)
+	    new_x = scale_f(scale_model, opt.scale, x, opt.crop_size)
 	 else
 	    error("undefined method:" .. opt.method)
 	 end
@@ -139,6 +174,7 @@ local function waifu2x()
    cmd:option("-crop_size", 128, 'patch size per process')
    cmd:option("-resume", 0, "skip existing files (0|1)")
    cmd:option("-thread", -1, "number of CPU threads")
+   cmd:option("-tta", 0, '8x slower and slightly high quality (0|1)')
    
    local opt = cmd:parse(arg)
    if opt.thread > 0 then

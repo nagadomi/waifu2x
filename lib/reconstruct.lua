@@ -206,5 +206,64 @@ function reconstruct.scale(model, scale, x, block_size)
 				 reconstruct.offset_size(model), block_size)
    end
 end
+local function tta(f, model, x, block_size)
+   local average = nil
+   local offset = reconstruct.offset_size(model)
+   for i = 1, 4 do 
+      local flip_f, iflip_f
+      if i == 1 then
+	 flip_f = function (a) return a end
+	 iflip_f = function (a) return a end
+      elseif i == 2 then
+	 flip_f = image.vflip
+	 iflip_f = image.vflip
+      elseif i == 3 then
+	 flip_f = image.hflip
+	 iflip_f = image.hflip
+      elseif i == 4 then
+	 flip_f = function (a) return image.hflip(image.vflip(a)) end
+	 iflip_f = function (a) return image.vflip(image.hflip(a)) end
+      end
+      for j = 1, 2 do
+	 local tr_f, itr_f
+	 if j == 1 then
+	    tr_f = function (a) return a end
+	    itr_f = function (a) return a end
+	 elseif j == 2 then
+	    tr_f = function(a) return a:transpose(2, 3):contiguous() end
+	    itr_f = function(a) return a:transpose(2, 3):contiguous() end
+	 end
+	 local out = itr_f(iflip_f(f(model, flip_f(tr_f(x)),
+				     offset, block_size)))
+	 if not average then
+	    average = out
+	 else
+	    average:add(out)
+	 end
+      end
+   end
+   return average:div(8.0)
+end
+function reconstruct.image_tta(model, x, block_size)
+   if reconstruct.is_rgb(model) then
+      return tta(reconstruct.image_rgb, model, x, block_size)
+   else
+      return tta(reconstruct.image_y, model, x, block_size)
+   end
+end
+function reconstruct.scale_tta(model, scale, x, block_size)
+   if reconstruct.is_rgb(model) then
+      local f = function (model, x, offset, block_size)
+	 return reconstruct.scale_rgb(model, scale, x, offset, block_size)
+      end
+      return tta(f, model, x, block_size)
+		 
+   else
+      local f = function (model, x, offset, block_size)
+	 return reconstruct.scale_y(model, scale, x, offset, block_size)
+      end
+      return tta(f, model, x, block_size)
+   end
+end
 
 return reconstruct
