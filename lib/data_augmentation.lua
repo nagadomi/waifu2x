@@ -77,10 +77,16 @@ function data_augmentation.shift_1px(src)
 end
 function data_augmentation.flip(src)
    local flip = torch.random(1, 4)
+   local tr = torch.random(1, 2)
    local src, conversion = iproc.byte2float(src)
    local dest
    
    src = src:contiguous()
+   if tr == 1 then
+      -- pass
+   elseif tr == 2 then
+      src = src:transpose(2, 3):contiguous()
+   end
    if flip == 1 then
       dest = image.hflip(src)
    elseif flip == 2 then

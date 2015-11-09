@@ -206,13 +206,18 @@ function pairwise_transform.jpeg(src, style, level, size, offset, n, options)
 end
 
 function pairwise_transform.test_jpeg(src)
-   local options = {color_noise = true,
-		    random_half = true,
-		    overlay = true,
+   torch.setdefaulttensortype("torch.FloatTensor")
+   local options = {random_color_noise_rate = 0.5,
+		    random_half_rate = 0.5,
+		    random_overlay_rate = 0.5,
+		    nr_rate = 1.0,
 		    active_cropping_rate = 0.5,
 		    active_cropping_tries = 10,
+		    max_size = 256,
 		    rgb = true
    }
+   local image = require 'image'
+   local src = image.lena()
    for i = 1, 9 do
       local xy = pairwise_transform.jpeg(src,
 					 "art",
@@ -223,13 +228,18 @@ function pairwise_transform.test_jpeg(src)
    end
 end
 function pairwise_transform.test_scale(src)
-   local options = {color_noise = true,
-		    random_half = true,
-		    overlay = true,
+   torch.setdefaulttensortype("torch.FloatTensor")
+   local options = {random_color_noise_rate = 0.5,
+		    random_half_rate = 0.5,
+		    random_overlay_rate = 0.5,
 		    active_cropping_rate = 0.5,
 		    active_cropping_tries = 10,
+		    max_size = 256,
 		    rgb = true
    }
+   local image = require 'image'
+   local src = image.lena()
+
    for i = 1, 10 do
       local xy = pairwise_transform.scale(src, 2.0, 128, 7, 1, options)
       image.display({image = xy[1][1], legend = "y:" .. (i * 10), min = 0, max = 1})
