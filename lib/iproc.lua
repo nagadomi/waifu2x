@@ -84,6 +84,30 @@ function iproc.padding(img, w1, w2, h1, h2)
    flow[2]:add(-w1)
    return image.warp(img, flow, "simple", false, "clamp")
 end
+function iproc.white_noise(src, std, rgb_weights, gamma)
+   gamma = gamma or 0.454545
+   local conversion
+   src, conversion = iproc.byte2float(src)
+   std = std or 0.01
+
+   local noise = torch.Tensor():resizeAs(src):normal(0, std)
+   if rgb_weights then 
+      noise[1]:mul(rgb_weights[1])
+      noise[2]:mul(rgb_weights[2])
+      noise[3]:mul(rgb_weights[3])
+   end
+
+   local dest
+   if gamma ~= 0 then
+      dest = src:clone():pow(gamma):add(noise):pow(1.0 / gamma)
+   else
+      dest = src + noise
+   end
+   if conversion then
+      dest = iproc.float2byte(dest)
+   end
+   return dest
+end
 
 local function test_conversion()
    local a = torch.linspace(0, 255, 256):float():div(255.0)

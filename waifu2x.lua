@@ -58,6 +58,9 @@ local function convert_image(opt)
    else
       error("undefined method:" .. opt.method)
    end
+   if opt.white_noise == 1 then
+      new_x = iproc.white_noise(new_x, opt.white_noise_std, {1.0, 0.8, 1.0})
+   end
    image_loader.save_png(opt.o, new_x, alpha, opt.depth)
    print(opt.o .. ": " .. (sys.clock() - t) .. " sec")
 end
@@ -138,6 +141,10 @@ local function convert_frames(opt)
 	 else
 	    error("undefined method:" .. opt.method)
 	 end
+	 if opt.white_noise == 1 then
+	    new_x = iproc.white_noise(new_x, opt.white_noise_std, {1.0, 0.8, 1.0})
+	 end
+
 	 local output = nil
 	 if opt.o == "(auto)" then
 	    local name = path.basename(lines[i])
@@ -175,6 +182,8 @@ local function waifu2x()
    cmd:option("-resume", 0, "skip existing files (0|1)")
    cmd:option("-thread", -1, "number of CPU threads")
    cmd:option("-tta", 0, '8x slower and slightly high quality (0|1)')
+   cmd:option("-white_noise", 0, 'adding white noise to output image (0|1)')
+   cmd:option("-white_noise_std", 0.0055, 'standard division of white noise')
    
    local opt = cmd:parse(arg)
    if opt.thread > 0 then

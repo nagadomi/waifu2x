@@ -142,6 +142,7 @@ function APIHandler:post()
    local x, alpha, blob = get_image(self)
    local scale = tonumber(self:get_argument("scale", "0"))
    local noise = tonumber(self:get_argument("noise", "0"))
+   local white_noise = tonumber(self:get_argument("white_noise", "0"))
    local style = self:get_argument("style", "art")
    if style ~= "art" then
       style = "photo" -- style must be art or photo
@@ -169,6 +170,9 @@ function APIHandler:post()
 					    "Jinc")
 	    end
 	 end
+	 if white_noise == 1 then
+	    x = iproc.white_noise(x, 0.005, {1.0, 0.8, 1.0})
+	 end
       end
       local name = uuid() .. ".png"
       local blob, len = image_loader.encode_png(x, alpha)
@@ -179,7 +183,7 @@ function APIHandler:post()
    else
       if not x then
 	 self:set_status(400)
-	 self:write("ERROR: unsupported image format.")
+	 self:write("ERROR: An error occurred. (unsupported image format/connection timeout/file is too large)")
       else
 	 self:set_status(400)
 	 self:write("ERROR: image size exceeds maximum allowable size.")
