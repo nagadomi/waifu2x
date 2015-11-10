@@ -41,7 +41,7 @@ cmd:option("-validation_rate", 0.05, 'validation-set rate (number_of_training_im
 cmd:option("-validation_crops", 80, 'number of cropping region per image in validation')
 cmd:option("-active_cropping_rate", 0.5, 'active cropping rate')
 cmd:option("-active_cropping_tries", 10, 'active cropping tries')
-cmd:option("-nr_rate", 0.7, 'trade-off between reducing noise and erasing details (0.0-1.0)')
+cmd:option("-nr_rate", 0.75, 'trade-off between reducing noise and erasing details (0.0-1.0)')
 
 local opt = cmd:parse(arg)
 for k, v in pairs(opt) do
