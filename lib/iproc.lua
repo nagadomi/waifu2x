@@ -2,6 +2,7 @@ local gm = require 'graphicsmagick'
 local image = require 'image'
 
 local iproc = {}
+local clip_eps8 = (1.0 / 255.0) * 0.5 - (1.0e-7 * (1.0 / 255.0) * 0.5)
 
 function iproc.crop_mod4(src)
    local w = src:size(3) % 4
@@ -40,7 +41,7 @@ function iproc.float2byte(src)
    local dest = src
    if src:type() == "torch.FloatTensor" then
       conversion = true
-      dest = (src * 255.0)
+      dest = (src + clip_eps8):mul(255.0)
       dest[torch.lt(dest, 0.0)] = 0
       dest[torch.gt(dest, 255.0)] = 255.0
       dest = dest:byte()
@@ -48,14 +49,16 @@ function iproc.float2byte(src)
    return dest, conversion
 end
 function iproc.scale(src, width, height, filter)
-   local t = "float"
-   if src:type() == "torch.ByteTensor" then
-      t = "byte"
-   end
+   local conversion
+   src, conversion = iproc.byte2float(src)
    filter = filter or "Box"
    local im = gm.Image(src, "RGB", "DHW")
    im:size(math.ceil(width), math.ceil(height), filter)
-   return im:toTensor(t, "RGB", "DHW")
+   local dest = im:toTensor("float", "RGB", "DHW")
+   if conversion then
+      dest = iproc.float2byte(dest)
+   end
+   return dest
 end
 function iproc.scale_with_gamma22(src, width, height, filter)
    local conversion
@@ -83,17 +86,21 @@ function iproc.padding(img, w1, w2, h1, h2)
 end
 
 local function test_conversion()
-   local x = torch.FloatTensor({{{0, 0.1}, {-0.1, 1.0}}, {{0.1234, 0.5}, {0.85, 1.2}}, {{0, 0.1}, {0.5, 0.8}}})
-   local im = gm.Image():fromTensor(x, "RGB", "DHW")
-   local a, b
+   local a = torch.linspace(0, 255, 256):float():div(255.0)
+   local b = iproc.float2byte(a)
+   local c = iproc.byte2float(a)
+   local d = torch.linspace(0, 255, 256)
+   assert((a - c):abs():sum() == 0)
+   assert((d:float() - b:float()):abs():sum() == 0)
 
-   a = iproc.float2byte(x):float()
-   b = im:toTensor("byte", "RGB", "DHW"):float()
-   assert((a - b):abs():sum() == 0)
+   a = torch.FloatTensor({256.0, 255.0, 254.999}):div(255.0)
+   b = iproc.float2byte(a)
+   assert(b:float():sum() == 255.0 * 3)
 
-   a = iproc.byte2float(iproc.float2byte(x))
-   b = gm.Image():fromTensor(im:toTensor("byte", "RGB", "DHW"), "RGB", "DHW"):toTensor("float", "RGB", "DHW")
-   assert((a - b):abs():sum() == 0)
+   a = torch.FloatTensor({254.0, 254.499, 253.50001}):div(255.0)
+   b = iproc.float2byte(a)
+   print(b)
+   assert(b:float():sum() == 254.0 * 3)
 end
 --test_conversion()
 
