@@ -52,7 +52,6 @@ local function active_cropping(x, y, size, p, tries)
       local yc = iproc.crop(y, xi, yi, xi + size, yi + size)
       return xc, yc
    else
-      local samples = {}
       local best_se = 0.0
       local best_xc, best_yc
       local m = torch.FloatTensor(x:size(1), size, size)

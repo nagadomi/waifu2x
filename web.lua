@@ -90,12 +90,8 @@ end
 local function get_image(req)
    local file = req:get_argument("file", "")
    local url = req:get_argument("url", "")
-   local blob = nil
-   local img = nil
-   local alpha = nil
    if file and file:len() > 0 then
-      blob = file
-      return image_loader.decode_float(blob)
+      return image_loader.decode_float(file)
    elseif url and url:len() > 0 then
       return cache_url(url)
    end
