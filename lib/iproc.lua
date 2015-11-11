@@ -99,7 +99,10 @@ function iproc.white_noise(src, std, rgb_weights, gamma)
 
    local dest
    if gamma ~= 0 then
-      dest = src:clone():pow(gamma):add(noise):pow(1.0 / gamma)
+      dest = src:clone():pow(gamma):add(noise)
+      dest[torch.lt(dest, 0.0)] = 0.0
+      dest[torch.gt(dest, 1.0)] = 1.0
+      dest:pow(1.0 / gamma)
    else
       dest = src + noise
    end
