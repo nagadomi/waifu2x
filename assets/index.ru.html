@@ -33,11 +33,6 @@
           Макс. размер файла — 2MB, устранение шума — макс. 2560x2560px, апскейл — 1280x1280px
         </div>
       </fieldset>
-      <fieldset>
-        <legend>Стиль</legend>
-	<label><input type="radio" name="style" value="art" checked>Произведение искусства</label>
-	<label><input type="radio" name="style" value="photo">Фотография</label>
-      </fieldset>
       <fieldset class="noise-field">
 	<legend>Устранение шума (артефактов JPEG)</legend>
         <label><input type="radio" name="noise" value="0"> Нет</label>
@@ -51,14 +46,28 @@
         <label><input type="radio" name="scale" value="1"> 1.6x</label>
         <label><input type="radio" name="scale" value="2"> 2x</label>
       </fieldset>
-      <fieldset>
-        <legend>Adding white noise</legend>
-        <label><input type="radio" name="white_noise" value="0" checked="checked">Off</label>
-        <label><input type="radio" name="white_noise" value="1">On</label>
-	<div class="help">
-	  To denoise without unnaturalness in an anime screencap.
+      <div class="experimental">
+	<div>
+	  <a href="#" class="button close">
+	    + Экспериментальный
+	  </a>
 	</div>
-      </fieldset>
+	<div class="container hide">
+	  <fieldset>
+            <legend>Стиль</legend>
+	    <label><input type="radio" name="style" value="art" checked>Произведение искусства</label>
+	    <label><input type="radio" name="style" value="photo">Фотография</label>
+	  </fieldset>
+	  <fieldset>
+            <legend>Adding white noise</legend>
+            <label><input type="radio" name="white_noise" value="0" checked="checked">Off</label>
+            <label><input type="radio" name="white_noise" value="1">On</label>
+	    <div class="help">
+	      To denoise without unnaturalness in anime screencap or photo.
+	    </div>
+	  </fieldset>
+	</div>
+      </div>
       <input type="submit"/>
     </form>
     <div class="help">

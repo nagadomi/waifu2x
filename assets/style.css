@@ -44,3 +44,9 @@ fieldset {
 .padding-left {
     padding-left: 15px;
 }
+.hide {
+    display: none;
+}
+.experimental {
+    margin-bottom: 1em;
+}
