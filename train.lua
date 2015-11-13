@@ -203,6 +203,9 @@ local function train()
       collectgarbage()
    end
 end
+if settings.gpu > 0 then
+   cutorch.setDevice(settings.gpu)
+end
 torch.manualSeed(settings.seed)
 cutorch.manualSeed(settings.seed)
 print(settings)
