@@ -40,7 +40,9 @@ local art_noise1_model = torch.load(path.join(ART_MODEL_DIR, "noise1_model.t7"),
 local art_noise2_model = torch.load(path.join(ART_MODEL_DIR, "noise2_model.t7"), "ascii")
 local art_scale2_model = torch.load(path.join(ART_MODEL_DIR, "scale2.0x_model.t7"), "ascii")
 local photo_scale2_model = torch.load(path.join(PHOTO_MODEL_DIR, "scale2.0x_model.t7"), "ascii")
-
+local photo_noise1_model = torch.load(path.join(PHOTO_MODEL_DIR, "noise1_model.t7"), "ascii")
+local photo_noise2_model = torch.load(path.join(PHOTO_MODEL_DIR, "noise2_model.t7"), "ascii")
+local CLEANUP_MODEL = false -- if you are using the low memory GPU, you could use this flag.
 local CACHE_DIR = path.join(ROOT, "cache")
 local MAX_NOISE_IMAGE = 2560 * 2560
 local MAX_SCALE_IMAGE = 1280 * 1280
@@ -97,6 +99,11 @@ local function get_image(req)
    end
    return nil, nil, nil
 end
+local function cleanup_model(model)
+   if CLEANUP_MODEL then
+      w2nn.cleanup_model(model) -- release GPU memory
+   end
+end
 local function convert(x, options)
    local cache_file = path.join(CACHE_DIR, options.prefix .. ".png")
    if path.exists(cache_file) then
@@ -105,17 +112,25 @@ local function convert(x, options)
       if options.style == "art" then
 	 if options.method == "scale" then
 	    x = reconstruct.scale(art_scale2_model, 2.0, x)
-	    w2nn.cleanup_model(art_scale2_model)
+	    cleanup_model(art_scale2_model)
 	 elseif options.method == "noise1" then
 	    x = reconstruct.image(art_noise1_model, x)
-	    w2nn.cleanup_model(art_noise1_model)
+	    cleanup_model(art_noise1_model)
 	 else -- options.method == "noise2"
 	    x = reconstruct.image(art_noise2_model, x)
-	    w2nn.cleanup_model(art_noise2_model)
+	    cleanup_model(art_noise2_model)
 	 end
       else -- photo
-	 x = reconstruct.scale(photo_scale2_model, 2.0, x)
-	 w2nn.cleanup_model(photo_scale2_model)
+	 if options.method == "scale" then
+	    x = reconstruct.scale(photo_scale2_model, 2.0, x)
+	    cleanup_model(photo_scale2_model)
+	 elseif options.method == "noise1" then
+	    x = reconstruct.image(photo_noise1_model, x)
+	    cleanup_model(photo_noise1_model)
+	 elseif options.method == "noise2" then
+	    x = reconstruct.image(photo_noise2_model, x)
+	    cleanup_model(photo_noise2_model)
+	 end
       end
       image.save(cache_file, x)
       return x
