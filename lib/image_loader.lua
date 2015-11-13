@@ -32,7 +32,7 @@ function image_loader.encode_png(rgb, alpha, depth)
 	 rgba[torch.gt(rgba, 1.0)] = 1.0
       end
       local im = gm.Image():fromTensor(rgba, "RGBA", "DHW")
-      return im:depth(depth):format("PNG"):toBlob(9)
+      return im:depth(depth):format("PNG"):toString(9)
    else
       if depth < 16 then
 	 rgb = rgb:clone():add(clip_eps8)
@@ -44,17 +44,17 @@ function image_loader.encode_png(rgb, alpha, depth)
 	 rgb[torch.gt(rgb, 1.0)] = 1.0
       end
       local im = gm.Image(rgb, "RGB", "DHW")
-      return im:depth(depth):format("PNG"):toBlob(9)
+      return im:depth(depth):format("PNG"):toString(9)
    end
 end
 function image_loader.save_png(filename, rgb, alpha, depth)
    depth = depth or 8
-   local blob, len = image_loader.encode_png(rgb, alpha, depth)
+   local blob = image_loader.encode_png(rgb, alpha, depth)
    local fp = io.open(filename, "wb")
    if not fp then
       error("IO error: " .. filename)
    end
-   fp:write(ffi.string(blob, len))
+   fp:write(blob)
    fp:close()
    return true
 end
@@ -136,13 +136,13 @@ end
 local function test()
    torch.setdefaulttensortype("torch.FloatTensor")
    local a = image_loader.load_float("../images/lena.png")
-   local blob, len = image_loader.encode_png(a)
-   local b = image_loader.decode_float(ffi.string(blob, len))
+   local blob = image_loader.encode_png(a)
+   local b = image_loader.decode_float(blob)
    assert((b - a):abs():sum() == 0)
 
    a = image_loader.load_byte("../images/lena.png")
-   blob, len = image_loader.encode_png(a)
-   b = image_loader.decode_byte(ffi.string(blob, len))
+   blob = image_loader.encode_png(a)
+   b = image_loader.decode_byte(blob)
    assert((b:float() - a:float()):abs():sum() == 0)
 end
 --test()

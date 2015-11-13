@@ -186,11 +186,11 @@ function APIHandler:post()
 	 end
       end
       local name = uuid() .. ".png"
-      local blob, len = image_loader.encode_png(x, alpha)
+      local blob = image_loader.encode_png(x, alpha)
       self:set_header("Content-Disposition", string.format('filename="%s"', name))
       self:set_header("Content-Type", "image/png")
-      self:set_header("Content-Length", string.format("%d", len))
-      self:write(ffi.string(blob, len))
+      self:set_header("Content-Length", string.format("%d", #blob))
+      self:write(blob)
    else
       if not x then
 	 self:set_status(400)
