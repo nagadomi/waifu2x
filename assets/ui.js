@@ -17,7 +17,7 @@ $(function (){
 	if (checked.val() == "art") {
 	    $("h1").text("waifu2x");
 	} else {
-	    $("h1").text("wife2x");
+	    $("h1").html("w<s>/a/</s>ifu2x");
 	}
     }
     function on_change_noise_level(e)
