@@ -189,13 +189,19 @@ function pairwise_transform.jpeg(src, style, level, size, offset, n, options)
       end
    elseif style == "photo" then
       if level == 1 then
-	 return pairwise_transform.jpeg_(src, {torch.random(80, 95)},
+	 return pairwise_transform.jpeg_(src, {torch.random(30, 75)},
 					 size, offset, n,
 					 options)
       elseif level == 2 then
-	 return pairwise_transform.jpeg_(src, {torch.random(65, 85)},
-					 size, offset, n,
-					 options)
+	 if torch.uniform() > 0.6 then
+	    return pairwise_transform.jpeg_(src, {torch.random(30, 60)},
+					    size, offset, n, options)
+	 else
+	    local quality1 = torch.random(40, 60)
+	    local quality2 = quality1 - torch.random(5, 10)
+	    return pairwise_transform.jpeg_(src, {quality1, quality2},
+					    size, offset, n, options)
+	 end
       else
 	 error("unknown noise level: " .. level)
       end
