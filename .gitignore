@@ -2,7 +2,7 @@
 work/
 cache/*.png
 cache/url_*
-data/
+data/*
 !data/.gitkeep
 
 models/
