@@ -19,16 +19,11 @@ waifu2x is inspired by SRCNN [1]. 2D character picture (HatsuneMiku) is licensed
 
 ## Public AMI
 ```
-AMI ID: ami-0be01e4f
-AMI NAME: waifu2x-server
-Instance Type: g2.2xlarge
-Region: US West (N.California)
-OS: Ubuntu 14.04
-User: ubuntu
-Created at: 2015-08-12
+TODO
 ```
 
 ## Third Party Software
+
 [Third-Party](https://github.com/nagadomi/waifu2x/wiki/Third-Party)
 
 ## Dependencies
@@ -37,10 +32,12 @@ Created at: 2015-08-12
 - NVIDIA GPU
 
 ### Platform
+
 - [Torch7](http://torch.ch/)
 - [NVIDIA CUDA](https://developer.nvidia.com/cuda-toolkit)
 
 ### lualocks packages (excludes torch7's default packages)
+- lua-csnappy
 - md5
 - uuid
 - [turbo](https://github.com/kernelsauce/turbo)
@@ -57,34 +54,44 @@ See: [NVIDIA CUDA Getting Started Guide for Linux](http://docs.nvidia.com/cuda/c
 Download [CUDA](http://developer.nvidia.com/cuda-downloads)
 
 ```
-sudo dpkg -i cuda-repo-ubuntu1404_7.0-28_amd64.deb
+sudo dpkg -i cuda-repo-ubuntu1404_7.5-18_amd64.deb
 sudo apt-get update
 sudo apt-get install cuda
+```
+
+#### Install Package
+
+```
+sudo apt-get install libsnappy-dev
 ```
 
 #### Install Torch7
 
 See: [Getting started with Torch](http://torch.ch/docs/getting-started.html)
 
+And install luarocks packages.
+```
+luarocks install graphicsmagick # upgrade
+luarocks install lua-csnappy
+luarocks install md5
+luarocks install uuid
+PREFIX=$HOME/torch/install luarocks install turbo # if you need to use web application
+```
+
+#### Getting waifu2x
+
+```
+git clone --depth 1 https://github.com/nagadomi/waifu2x.git
+```
+
 #### Validation
 
-Test the waifu2x command line tool.
+Testing the waifu2x command line tool.
 ```
 th waifu2x.lua
 ```
 
-### Setting Up the Web Application Environment (if you needed)
-
-#### Install packages
-
-```
-luarocks install md5
-luarocks install uuid
-PREFIX=$HOME/torch/install luarocks install turbo
-```
-
 ## Web Application
-Run.
 ```
 th web.lua
 ```
@@ -114,11 +121,11 @@ th waifu2x.lua -m noise_scale -noise_level 1 -i input_image.png -o output_image.
 th waifu2x.lua -m noise_scale -noise_level 2 -i input_image.png -o output_image.png
 ```
 
-See also `images/gen.sh`.
+See also `th waifu2x.lua -h`.
 
 ### Video Encoding
 
-\* `avconv` is `ffmpeg` on Ubuntu 14.04.
+\* `avconv` is alias of `ffmpeg` on Ubuntu 14.04.
 
 Extracting images and audio from a video. (range: 00:09:00 ~ 00:12:00)
 ```
@@ -144,6 +151,7 @@ avconv -f image2 -r 24 -i new_frames/%d.png -i audio.mp3 -r 24 -vcodec libx264 -
 ```
 
 ## Training Your Own Model
+Notes: If you have cuDNN library, you can use cudnn kernel with `-backend cudnn` option. And you can convert trained cudnn model to cunn model with `tools/cudnn2cunn.lua`.
 
 ### Data Preparation
 
@@ -151,7 +159,7 @@ Genrating a file list.
 ```
 find /path/to/image/dir -name "*.png" > data/image_list.txt
 ```
-(You should use PNG! In my case, waifu2x is trained with 3000 high-resolution-noise-free-PNG images.)
+You should use noise free images. In my case, waifu2x is trained with 6000 high-resolution-noise-free-PNG images.
 
 Converting training data.
 ```

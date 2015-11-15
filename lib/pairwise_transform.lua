@@ -1,69 +1,80 @@
 require 'image'
 local gm = require 'graphicsmagick'
-local iproc = require './iproc'
-local reconstruct = require './reconstruct'
+local iproc = require 'iproc'
+local data_augmentation = require 'data_augmentation'
+
 local pairwise_transform = {}
 
-local function random_half(src, p, min_size)
-   p = p or 0.5
-   local filter = ({"Box","Blackman", "SincFast", "Jinc"})[torch.random(1, 4)]
-   if p > torch.uniform() then
+local function random_half(src, p)
+   if torch.uniform() < p then
+      local filter = ({"Box","Box","Blackman","SincFast","Jinc"})[torch.random(1, 5)]
       return iproc.scale(src, src:size(3) * 0.5, src:size(2) * 0.5, filter)
    else
       return src
    end
 end
-local function color_augment(x)
-   local color_scale = torch.Tensor(3):uniform(0.8, 1.2)
-   x = x:float():div(255)
-   for i = 1, 3 do
-      x[i]:mul(color_scale[i])
-   end
-   x[torch.lt(x, 0.0)] = 0.0
-   x[torch.gt(x, 1.0)] = 1.0
-   return x:mul(255):byte()
-end
-local function flip_augment(x, y)
-   local flip = torch.random(1, 4)
-   if y then
-      if flip == 1 then
-	 x = image.hflip(x)
-	 y = image.hflip(y)
-      elseif flip == 2 then
-	 x = image.vflip(x)
-	 y = image.vflip(y)
-      elseif flip == 3 then
-	 x = image.hflip(image.vflip(x))
-	 y = image.hflip(image.vflip(y))
-      elseif flip == 4 then
+local function crop_if_large(src, max_size)
+   local tries = 4
+   if src:size(2) > max_size and src:size(3) > max_size then
+      local rect
+      for i = 1, tries do
+	 local yi = torch.random(0, src:size(2) - max_size)
+	 local xi = torch.random(0, src:size(3) - max_size)
+	 rect = iproc.crop(src, xi, yi, xi + max_size, yi + max_size)
+	 -- ignore simple background
+	 if rect:float():std() >= 0 then
+	    break
+	 end
       end
-      return x, y
+      return rect
    else
-      if flip == 1 then
-	 x = image.hflip(x)
-      elseif flip == 2 then
-	 x = image.vflip(x)
-      elseif flip == 3 then
-	 x = image.hflip(image.vflip(x))
-      elseif flip == 4 then
-      end
-      return x
+      return src
    end
 end
-local INTERPOLATION_PADDING = 16
-function pairwise_transform.scale(src, scale, size, offset, options)
-   options = options or {color_augment = true, random_half = true, rgb = true}
-   if options.random_half then
-      src = random_half(src)
+local function preprocess(src, crop_size, options)
+   local dest = src
+   dest = random_half(dest, options.random_half_rate)
+   dest = crop_if_large(dest, math.max(crop_size * 2, options.max_size))
+   dest = data_augmentation.flip(dest)
+   dest = data_augmentation.color_noise(dest, options.random_color_noise_rate)
+   dest = data_augmentation.overlay(dest, options.random_overlay_rate)
+   dest = data_augmentation.shift_1px(dest)
+   
+   return dest
+end
+local function active_cropping(x, y, size, p, tries)
+   assert("x:size == y:size", x:size(2) == y:size(2) and x:size(3) == y:size(3))
+   local r = torch.uniform()
+   if p < r then
+      local xi = torch.random(0, y:size(3) - (size + 1))
+      local yi = torch.random(0, y:size(2) - (size + 1))
+      local xc = iproc.crop(x, xi, yi, xi + size, yi + size)
+      local yc = iproc.crop(y, xi, yi, xi + size, yi + size)
+      return xc, yc
+   else
+      local best_se = 0.0
+      local best_xc, best_yc
+      local m = torch.FloatTensor(x:size(1), size, size)
+      for i = 1, tries do
+	 local xi = torch.random(0, y:size(3) - (size + 1))
+	 local yi = torch.random(0, y:size(2) - (size + 1))
+	 local xc = iproc.crop(x, xi, yi, xi + size, yi + size)
+	 local yc = iproc.crop(y, xi, yi, xi + size, yi + size)
+	 local xcf = iproc.byte2float(xc)
+	 local ycf = iproc.byte2float(yc)
+	 local se = m:copy(xcf):add(-1.0, ycf):pow(2):sum()
+	 if se >= best_se then
+	    best_xc = xcf
+	    best_yc = ycf
+	    best_se = se
+	 end
+      end
+      return best_xc, best_yc
    end
-   local yi = torch.random(INTERPOLATION_PADDING, src:size(2) - size - INTERPOLATION_PADDING)
-   local xi = torch.random(INTERPOLATION_PADDING, src:size(3) - size - INTERPOLATION_PADDING)
-   local down_scale = 1.0 / scale
-   local y = image.crop(src,
-			xi - INTERPOLATION_PADDING, yi - INTERPOLATION_PADDING,
-			xi + size + INTERPOLATION_PADDING, yi + size + INTERPOLATION_PADDING)
+end
+function pairwise_transform.scale(src, scale, size, offset, n, options)
    local filters = {
-      "Box",        -- 0.012756949974688
+      "Box","Box",  -- 0.012756949974688
       "Blackman",   -- 0.013191924552285
       --"Cartom",     -- 0.013753536746706
       --"Hanning",    -- 0.013761314529647
@@ -71,221 +82,173 @@ function pairwise_transform.scale(src, scale, size, offset, options)
       "SincFast",   -- 0.014095824314306
       "Jinc",       -- 0.014244299255442
    }
+   local unstable_region_offset = 8
    local downscale_filter = filters[torch.random(1, #filters)]
-   
-   y = flip_augment(y)
-   if options.color_augment then
-      y = color_augment(y)
-   end
-   local x = iproc.scale(y, y:size(3) * down_scale, y:size(2) * down_scale, downscale_filter)
-   x = iproc.scale(x, y:size(3), y:size(2))
-   y = y:float():div(255)
-   x = x:float():div(255)
-
-   if options.rgb then
-   else
-      y = image.rgb2yuv(y)[1]:reshape(1, y:size(2), y:size(3))
-      x = image.rgb2yuv(x)[1]:reshape(1, x:size(2), x:size(3))
-   end
-
-   y = image.crop(y, INTERPOLATION_PADDING + offset, INTERPOLATION_PADDING + offset, y:size(3) - offset -	INTERPOLATION_PADDING, y:size(2) - offset - INTERPOLATION_PADDING)
-   x = image.crop(x, INTERPOLATION_PADDING, INTERPOLATION_PADDING, x:size(3) - INTERPOLATION_PADDING, x:size(2) - INTERPOLATION_PADDING)
-   
-   return x, y
-end
-function pairwise_transform.jpeg_(src, quality, size, offset, options)
-   options = options or {color_augment = true, random_half = true, rgb = true}
-   if options.random_half then
-      src = random_half(src)
-   end
-   local yi = torch.random(0, src:size(2) - size - 1)
-   local xi = torch.random(0, src:size(3) - size - 1)
-   local y = src
-   local x
-
-   if options.color_augment then
-      y = color_augment(y)
-   end
-   x = y
-   for i = 1, #quality do
-      x = gm.Image(x, "RGB", "DHW")
-      x:format("jpeg")
-      x:samplingFactors({1.0, 1.0, 1.0})
-      local blob, len = x:toBlob(quality[i])
-      x:fromBlob(blob, len)
-      x = x:toTensor("byte", "RGB", "DHW")
-   end
-   
-   y = image.crop(y, xi, yi, xi + size, yi + size)
-   x = image.crop(x, xi, yi, xi + size, yi + size)
-   y = y:float():div(255)
-   x = x:float():div(255)
-   x, y = flip_augment(x, y)
-   
-   if options.rgb then
-   else
-      y = image.rgb2yuv(y)[1]:reshape(1, y:size(2), y:size(3))
-      x = image.rgb2yuv(x)[1]:reshape(1, x:size(2), x:size(3))
-   end
-   
-   return x, image.crop(y, offset, offset, size - offset, size - offset)
-end
-function pairwise_transform.jpeg(src, level, size, offset, options)
-   if level == 1 then
-      return pairwise_transform.jpeg_(src, {torch.random(65, 85)},
-				      size, offset,
-				      options)
-   elseif level == 2 then
-      local r = torch.uniform()
-      if r > 0.6 then
-	 return pairwise_transform.jpeg_(src, {torch.random(27, 70)},
-					 size, offset,
-					 options)
-      elseif r > 0.3 then
-	 local quality1 = torch.random(37, 70)
-	 local quality2 = quality1 - torch.random(5, 10)
-	 return pairwise_transform.jpeg_(src, {quality1, quality2},
-					    size, offset,
-					    options)
-      else
-	 local quality1 = torch.random(52, 70)
-	 return pairwise_transform.jpeg_(src,
-					 {quality1,
-					  quality1 - torch.random(5, 15),
-					  quality1 - torch.random(15, 25)},
-					 size, offset,
-					 options)
-      end
-   else
-      error("unknown noise level: " .. level)
-   end
-end
-function pairwise_transform.jpeg_scale_(src, scale, quality, size, offset, options)
-   if options.random_half then
-      src = random_half(src)
-   end
+   local y = preprocess(src, size, options)
+   assert(y:size(2) % 4 == 0 and y:size(3) % 4 == 0)
    local down_scale = 1.0 / scale
-   local filters = {
-      "Box",        -- 0.012756949974688
-      "Blackman",   -- 0.013191924552285
-      --"Cartom",     -- 0.013753536746706
-      --"Hanning",    -- 0.013761314529647
-      --"Hermite",    -- 0.013850225205266
-      "SincFast",   -- 0.014095824314306
-      "Jinc",       -- 0.014244299255442
-   }
-   local downscale_filter = filters[torch.random(1, #filters)]
-   local yi = torch.random(INTERPOLATION_PADDING, src:size(2) - size - INTERPOLATION_PADDING)
-   local xi = torch.random(INTERPOLATION_PADDING, src:size(3) - size - INTERPOLATION_PADDING)
-   local y = src
-   local x
+   local x = iproc.scale(iproc.scale(y, y:size(3) * down_scale,
+				     y:size(2) * down_scale, downscale_filter),
+			 y:size(3), y:size(2))
+   x = iproc.crop(x, unstable_region_offset, unstable_region_offset,
+		  x:size(3) - unstable_region_offset, x:size(2) - unstable_region_offset)
+   y = iproc.crop(y, unstable_region_offset, unstable_region_offset,
+		  y:size(3) - unstable_region_offset, y:size(2) - unstable_region_offset)
+   assert(x:size(2) % 4 == 0 and x:size(3) % 4 == 0)
+   assert(x:size(1) == y:size(1) and x:size(2) == y:size(2) and x:size(3) == y:size(3))
    
-   if options.color_augment then
-      y = color_augment(y)
+   local batch = {}
+   for i = 1, n do
+      local xc, yc = active_cropping(x, y,
+				     size,
+				     options.active_cropping_rate,
+				     options.active_cropping_tries)
+      xc = iproc.byte2float(xc)
+      yc = iproc.byte2float(yc)
+      if options.rgb then
+      else
+	 yc = image.rgb2yuv(yc)[1]:reshape(1, yc:size(2), yc:size(3))
+	 xc = image.rgb2yuv(xc)[1]:reshape(1, xc:size(2), xc:size(3))
+      end
+      table.insert(batch, {xc, iproc.crop(yc, offset, offset, size - offset, size - offset)})
    end
-   x = y
-   x = iproc.scale(x, y:size(3) * down_scale, y:size(2) * down_scale, downscale_filter)
+   return batch
+end
+function pairwise_transform.jpeg_(src, quality, size, offset, n, options)
+   local unstable_region_offset = 8
+   local y = preprocess(src, size, options)
+   local x = y
+
    for i = 1, #quality do
       x = gm.Image(x, "RGB", "DHW")
-      x:format("jpeg")
-      x:samplingFactors({1.0, 1.0, 1.0})
+      x:format("jpeg"):depth(8)
+      if options.jpeg_sampling_factors == 444 then
+	 x:samplingFactors({1.0, 1.0, 1.0})
+      else -- 420
+	 x:samplingFactors({2.0, 1.0, 1.0})
+      end
       local blob, len = x:toBlob(quality[i])
       x:fromBlob(blob, len)
       x = x:toTensor("byte", "RGB", "DHW")
    end
-   x = iproc.scale(x, y:size(3), y:size(2))
-   y = image.crop(y,
-		  xi, yi,
-		  xi + size, yi + size)
-   x = image.crop(x,
-		  xi, yi,
-		  xi + size, yi + size)
-   x = x:float():div(255)
-   y = y:float():div(255)
-   x, y = flip_augment(x, y)
-
-   if options.rgb then
-   else
-      y = image.rgb2yuv(y)[1]:reshape(1, y:size(2), y:size(3))
-      x = image.rgb2yuv(x)[1]:reshape(1, x:size(2), x:size(3))
-   end
+   x = iproc.crop(x, unstable_region_offset, unstable_region_offset,
+		  x:size(3) - unstable_region_offset, x:size(2) - unstable_region_offset)
+   y = iproc.crop(y, unstable_region_offset, unstable_region_offset,
+		  y:size(3) - unstable_region_offset, y:size(2) - unstable_region_offset)
+   assert(x:size(2) % 4 == 0 and x:size(3) % 4 == 0)
+   assert(x:size(1) == y:size(1) and x:size(2) == y:size(2) and x:size(3) == y:size(3))
    
-   return x, image.crop(y, offset, offset, size - offset, size - offset)
-end
-function pairwise_transform.jpeg_scale(src, scale, level, size, offset, options)
-   options = options or {color_augment = true, random_half = true}
-   if level == 1 then
-      return pairwise_transform.jpeg_scale_(src, scale, {torch.random(65, 85)},
-					    size, offset, options)
-   elseif level == 2 then
-      local r = torch.uniform()
-      if r > 0.6 then
-	 return pairwise_transform.jpeg_scale_(src, scale, {torch.random(27, 70)},
-					       size, offset, options)
-      elseif r > 0.3 then
-	 local quality1 = torch.random(37, 70)
-	 local quality2 = quality1 - torch.random(5, 10)
-	 return pairwise_transform.jpeg_scale_(src, scale, {quality1, quality2},
-					       size, offset, options)
+   local batch = {}
+   for i = 1, n do
+      local xc, yc = active_cropping(x, y, size,
+				     options.active_cropping_rate,
+				     options.active_cropping_tries)
+      xc = iproc.byte2float(xc)
+      yc = iproc.byte2float(yc)
+      if options.rgb then
       else
-	 local quality1 = torch.random(52, 70)
-	    return pairwise_transform.jpeg_scale_(src, scale,
-						  {quality1,
-						   quality1 - torch.random(5, 15),
-						   quality1 - torch.random(15, 25)},
-						  size, offset, options)
+	 yc = image.rgb2yuv(yc)[1]:reshape(1, yc:size(2), yc:size(3))
+	 xc = image.rgb2yuv(xc)[1]:reshape(1, xc:size(2), xc:size(3))
+      end
+      if torch.uniform() < options.nr_rate then
+	 -- reducing noise
+	 table.insert(batch, {xc, iproc.crop(yc, offset, offset, size - offset, size - offset)})
+      else
+	 -- ratain useful details
+	 table.insert(batch, {yc, iproc.crop(yc, offset, offset, size - offset, size - offset)})
+      end
+   end
+   return batch
+end
+function pairwise_transform.jpeg(src, style, level, size, offset, n, options)
+   if style == "art" then
+      if level == 1 then
+	 return pairwise_transform.jpeg_(src, {torch.random(65, 85)},
+					 size, offset, n, options)
+      elseif level == 2 then
+	 local r = torch.uniform()
+	 if r > 0.6 then
+	    return pairwise_transform.jpeg_(src, {torch.random(27, 70)},
+					    size, offset, n, options)
+	 elseif r > 0.3 then
+	    local quality1 = torch.random(37, 70)
+	    local quality2 = quality1 - torch.random(5, 10)
+	    return pairwise_transform.jpeg_(src, {quality1, quality2},
+					    size, offset, n, options)
+	 else
+	    local quality1 = torch.random(52, 70)
+	    local quality2 = quality1 - torch.random(5, 15)
+	    local quality3 = quality1 - torch.random(15, 25)
+	    
+	    return pairwise_transform.jpeg_(src, 
+					    {quality1, quality2, quality3},
+					    size, offset, n, options)
+	 end
+      else
+	 error("unknown noise level: " .. level)
+      end
+   elseif style == "photo" then
+      if level == 1 then
+	 return pairwise_transform.jpeg_(src, {torch.random(30, 75)},
+					 size, offset, n,
+					 options)
+      elseif level == 2 then
+	 if torch.uniform() > 0.6 then
+	    return pairwise_transform.jpeg_(src, {torch.random(30, 60)},
+					    size, offset, n, options)
+	 else
+	    local quality1 = torch.random(40, 60)
+	    local quality2 = quality1 - torch.random(5, 10)
+	    return pairwise_transform.jpeg_(src, {quality1, quality2},
+					    size, offset, n, options)
+	 end
+      else
+	 error("unknown noise level: " .. level)
       end
    else
-      error("unknown noise level: " .. level)
+      error("unknown style: " .. style)
    end
 end
 
-local function test_jpeg()
-   local loader = require './image_loader'
-   local src = loader.load_byte("../images/miku_CC_BY-NC.jpg")
-   local y, x = pairwise_transform.jpeg_(src, {}, 128, 0, false)
-   image.display({image = y, legend = "y:0"})
-   image.display({image = x, legend = "x:0"})
-   for i = 2, 9 do
-      local y, x = pairwise_transform.jpeg_(pairwise_transform.random_half(src),
-					    {i * 10}, 128, 0, {color_augment = false, random_half = true})
-      image.display({image = y, legend = "y:" .. (i * 10), max=1,min=0})
-      image.display({image = x, legend = "x:" .. (i * 10),max=1,min=0})
-      --print(x:mean(), y:mean())
+function pairwise_transform.test_jpeg(src)
+   torch.setdefaulttensortype("torch.FloatTensor")
+   local options = {random_color_noise_rate = 0.5,
+		    random_half_rate = 0.5,
+		    random_overlay_rate = 0.5,
+		    nr_rate = 1.0,
+		    active_cropping_rate = 0.5,
+		    active_cropping_tries = 10,
+		    max_size = 256,
+		    rgb = true
+   }
+   local image = require 'image'
+   local src = image.lena()
+   for i = 1, 9 do
+      local xy = pairwise_transform.jpeg(src,
+					 "art",
+					 torch.random(1, 2),
+					 128, 7, 1, options)
+      image.display({image = xy[1][1], legend = "y:" .. (i * 10), min=0, max=1})
+      image.display({image = xy[1][2], legend = "x:" .. (i * 10), min=0, max=1})
    end
 end
+function pairwise_transform.test_scale(src)
+   torch.setdefaulttensortype("torch.FloatTensor")
+   local options = {random_color_noise_rate = 0.5,
+		    random_half_rate = 0.5,
+		    random_overlay_rate = 0.5,
+		    active_cropping_rate = 0.5,
+		    active_cropping_tries = 10,
+		    max_size = 256,
+		    rgb = true
+   }
+   local image = require 'image'
+   local src = image.lena()
 
-local function test_scale()
-   local loader = require './image_loader'
-   local src = loader.load_byte("../images/miku_CC_BY-NC.jpg")   
-   for i = 1, 9 do
-      local y, x = pairwise_transform.scale(src, 2.0, 128, 7, {color_augment = true, random_half = true, rgb = true})
-      image.display({image = y, legend = "y:" .. (i * 10), min = 0, max = 1})
-      image.display({image = x, legend = "x:" .. (i * 10), min = 0, max = 1})
-      print(y:size(), x:size())
-      --print(x:mean(), y:mean())
+   for i = 1, 10 do
+      local xy = pairwise_transform.scale(src, 2.0, 128, 7, 1, options)
+      image.display({image = xy[1][1], legend = "y:" .. (i * 10), min = 0, max = 1})
+      image.display({image = xy[1][2], legend = "x:" .. (i * 10), min = 0, max = 1})
    end
 end
-local function test_jpeg_scale()
-   local loader = require './image_loader'
-   local src = loader.load_byte("../images/miku_CC_BY-NC.jpg")   
-   for i = 1, 9 do
-      local y, x = pairwise_transform.jpeg_scale(src, 2.0, 1, 128, 7, {color_augment = true, random_half = true})
-      image.display({image = y, legend = "y1:" .. (i * 10), min = 0, max = 1})
-      image.display({image = x, legend = "x1:" .. (i * 10), min = 0, max = 1})
-      print(y:size(), x:size())
-      --print(x:mean(), y:mean())
-   end
-   for i = 1, 9 do
-      local y, x = pairwise_transform.jpeg_scale(src, 2.0, 2, 128, 7, {color_augment = true, random_half = true})
-      image.display({image = y, legend = "y2:" .. (i * 10), min = 0, max = 1})
-      image.display({image = x, legend = "x2:" .. (i * 10), min = 0, max = 1})
-      print(y:size(), x:size())
-      --print(x:mean(), y:mean())
-   end
-end
---test_scale()
---test_jpeg()
---test_jpeg_scale()
-
 return pairwise_transform
