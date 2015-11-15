@@ -68,13 +68,13 @@ $(function (){
     
     $("#url").change(clear_file);
     $("#file").change(clear_url);
-    $("input[name=style]").change(on_change_style);
+    //$("input[name=style]").change(on_change_style);
     $("input[name=noise]").change(on_change_noise_level);
     $("input[name=scale]").change(on_change_scale_factor);
-    $("input[name=white_noise]").change(on_change_white_noise);
-    $(".experimental .button").click(on_click_experimental_button)
+    //$("input[name=white_noise]").change(on_change_white_noise);
+    //$(".experimental .button").click(on_click_experimental_button)
     
-    on_change_style();
+    //on_change_style();
     on_change_scale_factor();
     on_change_noise_level();
 })
