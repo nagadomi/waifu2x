@@ -20,7 +20,7 @@ local function load_images(list)
       else
 	 im = iproc.crop_mod4(im)
 	 local scale = 1.0
-	 if settings.random_half then
+	 if settings.random_half_rate > 0.0 then
 	    scale = 2.0
 	 end
 	 if im then
