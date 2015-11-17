@@ -36,7 +36,7 @@ TODO
 - [Torch7](http://torch.ch/)
 - [NVIDIA CUDA](https://developer.nvidia.com/cuda-toolkit)
 
-### lualocks packages (excludes torch7's default packages)
+### LuaRocks packages (excludes torch7's default packages)
 - lua-csnappy
 - md5
 - uuid
