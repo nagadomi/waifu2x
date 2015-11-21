@@ -50,3 +50,8 @@ fieldset {
 .experimental {
     margin-bottom: 1em;
 }
+.button {
+    min-width: 128px;
+    min-height: 2em;
+    margin: 4px;
+}
