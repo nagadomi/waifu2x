@@ -156,6 +156,8 @@ function APIHandler:post()
    local noise = tonumber(self:get_argument("noise", "0"))
    local white_noise = tonumber(self:get_argument("white_noise", "0"))
    local style = self:get_argument("style", "art")
+   local download = (self:get_argument("download", "")):len()
+
    if style ~= "art" then
       style = "photo" -- style must be art or photo
    end
@@ -189,8 +191,12 @@ function APIHandler:post()
       local name = uuid() .. ".png"
       local blob = image_loader.encode_png(x, alpha)
       self:set_header("Content-Disposition", string.format('filename="%s"', name))
-      self:set_header("Content-Type", "image/png")
       self:set_header("Content-Length", string.format("%d", #blob))
+      if download > 0 then
+	 self:set_header("Content-Type", "application/octet-stream")
+      else
+	 self:set_header("Content-Type", "image/png")
+      end
       self:write(blob)
    else
       if not x then
