@@ -105,7 +105,7 @@ function reconstruct.image_y(model, x, offset, block_size)
 end
 function reconstruct.scale_y(model, scale, x, offset, block_size)
    block_size = block_size or 128
-   local x_jinc = iproc.scale(x, x:size(3) * scale, x:size(2) * scale, "Jinc")
+   local x_lanczos = iproc.scale(x, x:size(3) * scale, x:size(2) * scale, "Lanczos")
    x = iproc.scale(x, x:size(3) * scale, x:size(2) * scale, "Box")
 
    local output_size = block_size - offset * 2
@@ -121,14 +121,14 @@ function reconstruct.scale_y(model, scale, x, offset, block_size)
    local pad_h2 = (h - offset) - x:size(2)
    local pad_w2 = (w - offset) - x:size(3)
    local yuv_nn = image.rgb2yuv(iproc.padding(x, pad_w1, pad_w2, pad_h1, pad_h2))
-   local yuv_jinc = image.rgb2yuv(iproc.padding(x_jinc, pad_w1, pad_w2, pad_h1, pad_h2))
+   local yuv_lanczos = image.rgb2yuv(iproc.padding(x_lanczos, pad_w1, pad_w2, pad_h1, pad_h2))
    local y = reconstruct_y(model, yuv_nn[1], offset, block_size)
    y[torch.lt(y, 0)] = 0
    y[torch.gt(y, 1)] = 1
-   yuv_jinc[1]:copy(y)
-   local output = image.yuv2rgb(iproc.crop(yuv_jinc,
+   yuv_lanczos[1]:copy(y)
+   local output = image.yuv2rgb(iproc.crop(yuv_lanczos,
 					   pad_w1, pad_h1,
-					   yuv_jinc:size(3) - pad_w2, yuv_jinc:size(2) - pad_h2))
+					   yuv_lanczos:size(3) - pad_w2, yuv_lanczos:size(2) - pad_h2))
    output[torch.lt(output, 0)] = 0
    output[torch.gt(output, 1)] = 1
    collectgarbage()
