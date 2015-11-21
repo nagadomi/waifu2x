@@ -179,7 +179,7 @@ function APIHandler:post()
 	       x = iproc.scale_with_gamma22(x,
 					    math.floor(x:size(3) * (1.6 / 2.0) + 0.5),
 					    math.floor(x:size(2) * (1.6 / 2.0) + 0.5),
-					    "Jinc")
+					    "Lanczos")
 	    end
 	 end
 	 if white_noise == 1 then

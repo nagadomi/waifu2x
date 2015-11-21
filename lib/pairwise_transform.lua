@@ -7,7 +7,7 @@ local pairwise_transform = {}
 
 local function random_half(src, p)
    if torch.uniform() < p then
-      local filter = ({"Box","Box","Blackman","SincFast","Jinc"})[torch.random(1, 5)]
+      local filter = ({"Box","Box","Blackman","Sinc","Lanczos"})[torch.random(1, 5)]
       return iproc.scale(src, src:size(3) * 0.5, src:size(2) * 0.5, filter)
    else
       return src
@@ -79,8 +79,8 @@ function pairwise_transform.scale(src, scale, size, offset, n, options)
       --"Cartom",     -- 0.013753536746706
       --"Hanning",    -- 0.013761314529647
       --"Hermite",    -- 0.013850225205266
-      "SincFast",   -- 0.014095824314306
-      "Jinc",       -- 0.014244299255442
+      "Sinc",   -- 0.014095824314306
+      "Lanczos",       -- 0.014244299255442
    }
    local unstable_region_offset = 8
    local downscale_filter = filters[torch.random(1, #filters)]
