@@ -14,7 +14,7 @@ function image_loader.encode_png(rgb, alpha, depth)
    rgb = iproc.byte2float(rgb)
    if alpha then
       if not (alpha:size(2) == rgb:size(2) and  alpha:size(3) == rgb:size(3)) then
-	 alpha = gm.Image(alpha, "I", "DHW"):size(rgb:size(3), rgb:size(2), "SincFast"):toTensor("float", "I", "DHW")
+	 alpha = gm.Image(alpha, "I", "DHW"):size(rgb:size(3), rgb:size(2), "Sinc"):toTensor("float", "I", "DHW")
       end
       local rgba = torch.Tensor(4, rgb:size(2), rgb:size(3))
       rgba[1]:copy(rgb[1])
