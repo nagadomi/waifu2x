@@ -23,6 +23,7 @@ cmd:option("-noise_level", 1, 'model noise level')
 cmd:option("-jpeg_quality", 75, 'jpeg quality')
 cmd:option("-jpeg_times", 1, 'jpeg compression times')
 cmd:option("-jpeg_quality_down", 5, 'value of jpeg quality to decrease each times')
+cmd:option("-range_bug", 0, 'Reproducing the dynamic range bug that is caused by MATLAB\'s rgb2ycbcr(1|0)')
 
 local opt = cmd:parse(arg)
 torch.setdefaulttensortype('torch.FloatTensor')
@@ -47,9 +48,15 @@ local function MSE(x1, x2)
    return (x1 - x2):pow(2):mean()
 end
 local function YMSE(x1, x2)
-   local x1_2 = rgb2y_matlab(x1)
-   local x2_2 = rgb2y_matlab(x2)
-   return (x1_2 - x2_2):pow(2):mean()
+   if opt.range_bug == 1 then
+      local x1_2 = rgb2y_matlab(x1)
+      local x2_2 = rgb2y_matlab(x2)
+      return (x1_2 - x2_2):pow(2):mean()
+   else
+      local x1_2 = image.rgb2y(x1):mul(255.0)
+      local x2_2 = image.rgb2y(x2):mul(255.0)
+      return (x1_2 - x2_2):pow(2):mean()
+   end
 end
 local function PSNR(x1, x2)
    local mse = MSE(x1, x2)
