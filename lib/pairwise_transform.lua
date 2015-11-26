@@ -122,10 +122,12 @@ function pairwise_transform.jpeg_(src, quality, size, offset, n, options)
    for i = 1, #quality do
       x = gm.Image(x, "RGB", "DHW")
       x:format("jpeg"):depth(8)
-      if options.jpeg_sampling_factors == 444 then
-	 x:samplingFactors({1.0, 1.0, 1.0})
-      else -- 420
+      if torch.uniform() < options.jpeg_chroma_subsampling_rate then
+	 -- YUV 420
 	 x:samplingFactors({2.0, 1.0, 1.0})
+      else
+	 -- YUV 444
+	 x:samplingFactors({1.0, 1.0, 1.0})
       end
       local blob, len = x:toBlob(quality[i])
       x:fromBlob(blob, len)
@@ -189,19 +191,13 @@ function pairwise_transform.jpeg(src, style, level, size, offset, n, options)
       end
    elseif style == "photo" then
       if level == 1 then
-	 return pairwise_transform.jpeg_(src, {torch.random(30, 75)},
+	 return pairwise_transform.jpeg_(src, {torch.random(70, 90)},
 					 size, offset, n,
 					 options)
       elseif level == 2 then
-	 if torch.uniform() > 0.6 then
-	    return pairwise_transform.jpeg_(src, {torch.random(30, 60)},
-					    size, offset, n, options)
-	 else
-	    local quality1 = torch.random(40, 60)
-	    local quality2 = quality1 - torch.random(5, 10)
-	    return pairwise_transform.jpeg_(src, {quality1, quality2},
-					    size, offset, n, options)
-	 end
+	 return pairwise_transform.jpeg_(src, {torch.random(50, 70)},
+					 size, offset, n,
+					 options)
       else
 	 error("unknown noise level: " .. level)
       end

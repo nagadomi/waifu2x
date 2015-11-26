@@ -37,7 +37,7 @@ cmd:option("-max_size", 256, 'if image is larger than max_size, image will be cr
 cmd:option("-batch_size", 8, 'mini batch size')
 cmd:option("-epoch", 200, 'number of total epochs to run')
 cmd:option("-thread", -1, 'number of CPU threads')
-cmd:option("-jpeg_sampling_factors", 444, '(444|420)')
+cmd:option("-jpeg_chroma_subsampling_rate", 0.0, 'the rate of YUV 4:2:0/YUV 4:4:4 in denoising training (0.0-1.0)')
 cmd:option("-validation_rate", 0.05, 'validation-set rate (number_of_training_images * validation_rate > 1)')
 cmd:option("-validation_crops", 80, 'number of cropping region per image in validation')
 cmd:option("-active_cropping_rate", 0.5, 'active cropping rate')
