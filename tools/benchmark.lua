@@ -76,7 +76,7 @@ local function transform_jpeg(x, opt)
       jpeg:fromBlob(blob, len)
       x = jpeg:toTensor("byte", "RGB", "DHW")
    end
-   return x
+   return iproc.byte2float(x)
 end
 local function baseline_scale(x, filter)
    return iproc.scale(x,
