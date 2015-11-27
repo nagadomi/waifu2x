@@ -145,34 +145,34 @@ local function benchmark(opt, x, input_func, model1, model2)
       if model2 then
 	 if baseline_output then
 	    io.stdout:write(
-	       string.format("%d/%d; baseline_mse=%f, model1_mse=%f, model2_mse=%f, baseline_psnr=%f, model1_psnr=%f, model2_psnr=%f \r",
+	       string.format("%d/%d; baseline_rmse=%f, model1_rmse=%f, model2_rmse=%f, baseline_psnr=%f, model1_psnr=%f, model2_psnr=%f \r",
 			     i, #x,
-			     baseline_mse / i,
-			     model1_mse / i, model2_mse / i,
+			     math.sqrt(baseline_mse / i),
+			     math.sqrt(model1_mse / i), math.sqrt(model2_mse / i),
 			     baseline_psnr / i,
 			     model1_psnr / i, model2_psnr / i
 	    ))
 	 else
 	    io.stdout:write(
-	       string.format("%d/%d; model1_mse=%f, model2_mse=%f, model1_psnr=%f, model2_psnr=%f \r",
+	       string.format("%d/%d; model1_rmse=%f, model2_rmse=%f, model1_psnr=%f, model2_psnr=%f \r",
 			     i, #x,
-			     model1_mse / i, model2_mse / i,
+			     math.sqrt(model1_mse / i), math.sqrt(model2_mse / i),
 			     model1_psnr / i, model2_psnr / i
 	    ))
 	 end
       else
 	 if baseline_output then
 	    io.stdout:write(
-	       string.format("%d/%d; baseline_mse=%f, model1_mse=%f, baseline_psnr=%f, model1_psnr=%f \r",
+	       string.format("%d/%d; baseline_rmse=%f, model1_rmse=%f, baseline_psnr=%f, model1_psnr=%f \r",
 			     i, #x,
-			     baseline_mse / i, model1_mse / i,
+			     math.sqrt(baseline_mse / i), math.sqrt(model1_mse / i),
 			     baseline_psnr / i, model1_psnr / i
 	    ))
 	 else
 	    io.stdout:write(
-	       string.format("%d/%d; model1_mse=%f, model1_psnr=%f \r",
+	       string.format("%d/%d; model1_rmse=%f, model1_psnr=%f \r",
 			     i, #x,
-			     model1_mse / i, model1_psnr / i
+			     math.sqrt(model1_mse / i), model1_psnr / i
 	    ))
 	 end
       end
