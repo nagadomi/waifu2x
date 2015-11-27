@@ -7,7 +7,7 @@ local pairwise_transform = {}
 
 local function random_half(src, p)
    if torch.uniform() < p then
-      local filter = ({"Box","Box","Blackman","Sinc","Lanczos"})[torch.random(1, 5)]
+      local filter = ({"Box","Box","Blackman","Sinc","Lanczos", "Catrom"})[torch.random(1, 6)]
       return iproc.scale(src, src:size(3) * 0.5, src:size(2) * 0.5, filter)
    else
       return src
@@ -38,6 +38,7 @@ local function preprocess(src, crop_size, options)
    dest = data_augmentation.flip(dest)
    dest = data_augmentation.color_noise(dest, options.random_color_noise_rate)
    dest = data_augmentation.overlay(dest, options.random_overlay_rate)
+   dest = data_augmentation.unsharp_mask(dest, options.random_unsharp_mask_rate)
    dest = data_augmentation.shift_1px(dest)
    
    return dest
@@ -81,6 +82,7 @@ function pairwise_transform.scale(src, scale, size, offset, n, options)
       --"Hermite",    -- 0.013850225205266
       "Sinc",   -- 0.014095824314306
       "Lanczos",       -- 0.014244299255442
+      "Catrom"
    }
    local unstable_region_offset = 8
    local downscale_filter = filters[torch.random(1, #filters)]
@@ -211,6 +213,8 @@ function pairwise_transform.test_jpeg(src)
    local options = {random_color_noise_rate = 0.5,
 		    random_half_rate = 0.5,
 		    random_overlay_rate = 0.5,
+		    random_unsharp_mask_rate = 0.5,
+		    jpeg_chroma_subsampling_rate = 0.5,
 		    nr_rate = 1.0,
 		    active_cropping_rate = 0.5,
 		    active_cropping_tries = 10,
@@ -233,6 +237,7 @@ function pairwise_transform.test_scale(src)
    local options = {random_color_noise_rate = 0.5,
 		    random_half_rate = 0.5,
 		    random_overlay_rate = 0.5,
+		    random_unsharp_mask_rate = 0.5,
 		    active_cropping_rate = 0.5,
 		    active_cropping_tries = 10,
 		    max_size = 256,

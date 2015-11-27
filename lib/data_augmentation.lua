@@ -1,5 +1,6 @@
 require 'image'
 local iproc = require 'iproc'
+local gm = require 'graphicsmagick'
 
 local data_augmentation = {}
 
@@ -46,6 +47,25 @@ function data_augmentation.overlay(src, p)
 	 flip = iproc.float2byte(flip)
       end
       return flip
+   else
+      return src
+   end
+end
+function data_augmentation.unsharp_mask(src, p)
+   if torch.uniform() < p then
+      local radius = 0 -- auto
+      local sigma = torch.uniform(0.7, 1.4)
+      local amount = torch.uniform(0.5, 1.0)
+      local threshold = torch.uniform(0.0, 0.05)
+      local unsharp = gm.Image(src, "RGB", "DHW"):
+	 unsharpMask(radius, sigma, amount, threshold):
+	 toTensor("float", "RGB", "DHW")
+      
+      if src:type() == "torch.ByteTensor" then
+	 return iproc.float2byte(unsharp)
+      else
+	 return unsharp
+      end
    else
       return src
    end
