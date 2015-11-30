@@ -74,16 +74,23 @@ local function active_cropping(x, y, size, p, tries)
    end
 end
 function pairwise_transform.scale(src, scale, size, offset, n, options)
-   local filters = {
-      "Box","Box",  -- 0.012756949974688
-      "Blackman",   -- 0.013191924552285
-      --"Cartom",     -- 0.013753536746706
-      --"Hanning",    -- 0.013761314529647
-      --"Hermite",    -- 0.013850225205266
-      "Sinc",   -- 0.014095824314306
-      "Lanczos",       -- 0.014244299255442
-      "Catrom"
-   }
+   local filters;
+
+   if options.style == "photo" then
+      filters = {
+	 "Box", "lanczos", "Catrom"
+      }
+   else
+      filters = {
+	 "Box","Box",  -- 0.012756949974688
+	 "Blackman",   -- 0.013191924552285
+	 --"Catrom",     -- 0.013753536746706
+	 --"Hanning",    -- 0.013761314529647
+	 --"Hermite",    -- 0.013850225205266
+	 "Sinc",   -- 0.014095824314306
+	 "Lanczos",       -- 0.014244299255442
+      }
+   end
    local unstable_region_offset = 8
    local downscale_filter = filters[torch.random(1, #filters)]
    local y = preprocess(src, size, options)
