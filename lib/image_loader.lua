@@ -58,7 +58,10 @@ function image_loader.decode_float(blob)
       end
       local gamma = math.floor(im:gamma() * 1000000) / 1000000
       if gamma ~= 0 and gamma ~= gamma_lcd then
-	 im:gammaCorrection(gamma / gamma_lcd)
+	 local cg = gamma / gamma_lcd
+	 im:gammaCorrection(cg, "Red")
+	 im:gammaCorrection(cg, "Blue")
+	 im:gammaCorrection(cg, "Green")
       end
       -- FIXME: How to detect that a image has an alpha channel?
       if blob:sub(1, 4) == "\x89PNG" or blob:sub(1, 3) == "GIF" then
