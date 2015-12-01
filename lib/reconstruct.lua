@@ -189,22 +189,48 @@ function reconstruct.scale_rgb(model, scale, x, offset, block_size)
 end
 
 function reconstruct.image(model, x, block_size)
-   if reconstruct.is_rgb(model) then
-      return reconstruct.image_rgb(model, x,
-				   reconstruct.offset_size(model), block_size)
-   else
-      return reconstruct.image_y(model, x,
-				 reconstruct.offset_size(model), block_size)
+   local i2rgb = false
+   if x:size(1) == 1 then
+      local new_x = torch.Tensor(3, x:size(2), x:size(3))
+      new_x[1]:copy(x)
+      new_x[2]:copy(x)
+      new_x[3]:copy(x)
+      x = new_x
+      i2rgb = true
    end
+   if reconstruct.is_rgb(model) then
+      x = reconstruct.image_rgb(model, x,
+				reconstruct.offset_size(model), block_size)
+   else
+      x = reconstruct.image_y(model, x,
+			      reconstruct.offset_size(model), block_size)
+   end
+   if i2rgb then
+      x = image.rgb2y(x)
+   end
+   return x
 end
 function reconstruct.scale(model, scale, x, block_size)
-   if reconstruct.is_rgb(model) then
-      return reconstruct.scale_rgb(model, scale, x,
-				   reconstruct.offset_size(model), block_size)
-   else
-      return reconstruct.scale_y(model, scale, x,
-				 reconstruct.offset_size(model), block_size)
+   local i2rgb = false
+   if x:size(1) == 1 then
+      local new_x = torch.Tensor(3, x:size(2), x:size(3))
+      new_x[1]:copy(x)
+      new_x[2]:copy(x)
+      new_x[3]:copy(x)
+      x = new_x
+      i2rgb = true
    end
+   if reconstruct.is_rgb(model) then
+      x = reconstruct.scale_rgb(model, scale, x,
+				reconstruct.offset_size(model), block_size)
+   else
+      x = reconstruct.scale_y(model, scale, x,
+			      reconstruct.offset_size(model), block_size)
+   end
+   if i2rgb then
+      x = image.rgb2y(x)
+   end
+   return x
 end
 local function tta(f, model, x, block_size)
    local average = nil

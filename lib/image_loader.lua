@@ -9,47 +9,34 @@ local clip_eps8 = (1.0 / 255.0) * 0.5 - (1.0e-7 * (1.0 / 255.0) * 0.5)
 local clip_eps16 = (1.0 / 65535.0) * 0.5 - (1.0e-7 * (1.0 / 65535.0) * 0.5)
 local background_color = 0.5
 
-function image_loader.encode_png(rgb, alpha, depth)
+function image_loader.encode_png(rgb, depth)
    depth = depth or 8
    rgb = iproc.byte2float(rgb)
-   if alpha then
-      if not (alpha:size(2) == rgb:size(2) and  alpha:size(3) == rgb:size(3)) then
-	 alpha = gm.Image(alpha, "I", "DHW"):size(rgb:size(3), rgb:size(2), "Sinc"):toTensor("float", "I", "DHW")
-      end
-      local rgba = torch.Tensor(4, rgb:size(2), rgb:size(3))
-      rgba[1]:copy(rgb[1])
-      rgba[2]:copy(rgb[2])
-      rgba[3]:copy(rgb[3])
-      rgba[4]:copy(alpha)
-      
-      if depth < 16 then
-	 rgba:add(clip_eps8)
-	 rgba[torch.lt(rgba, 0.0)] = 0.0
-	 rgba[torch.gt(rgba, 1.0)] = 1.0
-      else
-	 rgba:add(clip_eps16)
-	 rgba[torch.lt(rgba, 0.0)] = 0.0
-	 rgba[torch.gt(rgba, 1.0)] = 1.0
-      end
-      local im = gm.Image():fromTensor(rgba, "RGBA", "DHW")
-      return im:depth(depth):format("PNG"):toString(9)
+   if depth < 16 then
+      rgb = rgb:clone():add(clip_eps8)
+      rgb[torch.lt(rgb, 0.0)] = 0.0
+      rgb[torch.gt(rgb, 1.0)] = 1.0
+      rgb = rgb:mul(255):long():float():div(255)
    else
-      if depth < 16 then
-	 rgb = rgb:clone():add(clip_eps8)
-	 rgb[torch.lt(rgb, 0.0)] = 0.0
-	 rgb[torch.gt(rgb, 1.0)] = 1.0
-      else
-	 rgb = rgb:clone():add(clip_eps16)
-	 rgb[torch.lt(rgb, 0.0)] = 0.0
-	 rgb[torch.gt(rgb, 1.0)] = 1.0
-      end
-      local im = gm.Image(rgb, "RGB", "DHW")
-      return im:depth(depth):format("PNG"):toString(9)
+      rgb = rgb:clone():add(clip_eps16)
+      rgb[torch.lt(rgb, 0.0)] = 0.0
+      rgb[torch.gt(rgb, 1.0)] = 1.0
+      rgb = rgb:mul(65535):long():float():div(65535)
    end
+   local im
+   if rgb:size(1) == 4 then -- RGBA
+      im = gm.Image(rgb, "RGBA", "DHW")
+   elseif rgb:size(1) == 3 then -- RGB
+      im = gm.Image(rgb, "RGB", "DHW")
+   elseif rgb:size(1) == 1 then -- Y
+      im = gm.Image(rgb, "I", "DHW")
+      -- im:colorspace("GRAY") -- it does not work
+   end
+   return im:depth(depth):format("PNG"):toString(9)
 end
-function image_loader.save_png(filename, rgb, alpha, depth)
+function image_loader.save_png(filename, rgb, depth)
    depth = depth or 8
-   local blob = image_loader.encode_png(rgb, alpha, depth)
+   local blob = image_loader.encode_png(rgb, depth)
    local fp = io.open(filename, "wb")
    if not fp then
       error("IO error: " .. filename)
@@ -71,7 +58,10 @@ function image_loader.decode_float(blob)
       end
       local gamma = math.floor(im:gamma() * 1000000) / 1000000
       if gamma ~= 0 and gamma ~= gamma_lcd then
-	 im:gammaCorrection(gamma / gamma_lcd)
+	 local cg = gamma / gamma_lcd
+	 im:gammaCorrection(cg, "Red")
+	 im:gammaCorrection(cg, "Blue")
+	 im:gammaCorrection(cg, "Green")
       end
       -- FIXME: How to detect that a image has an alpha channel?
       if blob:sub(1, 4) == "\x89PNG" or blob:sub(1, 3) == "GIF" then
