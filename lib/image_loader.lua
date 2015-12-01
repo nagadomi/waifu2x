@@ -16,10 +16,12 @@ function image_loader.encode_png(rgb, depth)
       rgb = rgb:clone():add(clip_eps8)
       rgb[torch.lt(rgb, 0.0)] = 0.0
       rgb[torch.gt(rgb, 1.0)] = 1.0
+      rgb = rgb:mul(255):long():float():div(255)
    else
       rgb = rgb:clone():add(clip_eps16)
       rgb[torch.lt(rgb, 0.0)] = 0.0
       rgb[torch.gt(rgb, 1.0)] = 1.0
+      rgb = rgb:mul(65535):long():float():div(65535)
    end
    local im
    if rgb:size(1) == 4 then -- RGBA
