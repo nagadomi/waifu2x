@@ -11,6 +11,7 @@ local md5 = require 'md5'
 local iproc = require 'iproc'
 local reconstruct = require 'reconstruct'
 local image_loader = require 'image_loader'
+local alpha_util = require 'alpha_util'
 
 -- Notes:  turbo and xlua has different implementation of string:split().
 --         Therefore, string:split() has conflict issue.
@@ -104,14 +105,36 @@ local function cleanup_model(model)
       w2nn.cleanup_model(model) -- release GPU memory
    end
 end
-local function convert(x, options)
+local function convert(x, alpha, options)
    local cache_file = path.join(CACHE_DIR, options.prefix .. ".png")
+   local alpha_cache_file = path.join(CACHE_DIR, options.alpha_prefix .. ".png")
+   local alpha_orig = alpha
+
+   if path.exists(alpha_cache_file) then
+      alpha = image_loader.load_float(alpha_cache_file)
+      if alpha:dim() == 2 then
+	 alpha = alpha:reshape(1, alpha:size(1), alpha:size(2))
+      end
+      if alpha:size(1) == 3 then
+	 alpha = image.rgb2y(alpha)
+      end
+   end
    if path.exists(cache_file) then
-      return image.load(cache_file)
+      x = image_loader.load_float(cache_file)
+      return x, alpha
    else
       if options.style == "art" then
+	 if options.border then
+	    x = alpha_util.make_border(x, alpha_orig, reconstruct.offset_size(art_scale2_model))
+	 end
 	 if options.method == "scale" then
 	    x = reconstruct.scale(art_scale2_model, 2.0, x)
+	    if alpha then
+	       if not (alpha:size(2) == x:size(2) and alpha:size(3) == x:size(3)) then
+		  alpha = reconstruct.scale(art_scale2_model, 2.0, alpha)
+		  image_loader.save_png(alpha_cache_file, alpha)
+	       end
+	    end
 	    cleanup_model(art_scale2_model)
 	 elseif options.method == "noise1" then
 	    x = reconstruct.image(art_noise1_model, x)
@@ -121,8 +144,17 @@ local function convert(x, options)
 	    cleanup_model(art_noise2_model)
 	 end
       else --[[photo
+	 if options.border then
+	    x = alpha_util.make_border(x, alpha, reconstruct.offset_size(photo_scale2_model))
+	 end
 	 if options.method == "scale" then
 	    x = reconstruct.scale(photo_scale2_model, 2.0, x)
+	    if alpha then
+	       if not (alpha:size(2) == x:size(2) and alpha:size(3) == x:size(3)) then
+		  alpha = reconstruct.scale(photo_scale2_model, 2.0, alpha)
+		  image_loader.save_png(alpha_cache_file, alpha)
+	       end
+	    end
 	    cleanup_model(photo_scale2_model)
 	 elseif options.method == "noise1" then
 	    x = reconstruct.image(photo_noise1_model, x)
@@ -133,8 +165,9 @@ local function convert(x, options)
 	 end
       --]]
       end
-      image.save(cache_file, x)
-      return x
+      image_loader.save_png(cache_file, x)
+
+      return x, alpha
    end
 end
 local function client_disconnected(handler)
@@ -154,7 +187,6 @@ function APIHandler:post()
    local x, alpha, blob = get_image(self)
    local scale = tonumber(self:get_argument("scale", "0"))
    local noise = tonumber(self:get_argument("noise", "0"))
-   local white_noise = tonumber(self:get_argument("white_noise", "0"))
    local style = self:get_argument("style", "art")
    local download = (self:get_argument("download", "")):len()
 
@@ -164,29 +196,39 @@ function APIHandler:post()
    if x and valid_size(x, scale) then
       if (noise ~= 0 or scale ~= 0) then
 	 local hash = md5.sumhexa(blob)
+	 local alpha_prefix = style .. "_" .. hash .. "_alpha"
+	 local border = false
+	 if scale ~= 0 and alpha then
+	    border = true
+	 end
 	 if noise == 1 then
-	    x = convert(x, {method = "noise1", style = style, prefix = style .. "_noise1_" .. hash})
+	    x = convert(x, alpha, {method = "noise1", style = style,
+				   prefix = style .. "_noise1_" .. hash,
+				   alpha_prefix = alpha_prefix, border = border})
+	    border = false
 	 elseif noise == 2 then
-	    x = convert(x, {method = "noise2", style = style, prefix = style .. "_noise2_" .. hash})
+	    x = convert(x, alpha, {method = "noise2", style = style,
+				   prefix = style .. "_noise2_" .. hash, 
+				   alpha_prefix = alpha_prefix, border = border})
+	    border = false
 	 end
 	 if scale == 1 or scale == 2 then
+	    local prefix
 	    if noise == 1 then
-	       x = convert(x, {method = "scale", style = style, prefix = style .. "_noise1_scale_" .. hash})
+	       prefix = style .. "_noise1_scale_" .. hash
 	    elseif noise == 2 then
-	       x = convert(x, {method = "scale", style = style, prefix = style .. "_noise2_scale_" .. hash})
+	       prefix = style .. "_noise2_scale_" .. hash
 	    else
-	       x = convert(x, {method = "scale", style = style, prefix = style .. "_scale_" .. hash})
+	       prefix = style .. "_scale_" .. hash
 	    end
+	    x, alpha = convert(x, alpha, {method = "scale", style = style, prefix = prefix, alpha_prefix = alpha_prefix, border = border})
 	    if scale == 1 then
 	       x = iproc.scale(x, x:size(3) * (1.6 / 2.0), x:size(2) * (1.6 / 2.0), "Sinc")
 	    end
 	 end
-	 if white_noise == 1 then
-	    x = iproc.white_noise(x, 0.005, {1.0, 0.8, 1.0})
-	 end
       end
       local name = uuid() .. ".png"
-      local blob = image_loader.encode_png(x, alpha)
+      local blob = image_loader.encode_png(alpha_util.composite(x, alpha))
       self:set_header("Content-Disposition", string.format('filename="%s"', name))
       self:set_header("Content-Length", string.format("%d", #blob))
       if download > 0 then
