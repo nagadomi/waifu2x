@@ -49,12 +49,17 @@ function iproc.float2byte(src)
    return dest, conversion
 end
 function iproc.scale(src, width, height, filter)
-   local conversion
+   local conversion, color
    src, conversion = iproc.byte2float(src)
    filter = filter or "Box"
-   local im = gm.Image(src, "RGB", "DHW")
+   if src:size(1) == 3 then
+      color = "RGB"
+   else
+      color = "I"
+   end
+   local im = gm.Image(src, color, "DHW")
    im:size(math.ceil(width), math.ceil(height), filter)
-   local dest = im:toTensor("float", "RGB", "DHW")
+   local dest = im:toTensor("float", color, "DHW")
    if conversion then
       dest = iproc.float2byte(dest)
    end
@@ -83,6 +88,16 @@ function iproc.padding(img, w1, w2, h1, h2)
    flow[1]:add(-h1)
    flow[2]:add(-w1)
    return image.warp(img, flow, "simple", false, "clamp")
+end
+function iproc.zero_padding(img, w1, w2, h1, h2)
+   local dst_height = img:size(2) + h1 + h2
+   local dst_width = img:size(3) + w1 + w2
+   local flow = torch.Tensor(2, dst_height, dst_width)
+   flow[1] = torch.ger(torch.linspace(0, dst_height -1, dst_height), torch.ones(dst_width))
+   flow[2] = torch.ger(torch.ones(dst_height), torch.linspace(0, dst_width - 1, dst_width))
+   flow[1]:add(-h1)
+   flow[2]:add(-w1)
+   return image.warp(img, flow, "simple", false, "pad", 0)
 end
 function iproc.white_noise(src, std, rgb_weights, gamma)
    gamma = gamma or 0.454545
