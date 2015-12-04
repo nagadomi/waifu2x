@@ -54,8 +54,8 @@ end
 function data_augmentation.unsharp_mask(src, p)
    if torch.uniform() < p then
       local radius = 0 -- auto
-      local sigma = torch.uniform(0.7, 3.0)
-      local amount = torch.uniform(0.25, 0.75)
+      local sigma = torch.uniform(0.5, 1.5)
+      local amount = torch.uniform(0.1, 0.9)
       local threshold = torch.uniform(0.0, 0.05)
       local unsharp = gm.Image(src, "RGB", "DHW"):
 	 unsharpMask(radius, sigma, amount, threshold):

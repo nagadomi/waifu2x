@@ -208,7 +208,7 @@ function pairwise_transform.jpeg(src, style, level, size, offset, n, options)
       end
    elseif style == "photo" then
       -- level adjusting by -nr_rate
-      return pairwise_transform.jpeg_(src, {torch.random(50, 75)},
+      return pairwise_transform.jpeg_(src, {torch.random(30, 70)},
 				      size, offset, n,
 				      options)
    else
