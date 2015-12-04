@@ -205,15 +205,32 @@ local function train()
 	    lrd_count = 0
 	    best_score = score
 	    print("* update best model")
-	    torch.save(settings.model_file, model)
-	    if settings.method == "noise" then
-	       local log = path.join(settings.model_dir,
-				     ("noise%d_best.png"):format(settings.noise_level))
-	       save_test_jpeg(model, test_image, log)
-	    elseif settings.method == "scale" then
-	       local log = path.join(settings.model_dir,
-				     ("scale%.1f_best.png"):format(settings.scale))
-	       save_test_scale(model, test_image, log)
+	    if settings.save_history then
+	       local model_clone = model:clone()
+	       w2nn.cleanup_model(model_clone)
+	       torch.save(string.format(settings.model_file, epoch, i), model_clone)
+	       if settings.method == "noise" then
+		  local log = path.join(settings.model_dir,
+					("noise%d_best.%d-%d.png"):format(settings.noise_level,
+									  epoch, i))
+		  save_test_jpeg(model, test_image, log)
+	       elseif settings.method == "scale" then
+		  local log = path.join(settings.model_dir,
+					("scale%.1f_best.%d-%d.png"):format(settings.scale,
+									    epoch, i))
+		  save_test_scale(model, test_image, log)
+	       end
+	    else
+	       torch.save(settings.model_file, model)
+	       if settings.method == "noise" then
+		  local log = path.join(settings.model_dir,
+					("noise%d_best.png"):format(settings.noise_level))
+		  save_test_jpeg(model, test_image, log)
+	       elseif settings.method == "scale" then
+		  local log = path.join(settings.model_dir,
+					("scale%.1f_best.png"):format(settings.scale))
+		  save_test_scale(model, test_image, log)
+	       end
 	    end
 	 else
 	    lrd_count = lrd_count + 1
