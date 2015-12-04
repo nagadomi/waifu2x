@@ -1,7 +1,7 @@
 # waifu2x
 
 Image Super-Resolution for Anime-style art using Deep Convolutional Neural Networks.
-Also, it is supported photo.
+And it supports photo.
 
 Demo-Application can be found at http://waifu2x.udp.jp/ .
 
