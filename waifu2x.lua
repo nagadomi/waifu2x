@@ -134,7 +134,7 @@ local function convert_frames(opt)
 	    new_x = image_f(noise1_model, x, opt.crop_size)
 	    new_x = alpha_util.composite(new_x, alpha)
 	 elseif opt.m == "noise" and opt.noise_level == 2 then
-	    new_x = image_func(noise2_model, x, opt.crop_size)
+	    new_x = image_f(noise2_model, x, opt.crop_size)
 	    new_x = alpha_util.composite(new_x, alpha)
 	 elseif opt.m == "scale" then
 	    x = alpha_util.make_border(x, alpha, reconstruct.offset_size(scale_model))
