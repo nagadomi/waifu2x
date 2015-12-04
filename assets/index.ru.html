@@ -6,6 +6,7 @@
     <title>waifu2x</title>
     <link href="style.css" rel="stylesheet" type="text/css">
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
     <script type="text/javascript" src="ui.js"></script>
   </head>
   <body>
@@ -32,6 +33,11 @@
         <div class="help">
           Макс. размер файла — 2MB, устранение шума — макс. 2560x2560px, апскейл — 1280x1280px
         </div>
+      </fieldset>
+      <fieldset>
+        <legend>Стиль</legend>
+        <label><input type="radio" name="style" value="art" checked>Произведение искусства</label>
+        <label><input type="radio" name="style" value="photo">фото</label>
       </fieldset>
       <fieldset class="noise-field">
 	<legend>Устранение шума (артефактов JPEG)</legend>
