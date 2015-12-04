@@ -35,14 +35,14 @@ local function split_data(x, test_size)
    end
    return train_x, valid_x
 end
-local function make_validation_set(x, transformer, n, batch_size)
+local function make_validation_set(x, transformer, n, patches)
    n = n or 4
    local data = {}
    for i = 1, #x do
-      for k = 1, math.max(n / batch_size, 1) do
-	 local xy = transformer(x[i], true, batch_size)
-	 local tx = torch.Tensor(batch_size, xy[1][1]:size(1), xy[1][1]:size(2), xy[1][1]:size(3))
-	 local ty = torch.Tensor(batch_size, xy[1][2]:size(1), xy[1][2]:size(2), xy[1][2]:size(3))
+      for k = 1, math.max(n / patches, 1) do
+	 local xy = transformer(x[i], true, patches)
+	 local tx = torch.Tensor(patches, xy[1][1]:size(1), xy[1][1]:size(2), xy[1][1]:size(3))
+	 local ty = torch.Tensor(patches, xy[1][2]:size(1), xy[1][2]:size(2), xy[1][2]:size(3))
 	 for j = 1, #xy do
 	    tx[j]:copy(xy[j][1])
 	    ty[j]:copy(xy[j][2])
@@ -83,7 +83,8 @@ local function create_criterion(model)
 end
 local function transformer(x, is_validation, n, offset)
    x = compression.decompress(x)
-   n = n or settings.batch_size;
+   n = n or settings.patches
+
    if is_validation == nil then is_validation = false end
    local random_color_noise_rate = nil 
    local random_overlay_rate = nil
@@ -110,6 +111,7 @@ local function transformer(x, is_validation, n, offset)
 					 random_half_rate = settings.random_half_rate,
 					 random_color_noise_rate = random_color_noise_rate,
 					 random_overlay_rate = random_overlay_rate,
+					 random_unsharp_mask_rate = settings.random_unsharp_mask_rate,
 					 max_size = settings.max_size,
 					 active_cropping_rate = active_cropping_rate,
 					 active_cropping_tries = active_cropping_tries,
@@ -125,8 +127,9 @@ local function transformer(x, is_validation, n, offset)
 					random_half_rate = settings.random_half_rate,
 					random_color_noise_rate = random_color_noise_rate,
 					random_overlay_rate = random_overlay_rate,
+					random_unsharp_mask_rate = settings.random_unsharp_mask_rate,
 					max_size = settings.max_size,
-					jpeg_sampling_factors = settings.jpeg_sampling_factors,
+					jpeg_chroma_subsampling_rate = settings.jpeg_chroma_subsampling_rate,
 					active_cropping_rate = active_cropping_rate,
 					active_cropping_tries = active_cropping_tries,
 					nr_rate = settings.nr_rate,
@@ -135,7 +138,24 @@ local function transformer(x, is_validation, n, offset)
    end
 end
 
+local function resampling(x, y, train_x, transformer, input_size, target_size)
+   print("## resampling")
+   for t = 1, #train_x do
+      xlua.progress(t, #train_x)
+      local xy = transformer(train_x[t], false, settings.patches)
+      for i = 1, #xy do
+	 local index = (t - 1) * settings.patches + i
+         x[index]:copy(xy[i][1])
+	 y[index]:copy(xy[i][2])
+      end
+      if t % 50 == 0 then
+	 collectgarbage()
+      end
+   end
+end
+
 local function train()
+   local LR_MIN = 1.0e-5
    local model = srcnn.create(settings.method, settings.backend, settings.color)
    local offset = reconstruct.offset_size(model)
    local pairwise_func = function(x, is_validation, n)
@@ -143,12 +163,12 @@ local function train()
    end
    local criterion = create_criterion(model)
    local x = torch.load(settings.images)
-   local lrd_count = 0
    local train_x, valid_x = split_data(x, math.floor(settings.validation_rate * #x))
    local adam_config = {
       learningRate = settings.learning_rate,
       xBatchSize = settings.batch_size,
    }
+   local lrd_count = 0
    local ch = nil
    if settings.color == "y" then
       ch = 1
@@ -159,48 +179,70 @@ local function train()
    print("# make validation-set")
    local valid_xy = make_validation_set(valid_x, pairwise_func,
 					settings.validation_crops,
-					settings.batch_size)
+					settings.patches)
    valid_x = nil
    
    collectgarbage()
    model:cuda()
    print("load .. " .. #train_x)
+
+   local x = torch.Tensor(settings.patches * #train_x,
+			  ch, settings.crop_size, settings.crop_size)
+   local y = torch.Tensor(settings.patches * #train_x,
+			  ch * (settings.crop_size - offset * 2) * (settings.crop_size - offset * 2)):zero()
+
    for epoch = 1, settings.epoch do
       model:training()
       print("# " .. epoch)
-      print(minibatch_adam(model, criterion, train_x, adam_config,
-			   pairwise_func,
-			   {ch, settings.crop_size, settings.crop_size},
-			   {ch, settings.crop_size - offset * 2, settings.crop_size - offset * 2}
-			  ))
-      model:evaluate()
-      print("# validation")
-      local score = validate(model, criterion, valid_xy)
-      if score < best_score then
-	 local test_image = image_loader.load_float(settings.test) -- reload
-	 lrd_count = 0
-	 best_score = score
-	 print("* update best model")
-	 torch.save(settings.model_file, model)
-	 if settings.method == "noise" then
-	    local log = path.join(settings.model_dir,
-				  ("noise%d_best.png"):format(settings.noise_level))
-	    save_test_jpeg(model, test_image, log)
-	 elseif settings.method == "scale" then
-	    local log = path.join(settings.model_dir,
-				  ("scale%.1f_best.png"):format(settings.scale))
-	    save_test_scale(model, test_image, log)
-	 end
-      else
-	 lrd_count = lrd_count + 1
-	 if lrd_count > 5 then
+      resampling(x, y, train_x, pairwise_func)
+      for i = 1, settings.inner_epoch do
+	 print(minibatch_adam(model, criterion, x, y, adam_config))
+	 model:evaluate()
+	 print("# validation")
+	 local score = validate(model, criterion, valid_xy)
+	 if score < best_score then
+	    local test_image = image_loader.load_float(settings.test) -- reload
 	    lrd_count = 0
-	    adam_config.learningRate = adam_config.learningRate * 0.9
-	    print("* learning rate decay: " .. adam_config.learningRate)
+	    best_score = score
+	    print("* update best model")
+	    if settings.save_history then
+	       local model_clone = model:clone()
+	       w2nn.cleanup_model(model_clone)
+	       torch.save(string.format(settings.model_file, epoch, i), model_clone)
+	       if settings.method == "noise" then
+		  local log = path.join(settings.model_dir,
+					("noise%d_best.%d-%d.png"):format(settings.noise_level,
+									  epoch, i))
+		  save_test_jpeg(model, test_image, log)
+	       elseif settings.method == "scale" then
+		  local log = path.join(settings.model_dir,
+					("scale%.1f_best.%d-%d.png"):format(settings.scale,
+									    epoch, i))
+		  save_test_scale(model, test_image, log)
+	       end
+	    else
+	       torch.save(settings.model_file, model)
+	       if settings.method == "noise" then
+		  local log = path.join(settings.model_dir,
+					("noise%d_best.png"):format(settings.noise_level))
+		  save_test_jpeg(model, test_image, log)
+	       elseif settings.method == "scale" then
+		  local log = path.join(settings.model_dir,
+					("scale%.1f_best.png"):format(settings.scale))
+		  save_test_scale(model, test_image, log)
+	       end
+	    end
+	 else
+	    lrd_count = lrd_count + 1
+	    if lrd_count > 2 and adam_config.learningRate > LR_MIN then
+	       adam_config.learningRate = adam_config.learningRate * 0.8
+	       print("* learning rate decay: " .. adam_config.learningRate)
+	       lrd_count = 0
+	    end
 	 end
+	 print("current: " .. score .. ", best: " .. best_score)
+	 collectgarbage()
       end
-      print("current: " .. score .. ", best: " .. best_score)
-      collectgarbage()
    end
 end
 if settings.gpu > 0 then

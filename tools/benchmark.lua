@@ -23,6 +23,7 @@ cmd:option("-noise_level", 1, 'model noise level')
 cmd:option("-jpeg_quality", 75, 'jpeg quality')
 cmd:option("-jpeg_times", 1, 'jpeg compression times')
 cmd:option("-jpeg_quality_down", 5, 'value of jpeg quality to decrease each times')
+cmd:option("-range_bug", 0, 'Reproducing the dynamic range bug that is caused by MATLAB\'s rgb2ycbcr(1|0)')
 
 local opt = cmd:parse(arg)
 torch.setdefaulttensortype('torch.FloatTensor')
@@ -41,25 +42,33 @@ local function rgb2y_matlab(x)
    return y:byte():float()
 end
 
-local function MSE(x1, x2)
+local function RGBMSE(x1, x2)
    x1 = iproc.float2byte(x1):float()
    x2 = iproc.float2byte(x2):float()
    return (x1 - x2):pow(2):mean()
 end
 local function YMSE(x1, x2)
-   local x1_2 = rgb2y_matlab(x1)
-   local x2_2 = rgb2y_matlab(x2)
-   return (x1_2 - x2_2):pow(2):mean()
+   if opt.range_bug == 1 then
+      local x1_2 = rgb2y_matlab(x1)
+      local x2_2 = rgb2y_matlab(x2)
+      return (x1_2 - x2_2):pow(2):mean()
+   else
+      local x1_2 = image.rgb2y(x1):mul(255.0)
+      local x2_2 = image.rgb2y(x2):mul(255.0)
+      return (x1_2 - x2_2):pow(2):mean()
+   end
 end
-local function PSNR(x1, x2)
-   local mse = MSE(x1, x2)
+local function MSE(x1, x2, color)
+   if color == "y" then
+      return YMSE(x1, x2)
+   else
+      return RGBMSE(x1, x2)
+   end
+end
+local function PSNR(x1, x2, color)
+   local mse = MSE(x1, x2, color)
    return 10 * math.log10((255.0 * 255.0) / mse)
 end
-local function YPSNR(x1, x2)
-   local mse = YMSE(x1, x2)
-   return 10 * math.log10((255.0 * 255.0) / mse)
-end
-
 local function transform_jpeg(x, opt)
    for i = 1, opt.jpeg_times do
       jpeg = gm.Image(x, "RGB", "DHW")
@@ -69,7 +78,7 @@ local function transform_jpeg(x, opt)
       jpeg:fromBlob(blob, len)
       x = jpeg:toTensor("byte", "RGB", "DHW")
    end
-   return x
+   return iproc.byte2float(x)
 end
 local function baseline_scale(x, filter)
    return iproc.scale(x,
@@ -110,62 +119,47 @@ local function benchmark(opt, x, input_func, model1, model2)
 	 end
 	 baseline_output = baseline_scale(input, opt.filter)
       end
-      if opt.color == "y" then
-	 model1_mse = model1_mse + YMSE(ground_truth, model1_output)
-	 model1_psnr = model1_psnr + YPSNR(ground_truth, model1_output)
-	 if model2 then
-	    model2_mse = model2_mse + YMSE(ground_truth, model2_output)
-	    model2_psnr = model2_psnr + YPSNR(ground_truth, model2_output)
-	 end
-	 if baseline_output then
-	    baseline_mse = baseline_mse + YMSE(ground_truth, baseline_output)
-	    baseline_psnr = baseline_psnr + YPSNR(ground_truth, baseline_output)
-	 end
-      elseif opt.color == "rgb" then
-	 model1_mse = model1_mse + MSE(ground_truth, model1_output)
-	 model1_psnr = model1_psnr + PSNR(ground_truth, model1_output)
-	 if model2 then
-	    model2_mse = model2_mse + MSE(ground_truth, model2_output)
-	    model2_psnr = model2_psnr + PSNR(ground_truth, model2_output)
-	 end
-	 if baseline_output then
-	    baseline_mse = baseline_mse + MSE(ground_truth, baseline_output)
-	    baseline_psnr = baseline_psnr + PSNR(ground_truth, baseline_output)
-	 end
-      else
-	 error("Unknown color: " .. opt.color)
+      model1_mse = model1_mse + MSE(ground_truth, model1_output, opt.color)
+      model1_psnr = model1_psnr + PSNR(ground_truth, model1_output, opt.color)
+      if model2 then
+	 model2_mse = model2_mse + MSE(ground_truth, model2_output, opt.color)
+	 model2_psnr = model2_psnr + PSNR(ground_truth, model2_output, opt.color)
+      end
+      if baseline_output then
+	 baseline_mse = baseline_mse + MSE(ground_truth, baseline_output, opt.color)
+	 baseline_psnr = baseline_psnr + PSNR(ground_truth, baseline_output, opt.color)
       end
       if model2 then
 	 if baseline_output then
 	    io.stdout:write(
-	       string.format("%d/%d; baseline_mse=%f, model1_mse=%f, model2_mse=%f, baseline_psnr=%f, model1_psnr=%f, model2_psnr=%f \r",
+	       string.format("%d/%d; baseline_rmse=%f, model1_rmse=%f, model2_rmse=%f, baseline_psnr=%f, model1_psnr=%f, model2_psnr=%f \r",
 			     i, #x,
-			     baseline_mse / i,
-			     model1_mse / i, model2_mse / i,
+			     math.sqrt(baseline_mse / i),
+			     math.sqrt(model1_mse / i), math.sqrt(model2_mse / i),
 			     baseline_psnr / i,
 			     model1_psnr / i, model2_psnr / i
 	    ))
 	 else
 	    io.stdout:write(
-	       string.format("%d/%d; model1_mse=%f, model2_mse=%f, model1_psnr=%f, model2_psnr=%f \r",
+	       string.format("%d/%d; model1_rmse=%f, model2_rmse=%f, model1_psnr=%f, model2_psnr=%f \r",
 			     i, #x,
-			     model1_mse / i, model2_mse / i,
+			     math.sqrt(model1_mse / i), math.sqrt(model2_mse / i),
 			     model1_psnr / i, model2_psnr / i
 	    ))
 	 end
       else
 	 if baseline_output then
 	    io.stdout:write(
-	       string.format("%d/%d; baseline_mse=%f, model1_mse=%f, baseline_psnr=%f, model1_psnr=%f \r",
+	       string.format("%d/%d; baseline_rmse=%f, model1_rmse=%f, baseline_psnr=%f, model1_psnr=%f \r",
 			     i, #x,
-			     baseline_mse / i, model1_mse / i,
+			     math.sqrt(baseline_mse / i), math.sqrt(model1_mse / i),
 			     baseline_psnr / i, model1_psnr / i
 	    ))
 	 else
 	    io.stdout:write(
-	       string.format("%d/%d; model1_mse=%f, model1_psnr=%f \r",
+	       string.format("%d/%d; model1_rmse=%f, model1_psnr=%f \r",
 			     i, #x,
-			     model1_mse / i, model1_psnr / i
+			     math.sqrt(model1_mse / i), model1_psnr / i
 	    ))
 	 end
       end

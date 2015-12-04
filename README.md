@@ -1,6 +1,7 @@
 # waifu2x
 
-Image Super-Resolution for anime-style-art using Deep Convolutional Neural Networks.
+Image Super-Resolution for Anime-style art using Deep Convolutional Neural Networks.
+And it supports photo.
 
 Demo-Application can be found at http://waifu2x.udp.jp/ .
 
@@ -122,6 +123,15 @@ th waifu2x.lua -m noise_scale -noise_level 2 -i input_image.png -o output_image.
 ```
 
 See also `th waifu2x.lua -h`.
+
+### Using photo model
+
+Please add `-model_dir models/photo` to command line option, if you want to use photo model.
+For example,
+
+```
+th waifu2x.lua -model_dir models/photo -m scale -i input_image.png -o output_image.png
+```
 
 ### Video Encoding
 

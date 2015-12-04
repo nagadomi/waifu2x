@@ -12,8 +12,9 @@ local iproc = require 'iproc'
 local reconstruct = require 'reconstruct'
 local image_loader = require 'image_loader'
 local alpha_util = require 'alpha_util'
+local gm = require 'graphicsmagick'
 
--- Notes:  turbo and xlua has different implementation of string:split().
+-- Note:  turbo and xlua has different implementation of string:split().
 --         Therefore, string:split() has conflict issue.
 --         In this script, use turbo's string:split().
 local turbo = require 'turbo'
@@ -36,13 +37,13 @@ if cudnn then
    cudnn.benchmark = false
 end
 local ART_MODEL_DIR = path.join(ROOT, "models", "anime_style_art_rgb")
-local PHOTO_MODEL_DIR = path.join(ROOT, "models", "ukbench")
+local PHOTO_MODEL_DIR = path.join(ROOT, "models", "photo")
 local art_noise1_model = torch.load(path.join(ART_MODEL_DIR, "noise1_model.t7"), "ascii")
 local art_noise2_model = torch.load(path.join(ART_MODEL_DIR, "noise2_model.t7"), "ascii")
 local art_scale2_model = torch.load(path.join(ART_MODEL_DIR, "scale2.0x_model.t7"), "ascii")
---local photo_scale2_model = torch.load(path.join(PHOTO_MODEL_DIR, "scale2.0x_model.t7"), "ascii")
---local photo_noise1_model = torch.load(path.join(PHOTO_MODEL_DIR, "noise1_model.t7"), "ascii")
---local photo_noise2_model = torch.load(path.join(PHOTO_MODEL_DIR, "noise2_model.t7"), "ascii")
+local photo_scale2_model = torch.load(path.join(PHOTO_MODEL_DIR, "scale2.0x_model.t7"), "ascii")
+local photo_noise1_model = torch.load(path.join(PHOTO_MODEL_DIR, "noise1_model.t7"), "ascii")
+local photo_noise2_model = torch.load(path.join(PHOTO_MODEL_DIR, "noise2_model.t7"), "ascii")
 local CLEANUP_MODEL = false -- if you are using the low memory GPU, you could use this flag.
 local CACHE_DIR = path.join(ROOT, "cache")
 local MAX_NOISE_IMAGE = 2560 * 2560
@@ -143,7 +144,7 @@ local function convert(x, alpha, options)
 	    x = reconstruct.image(art_noise2_model, x)
 	    cleanup_model(art_noise2_model)
 	 end
-      else --[[photo
+      else -- photo
 	 if options.border then
 	    x = alpha_util.make_border(x, alpha, reconstruct.offset_size(photo_scale2_model))
 	 end
@@ -163,7 +164,6 @@ local function convert(x, alpha, options)
 	    x = reconstruct.image(photo_noise2_model, x)
 	    cleanup_model(photo_noise2_model)
 	 end
-      --]]
       end
       image_loader.save_png(cache_file, x)
 
