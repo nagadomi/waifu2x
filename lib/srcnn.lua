@@ -9,7 +9,7 @@ function nn.SpatialConvolutionMM:reset(stdv)
    self.weight:normal(0, stdv)
    self.bias:zero()
 end
-if cudnn then
+if cudnn and cudnn.SpatialConvolution then
    function cudnn.SpatialConvolution:reset(stdv)
       stdv = math.sqrt(2 / ((1.0 + 0.1 * 0.1) * self.kW * self.kH * self.nOutputPlane))
       self.weight:normal(0, stdv)
