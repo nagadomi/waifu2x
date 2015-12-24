@@ -4,15 +4,25 @@ a { text-decoration: none; cursor: pointer; color: inherit; } a:hover { text-dec
 div, span, a, input	 { background-repeat: no-repeat; }
 
 
-
 body {
-    margin: 2em 0.5em 2em 2em;
-	padding: 0;
-    background: #fff;
+	width: 780px;
+	margin: 0 auto;
+	background: #f5f5f5;
 	color: #000;
 	font-size: 14px;
 	font-family: Tahoma, Arial, Verdana, sans-serif, Lucida Sans;
 	line-height: 1.5em;
+	text-align: center;
+}
+
+.allPage {
+	display: inline-block;
+	width: 700px;
+	margin: 15px auto;
+	padding: 5px 25px 10px 25px;
+	background: #fff;
+	border: 1px solid #000;
+	text-align: left;
 }
 
 .mainTitle {
@@ -40,7 +50,7 @@ body {
 }
 
 p {
-	max-width: 710px;
+	max-width: 700px;
 	margin: 0.4em 0;
 }
 p.margin1 { margin: 0.9em 0; }
@@ -56,6 +66,10 @@ p.margin1 { margin: 0.9em 0; }
 
 .blueLink {
 	color: #36b;
+}
+
+.grayLink {
+	color: #999;
 }
 
 
@@ -120,9 +134,13 @@ p.margin1 { margin: 0.9em 0; }
 }
 
 .bottomHint {
-	max-width: 710px;
+	max-width: 700px;
 	margin: 0.85em 0;
 	color: #999;
 	font-size: 0.85em;
 	line-height: 1.5em;
+}
+
+.bottomInfo {
+	text-align: center;
 }

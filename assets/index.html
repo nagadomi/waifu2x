@@ -11,61 +11,66 @@
 		<script type="text/javascript" src="ui.js"></script>
 	</head>
 	<body>
-		<div class="mainTitle"><!--
-			--><div class="mainTitle-text">waifu2x</div><!--
-			--><a href="index.html" class="flagLink first"><img src="img/flags/US.png" class="chooseLang"></a><!--
-			--><a href="index.ja.html" class="flagLink"><img src="img/flags/JP.png" class="chooseLang"></a><!--
-			--><a href="index.ru.html" class="flagLink"><img src="img/flags/RU.png" class="chooseLang"></a><!--
-		--></div>
-		<p>Single-Image Super-Resolution for Anime-Style Art using Deep Convolutional Neural Networks. And it supports photo.</p>
-		<p class="margin1 linksBox"><a href="https://raw.githubusercontent.com/nagadomi/waifu2x/master/images/slide.png" class="blueLink" target="_blank">Show full demonstration</a> | <a href="https://github.com/nagadomi/waifu2x" class="blueLink" target="_blank">Go to GitHub</a></p>
-		<img src="img/example2-zip.png" class="example">
-		
-		<div class="secondTitle">Convert image:</div>
-		
-		<form action="/api" method="POST" enctype="multipart/form-data" target="_blank">
-			<div class="optionBox first">
-				<div class="option-left">Image choosing:</div>
-				<div class="option-right">
-					<input type="text" id="url" name="url" placeholder="Type URL">
-					<div class="option-right-small">Or choose a file: <input type="file" id="file" name="file"></div>
+		<div class="allPage">
+			<div class="mainTitle"><!--
+				--><div class="mainTitle-text">waifu2x</div><!--
+				--><a href="index.html" class="flagLink first"><img src="img/flags/US.png" class="chooseLang"></a><!--
+				--><a href="index.ja.html" class="flagLink"><img src="img/flags/JP.png" class="chooseLang"></a><!--
+				--><a href="index.ru.html" class="flagLink"><img src="img/flags/RU.png" class="chooseLang"></a><!--
+			--></div>
+			<p>Single-Image Super-Resolution for Anime-Style Art using Deep Convolutional Neural Networks. And it supports photo.</p>
+			<p class="margin1 linksBox"><a href="https://raw.githubusercontent.com/nagadomi/waifu2x/master/images/slide.png" class="blueLink" target="_blank">Show full demonstration</a> | <a href="https://github.com/nagadomi/waifu2x" class="blueLink" target="_blank">Go to GitHub</a></p>
+			<img src="img/example2-zip.png" class="example">
+			
+			<div class="secondTitle">Convert image:</div>
+			
+			<form action="/api" method="POST" enctype="multipart/form-data" target="_blank">
+				<div class="optionBox first">
+					<div class="option-left">Image choosing:</div>
+					<div class="option-right">
+						<input type="text" id="url" name="url" placeholder="Type URL">
+						<div class="option-right-small">Or choose a file: <input type="file" id="file" name="file"></div>
+					</div>
+					<div class="option-hint">Limits: Size: 3MB, Noise Reduction: 2560x2560px, Upscaling: 1280x1280px.</div>
 				</div>
-				<div class="option-hint">Limits: Size: 3MB, Noise Reduction: 2560x2560px, Upscaling: 1280x1280px.</div>
-			</div>
-			
-			<div class="optionBox">
-				<div class="option-left">Style:</div>
-				<div class="option-right">
-					<label><input type="radio" name="style" class="radio fisrt" value="art" checked><span class="r-text">Artwork</span></label>
-					<label><input type="radio" name="style" class="radio" value="photo"><span class="r-text">Photo</span></label>
+				
+				<div class="optionBox">
+					<div class="option-left">Style:</div>
+					<div class="option-right">
+						<label><input type="radio" name="style" class="radio fisrt" value="art" checked><span class="r-text">Artwork</span></label>
+						<label><input type="radio" name="style" class="radio" value="photo"><span class="r-text">Photo</span></label>
+					</div>
 				</div>
-			</div>
-			
-			<div class="optionBox">
-				<div class="option-left">Noise Reduction:<div class="option-left-small">(expect JPEG artifact)</div></div>
-				<div class="option-right">
-					<label><input type="radio" name="noise" class="radio fisrt" value="0"><span class="r-text">None</span></label>
-					<label><input type="radio" name="noise" class="radio" value="1" checked><span class="r-text">Medium</span></label>
-					<label><input type="radio" name="noise" class="radio" value="2"><span class="r-text">High</span></label>
-					<label><input type="radio" name="noise" class="radio" value="3"><span class="r-text">Super (tmp)</span></label>
+				
+				<div class="optionBox">
+					<div class="option-left">Noise Reduction:<div class="option-left-small">(expect JPEG artifact)</div></div>
+					<div class="option-right">
+						<label><input type="radio" name="noise" class="radio fisrt" value="0"><span class="r-text">None</span></label>
+						<label><input type="radio" name="noise" class="radio" value="1" checked><span class="r-text">Medium</span></label>
+						<label><input type="radio" name="noise" class="radio" value="2"><span class="r-text">High</span></label>
+						<label><input type="radio" name="noise" class="radio" value="3"><span class="r-text">Super (tmp)</span></label>
+					</div>
+					<div class="option-hint">You need use noise reduction if image actually has noise or it may cause opposite effect.</div>
 				</div>
-				<div class="option-hint">You need use noise reduction if image actually has noise or it may cause opposite effect.</div>
-			</div>
-			
-			<div class="optionBox">
-				<div class="option-left">Upscaling:<div class="option-left-small"></div></div>
-				<div class="option-right">
-					<label><input type="radio" name="scale" class="radio fisrt" value="0" checked><span class="r-text">None</span></label>
-					<label><input type="radio" name="scale" class="radio" value="1"><span class="r-text">1.6x</span></label>
-					<label><input type="radio" name="scale" class="radio" value="2"><span class="r-text">2x</span></label>
+				
+				<div class="optionBox">
+					<div class="option-left">Upscaling:<div class="option-left-small"></div></div>
+					<div class="option-right">
+						<label><input type="radio" name="scale" class="radio fisrt" value="0" checked><span class="r-text">None</span></label>
+						<label><input type="radio" name="scale" class="radio" value="1"><span class="r-text">1.6x</span></label>
+						<label><input type="radio" name="scale" class="radio" value="2"><span class="r-text">2x</span></label>
+					</div>
 				</div>
-			</div>
-			
-			<input type="submit" class="button" value="Convert">
-			<input type="submit" name="download" value="Download" class="button">
-			
-			<div class="bottomHint">If you are using Firefox, Please press the CTRL+S key to save image. "Save Image" option doesn't work.</div>
-			<!--<div class="bottomHint">This website uses Google Analytics to help us improve the website content.</div>-->
-		</form>
+				
+				<input type="submit" class="button" value="Convert">
+				<input type="submit" name="download" value="Download" class="button">
+				
+				<div class="bottomHint">If you are using Firefox, Please press the CTRL+S key to save image. "Save Image" option doesn't work.</div>
+				<!--<div class="bottomHint">This website uses Google Analytics to help us improve the website content.</div>-->
+			</form>
+		</div>
+		<div class="bottomInfo">
+			<a href="https://github.com/nagadomi/waifu2x" class="grayLink" target="_blank">waifu2x</a>
+		</div>
 	</body>
 </html>

@@ -11,62 +11,67 @@
 		<script type="text/javascript" src="ui.js"></script>
 	</head>
 	<body>
-		<div class="mainTitle"><!--
-			--><div class="mainTitle-text">waifu2x</div><!--
-			--><a href="index.html" class="flagLink first"><img src="img/flags/US.png" class="chooseLang"></a><!--
-			--><a href="index.ja.html" class="flagLink"><img src="img/flags/JP.png" class="chooseLang"></a><!--
-			--><a href="index.ru.html" class="flagLink"><img src="img/flags/RU.png" class="chooseLang"></a><!--
-		--></div>
-		<p>Waifu2x позволяет увеличивать в 4 раза рисованные изображения, например аниме или арт, а также устранять шум на изображении (преимущественно артефакты сжатия JPEG).</p>
-		<p>Теперь также поддерживаются фотографии.</p>
-		<p class="margin1 linksBox"><a href="https://raw.githubusercontent.com/nagadomi/waifu2x/master/images/slide.png" class="blueLink" target="_blank">Посмотреть полную демонстрацию</a> | <a href="https://github.com/nagadomi/waifu2x" class="blueLink" target="_blank">Перейти на GitHub</a></p>
-		<img src="img/example2-zip.png" class="example">
-		
-		<div class="secondTitle">Преобразовать изображение:</div>
-		
-		<form action="/api" method="POST" enctype="multipart/form-data" target="_blank">
-			<div class="optionBox first">
-				<div class="option-left">Выбор изображения:</div>
-				<div class="option-right">
-					<input type="text" id="url" name="url" placeholder="Укажите URL">
-					<div class="option-right-small">Либо выберите файл: <input type="file" id="file" name="file"></div>
+		<div class="allPage">
+			<div class="mainTitle"><!--
+				--><div class="mainTitle-text">waifu2x</div><!--
+				--><a href="index.html" class="flagLink first"><img src="img/flags/US.png" class="chooseLang"></a><!--
+				--><a href="index.ja.html" class="flagLink"><img src="img/flags/JP.png" class="chooseLang"></a><!--
+				--><a href="index.ru.html" class="flagLink"><img src="img/flags/RU.png" class="chooseLang"></a><!--
+			--></div>
+			<p>Waifu2x позволяет увеличивать в 4 раза рисованные изображения, например аниме или арт, а также устранять шум на изображении (преимущественно артефакты сжатия JPEG).</p>
+			<p>Теперь также поддерживаются фотографии.</p>
+			<p class="margin1 linksBox"><a href="https://raw.githubusercontent.com/nagadomi/waifu2x/master/images/slide.png" class="blueLink" target="_blank">Посмотреть полную демонстрацию</a> | <a href="https://github.com/nagadomi/waifu2x" class="blueLink" target="_blank">Перейти на GitHub</a></p>
+			<img src="img/example2-zip.png" class="example">
+			
+			<div class="secondTitle">Преобразовать изображение:</div>
+			
+			<form action="/api" method="POST" enctype="multipart/form-data" target="_blank">
+				<div class="optionBox first">
+					<div class="option-left">Выбор изображения:</div>
+					<div class="option-right">
+						<input type="text" id="url" name="url" placeholder="Укажите URL">
+						<div class="option-right-small">Либо выберите файл: <input type="file" id="file" name="file"></div>
+					</div>
+					<div class="option-hint">Макс. размер файла — 2MB, устранение шума — макс. 2560x2560px, апскейл — 1280x1280px.</div>
 				</div>
-				<div class="option-hint">Макс. размер файла — 2MB, устранение шума — макс. 2560x2560px, апскейл — 1280x1280px.</div>
-			</div>
-			
-			<div class="optionBox">
-				<div class="option-left">Тип изображения:</div>
-				<div class="option-right">
-					<label><input type="radio" name="style" class="radio fisrt" value="art" checked><span class="r-text">Арт</span></label>
-					<label><input type="radio" name="style" class="radio" value="photo"><span class="r-text">Фотография</span></label>
+				
+				<div class="optionBox">
+					<div class="option-left">Тип изображения:</div>
+					<div class="option-right">
+						<label><input type="radio" name="style" class="radio fisrt" value="art" checked><span class="r-text">Арт</span></label>
+						<label><input type="radio" name="style" class="radio" value="photo"><span class="r-text">Фотография</span></label>
+					</div>
 				</div>
-			</div>
-			
-			<div class="optionBox">
-				<div class="option-left">Устранение шума:<div class="option-left-small">(артефактов JPEG)</div></div>
-				<div class="option-right">
-					<label><input type="radio" name="noise" class="radio fisrt" value="0"><span class="r-text">Нет</span></label>
-					<label><input type="radio" name="noise" class="radio" value="1" checked><span class="r-text">Средне</span></label>
-					<label><input type="radio" name="noise" class="radio" value="2"><span class="r-text">Сильно</span></label>
-					<label><input type="radio" name="noise" class="radio" value="3"><span class="r-text">Очень сильно (эксперим.)</span></label>
+				
+				<div class="optionBox">
+					<div class="option-left">Устранение шума:<div class="option-left-small">(артефактов JPEG)</div></div>
+					<div class="option-right">
+						<label><input type="radio" name="noise" class="radio fisrt" value="0"><span class="r-text">Нет</span></label>
+						<label><input type="radio" name="noise" class="radio" value="1" checked><span class="r-text">Средне</span></label>
+						<label><input type="radio" name="noise" class="radio" value="2"><span class="r-text">Сильно</span></label>
+						<label><input type="radio" name="noise" class="radio" value="3"><span class="r-text">Очень сильно (эксперим.)</span></label>
+					</div>
+					<div class="option-hint">Устранение шума нужно использовать, если на картинке действительно есть шум, иначе это даст противоположный эффект.</div>
 				</div>
-				<div class="option-hint">Устранение шума нужно использовать, если на картинке действительно есть шум, иначе это даст противоположный эффект.</div>
-			</div>
-			
-			<div class="optionBox">
-				<div class="option-left">Апскейл:<div class="option-left-small">(увеличение размера)</div></div>
-				<div class="option-right">
-					<label><input type="radio" name="scale" class="radio fisrt" value="0" checked><span class="r-text">Нет</span></label>
-					<label><input type="radio" name="scale" class="radio" value="1"><span class="r-text">1.6x</span></label>
-					<label><input type="radio" name="scale" class="radio" value="2"><span class="r-text">2x</span></label>
+				
+				<div class="optionBox">
+					<div class="option-left">Апскейл:<div class="option-left-small">(увеличение размера)</div></div>
+					<div class="option-right">
+						<label><input type="radio" name="scale" class="radio fisrt" value="0" checked><span class="r-text">Нет</span></label>
+						<label><input type="radio" name="scale" class="radio" value="1"><span class="r-text">1.6x</span></label>
+						<label><input type="radio" name="scale" class="radio" value="2"><span class="r-text">2x</span></label>
+					</div>
 				</div>
-			</div>
-			
-			<input type="submit" class="button" value="Преобразовать">
-			<input type="submit" name="download" value="Скачать" class="button">
-			
-			<div class="bottomHint">Если Вы используете Firefox, для сохранения изображения нажмите Ctrl+S (перетаскивание изображения и опция "Сохранить изображение" работать не будут).</div>
-			<!--<div class="bottomHint">Этот сайт использует Google Analytics, чтобы помочь нам повысить качество содержания сайта.</div>-->
-		</form>
+				
+				<input type="submit" class="button" value="Преобразовать">
+				<input type="submit" name="download" value="Скачать" class="button">
+				
+				<div class="bottomHint">Если Вы используете Firefox, для сохранения изображения нажмите Ctrl+S (перетаскивание изображения и опция "Сохранить изображение" работать не будут).</div>
+				<!--<div class="bottomHint">Этот сайт использует Google Analytics, чтобы помочь нам повысить качество содержания сайта.</div>-->
+			</form>
+		</div>
+		<div class="bottomInfo">
+			<a href="https://github.com/nagadomi/waifu2x" class="grayLink" target="_blank">waifu2x</a>
+		</div>
 	</body>
 </html>
