@@ -1,57 +1,128 @@
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, font, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td { margin: 0; padding: 0; border: 0; outline: 0; vertical-align: top; background: transparent; } /*Reset style*/
+button::-moz-focus-inner, input[type="reset"]::-moz-focus-inner, input[type="button"]::-moz-focus-inner, input[type="submit"]::-moz-focus-inner, input[type="submit"]::-moz-focus-inner, input[type="file"] > input[type="button"]::-moz-focus-inner { border: none; }      input[type="checkbox"]:focus { -moz-outline-offset: -1px !important; -moz-outline: 1px solid #000 !important; }      :focus { outline: none; } /*Remove a dotted line around 1) buttons, 2) checkboxes, 3) links*/
+a { text-decoration: none; cursor: pointer; color: inherit; } a:hover { text-decoration: underline; }
+div, span, a, input	 { background-repeat: no-repeat; }
+
+
+
 body {
-    margin: 1em 2em 1em 2em;
-    background: LightGray;
-    width: 640px;
+    margin: 2em 0.5em 2em 2em;
+	padding: 0;
+    background: #fff;
+	color: #000;
+	font-size: 14px;
+	font-family: Tahoma, Arial, Verdana, sans-serif, Lucida Sans;
+	line-height: 1.5em;
 }
-fieldset {
-    margin-top: 1em;
-    margin-bottom: 1em;
+
+.mainTitle {
+	font-size: 2em;
+	font-weight: bold;
+	margin: 0.6em 0;
+	white-space: nowrap;
 }
-.about {
-    position: relative;
-    display: inline-block;
-    font-size: 0.9em;
-    padding: 1em 5px 0.2em 0;
+
+.mainTitle-text {
+	display: inline-block;
 }
-.help {
-    font-size: 0.8em;
-    margin: 1em 0 0 0;
+
+.flagLink {
+	display: inline-block;
 }
-.github-banner {
-    position:absolute;
-    display:block;
-    top:0;
-    left:540px;
-    max-height:140px;
+.flagLink.first { margin-left: 20px; }
+
+.chooseLang {
+	width: 24px;
+	height: 24px;
+	margin: 0 5px;
+	opacity: 0.9;
+	vertical-align: middle;
 }
-.github-banner-image {
-    position: absolute;
-    display: block; 
-    left: 0;
-    top: 0;
-    width: 149px;
-    height: 149px;
-    border: 0;
+
+p {
+	max-width: 710px;
+	margin: 0.4em 0;
 }
-.github-banner-link {
-    position: absolute;
-    display: block; 
-    left:0;
-    top:0; 
-    width:149px;
-    height:130px;
+p.margin1 { margin: 0.9em 0; }
+
+.linksBox {
+	color: #999;
 }
-.padding-left {
-    padding-left: 15px;
+
+.example {
+	width: 445px;
+	height: 200px;
 }
-.hide {
-    display: none;
+
+.blueLink {
+	color: #36b;
 }
-.experimental {
-    margin-bottom: 1em;
+
+
+
+.secondTitle {
+	font-size: 1.5em;
+	font-weight: bold;
+	margin: 2.4em 0 1.2em;
+	line-height: 1.3em;
 }
+
+.optionBox {
+	max-width: 800px;
+	margin: 1.5em 0;
+	white-space: nowrap;
+}
+
+.option-left {
+	display: inline-block;
+	width: 180px;
+	color: #777;
+	font-weight: bold;
+}
+
+.option-left-small {
+	font-size: 0.8em;
+	line-height: 1.5em;
+}
+
+.option-right {
+	display: inline-block;
+	white-space: normal;
+}
+
+.option-right-small {
+	margin-top: 2px;
+	font-size: 0.9em;
+}
+
+.option-hint {
+	margin: 0.5em 0;
+	color: #999;
+	font-size: 0.85em;
+	line-height: 1.5em;
+	white-space: normal;
+}
+
+#url {
+	width: 300px;
+}
+
+.radio.fisrt {
+	margin-left: 0;
+}
+.radio:checked + .r-text { color: #494; }
+
 .button {
-    min-width: 128px;
-    min-height: 2em;
-    margin: 4px;
+	min-width: 160px;
+	height: 26px;
+	margin: 0 10px 3px 0;
+	padding-bottom: 1px;
+}
+
+.bottomHint {
+	max-width: 710px;
+	margin: 0.85em 0;
+	color: #999;
+	font-size: 0.85em;
+	line-height: 1.5em;
 }

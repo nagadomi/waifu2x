@@ -1,65 +1,72 @@
 <!DOCTYPE html> 
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <link href="style.css" rel="stylesheet" type="text/css">
-    <title>waifu2x</title>
-    <link href="style.css" rel="stylesheet" type="text/css">
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
-    <script type="text/javascript" src="ui.js"></script>
-  </head>
-  <body>
-    <h1>waifu2x</h1>
-    <div class="header">
-      <div class="github-banner">
-        <img class="github-banner-image" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png">
-        <a class="github-banner-link" href="https://github.com/nagadomi/waifu2x" target="_blank"></a>
-      </div>
-      <a href="index.html">en</a>/<a href="index.ja.html">ja</a>/<a href="index.ru.html">ru</a>
-    </div>
-    <div class="about">
-      <div>Увеличение в 4 раза рисованных изображений, например, аниме или фан-арт, а также устранение шума (преимущественно артефактов сжатия JPEG), см. <a href="https://raw.githubusercontent.com/nagadomi/waifu2x/master/images/slide.png" target="_blank">демонстрацию и сравнения</a></div>
-    </div>
-    <form action="/api" method="POST" enctype="multipart/form-data" target="_blank">
-      <fieldset>
-        <legend>Выбор изображения</legend>
-        <div>
-          Указать URL: <input id="url" type="text" name="url" style="width:400px">
-        </div>
-        <div>
-          Или загрузить файл: <input id="file" type="file" name="file">
-        </div>
-        <div class="help">
-          Макс. размер файла — 2MB, устранение шума — макс. 2560x2560px, апскейл — 1280x1280px
-        </div>
-      </fieldset>
-      <fieldset>
-        <legend>Стиль</legend>
-        <label><input type="radio" name="style" value="art" checked>Произведение искусства</label>
-        <label><input type="radio" name="style" value="photo">фото</label>
-      </fieldset>
-      <fieldset class="noise-field">
-	<legend>Устранение шума (артефактов JPEG)</legend>
-        <label><input type="radio" name="noise" value="0"> Нет</label>
-        <label><input type="radio" name="noise" value="1" checked="checked"> Средне</label>
-        <label><input type="radio" name="noise" value="2"> Сильно</label>
-        <div class="help">Устранение шума нужно использовать, если на картинке действительно есть шум, иначе это даст противоположный эффект. Также не рекомендуется сильное устранение шума, оно даёт выгоду только в редких случаях, когда картинка изначально была сильно испорчена.</div>
-      </fieldset>
-      <fieldset>
-        <legend>Апскейл (увеличение размера)</legend>
-        <label><input type="radio" name="scale" value="0" checked="checked"> Нет</label>
-        <label><input type="radio" name="scale" value="1"> 1.6x</label>
-        <label><input type="radio" name="scale" value="2"> 2x</label>
-      </fieldset>
-      <input type="submit" class="button"><br>
-      <input type="submit" name="download" value="Download" class="button">
-    </form>
-    <div class="help">
-      <ul class="padding-left">
-        <li>Если Вы используете Firefox, для сохранения изображения Вам придётся нажать Ctrl+S (опция в меню "Сохранить изображение" работать не будет!)
-	</li>
-      </ul>
-    </div>
-  </body>
+<html lang="ru">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta charset="utf-8">
+		<title>waifu2x</title>
+		<link rel="shortcut icon" href="favicon.ico"/>
+		<link href="style.css" rel="stylesheet" type="text/css">
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+		<script type="text/javascript" src="ui.js"></script>
+	</head>
+	<body>
+		<div class="mainTitle"><!--
+			--><div class="mainTitle-text">waifu2x</div><!--
+			--><a href="index.html" class="flagLink first"><img src="img/flags/US.png" class="chooseLang"></a><!--
+			--><a href="index.ja.html" class="flagLink"><img src="img/flags/JP.png" class="chooseLang"></a><!--
+			--><a href="index.ru.html" class="flagLink"><img src="img/flags/RU.png" class="chooseLang"></a><!--
+		--></div>
+		<p>Waifu2x позволяет увеличивать в 4 раза рисованные изображения, например аниме или арт, а также устранять шум на изображении (преимущественно артефакты сжатия JPEG).</p>
+		<p>Теперь также поддерживаются фотографии.</p>
+		<p class="margin1 linksBox"><a href="https://raw.githubusercontent.com/nagadomi/waifu2x/master/images/slide.png" class="blueLink" target="_blank">Посмотреть полную демонстрацию</a> | <a href="https://github.com/nagadomi/waifu2x" class="blueLink" target="_blank">Перейти на GitHub</a></p>
+		<img src="img/example2-zip.png" class="example">
+		
+		<div class="secondTitle">Преобразовать изображение:</div>
+		
+		<form action="/api" method="POST" enctype="multipart/form-data" target="_blank">
+			<div class="optionBox first">
+				<div class="option-left">Выбор изображения:</div>
+				<div class="option-right">
+					<input type="text" id="url" name="url" placeholder="Укажите URL">
+					<div class="option-right-small">Либо выберите файл: <input type="file" id="file" name="file"></div>
+				</div>
+				<div class="option-hint">Макс. размер файла — 2MB, устранение шума — макс. 2560x2560px, апскейл — 1280x1280px.</div>
+			</div>
+			
+			<div class="optionBox">
+				<div class="option-left">Тип изображения:</div>
+				<div class="option-right">
+					<label><input type="radio" name="style" class="radio fisrt" value="art" checked><span class="r-text">Арт</span></label>
+					<label><input type="radio" name="style" class="radio" value="photo"><span class="r-text">Фотография</span></label>
+				</div>
+			</div>
+			
+			<div class="optionBox">
+				<div class="option-left">Устранение шума:<div class="option-left-small">(артефактов JPEG)</div></div>
+				<div class="option-right">
+					<label><input type="radio" name="noise" class="radio fisrt" value="0"><span class="r-text">Нет</span></label>
+					<label><input type="radio" name="noise" class="radio" value="1" checked><span class="r-text">Средне</span></label>
+					<label><input type="radio" name="noise" class="radio" value="2"><span class="r-text">Сильно</span></label>
+					<label><input type="radio" name="noise" class="radio" value="3"><span class="r-text">Очень сильно (эксперим.)</span></label>
+				</div>
+				<div class="option-hint">Устранение шума нужно использовать, если на картинке действительно есть шум, иначе это даст противоположный эффект.</div>
+			</div>
+			
+			<div class="optionBox">
+				<div class="option-left">Апскейл:<div class="option-left-small">(увеличение размера)</div></div>
+				<div class="option-right">
+					<label><input type="radio" name="scale" class="radio fisrt" value="0" checked><span class="r-text">Нет</span></label>
+					<label><input type="radio" name="scale" class="radio" value="1"><span class="r-text">1.6x</span></label>
+					<label><input type="radio" name="scale" class="radio" value="2"><span class="r-text">2x</span></label>
+				</div>
+			</div>
+			
+			<input type="submit" class="button" value="Преобразовать">
+			<input type="submit" name="download" value="Скачать" class="button">
+			
+			<div class="bottomHint">Если Вы используете Firefox, для сохранения изображения нажмите Ctrl+S (перетаскивание изображения и опция "Сохранить изображение" работать не будут).</div>
+			<!--<div class="bottomHint">Этот сайт использует Google Analytics, чтобы помочь нам повысить качество содержания сайта.</div>-->
+		</form>
+	</body>
 </html>

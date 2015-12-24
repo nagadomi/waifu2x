@@ -1,63 +1,71 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="ja">
-  <head>
-    <meta charset="UTF-8">
-    <link href="style.css" rel="stylesheet" type="text/css">
-    <title>waifu2x</title>
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
-    <script type="text/javascript" src="ui.js"></script>    
-  </head>
-  <body>
-    <h1>waifu2x</h1>
-    <div class="header">
-      <div class="github-banner">
-        <img class="github-banner-image" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png">
-        <a class="github-banner-link" href="https://github.com/nagadomi/waifu2x" target="_blank"></a>
-      </div>
-      <a href="index.html">en</a>/<a href="index.ja.html">ja</a>/<a href="index.ru.html">ru</a>
-    </div>
-    <div class="about">
-      <div>深層畳み込みニューラルネットワークによる二次元画像のための超解像システム. 写真にも対応. <a href="https://raw.githubusercontent.com/nagadomi/waifu2x/master/images/slide.png" target="_blank">about</a>.</div>
-    </div>
-    <form action="/api" method="POST" enctype="multipart/form-data" target="_blank">
-      <fieldset>
-        <legend>画像</legend>
-        <div>
-          URL: <input id="url" type="text" name="url" style="width:400px"> or
-        </div>
-        <div>
-          FILE: <input id="file" type="file" name="file">
-        </div>
-        <div class="help">
-          制限: サイズ: 2MB, ノイズ除去: 2560x2560px, 拡大: 1280x1280px
-        </div>
-      </fieldset>
-      <fieldset>
-        <legend>スタイル</legend>
-        <label><input type="radio" name="style" value="art" checked>イラスト</label>
-        <label><input type="radio" name="style" value="photo">写真</label>
-      </fieldset>
-      <fieldset class="noise-field">
-        <legend>ノイズ除去 (JPEGノイズを想定)</legend>
-        <label><input type="radio" name="noise" value="0"> なし</label>
-        <label><input type="radio" name="noise" value="1" checked="checked"> 弱</label>
-        <label><input type="radio" name="noise" value="2"> 強</label>
-      </fieldset>
-      <fieldset>
-        <legend>拡大</legend>
-        <label><input type="radio" name="scale" value="0" checked="checked"> なし</label>
-        <label><input type="radio" name="scale" value="1"> 1.6x</label>
-        <label><input type="radio" name="scale" value="2"> 2x</label>
-      </fieldset>
-      <input type="submit" value="実行" class="button"><br>
-      <input type="submit" name="download" value="ダウンロード" class="button">
-    </form>
-    <div class="help">
-      <ul class="padding-left">
-        <li>なし/なしで入力画像を変換せずに出力する。ブラウザのタブで変換結果を比較したい人用。
-        <li>Firefoxの方は、右クリから画像が保存できないようなので、CTRL+SキーかALTキー後 ファイル - ページを保存 で画像を保存してください。
-      </ul>
-    </div>
-  </body>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta charset="utf-8">
+		<title>waifu2x</title>
+		<link rel="shortcut icon" href="favicon.ico"/>
+		<link href="style.css" rel="stylesheet" type="text/css">
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+		<script type="text/javascript" src="ui.js"></script>
+	</head>
+	<body>
+		<div class="mainTitle"><!--
+			--><div class="mainTitle-text">waifu2x</div><!--
+			--><a href="index.html" class="flagLink first"><img src="img/flags/US.png" class="chooseLang"></a><!--
+			--><a href="index.ja.html" class="flagLink"><img src="img/flags/JP.png" class="chooseLang"></a><!--
+			--><a href="index.ru.html" class="flagLink"><img src="img/flags/RU.png" class="chooseLang"></a><!--
+		--></div>
+		<p>深層畳み込みニューラルネットワークによる二次元画像のための超解像システム。 写真にも対応。</p>
+		<p class="margin1 linksBox"><a href="https://raw.githubusercontent.com/nagadomi/waifu2x/master/images/slide.png" class="blueLink" target="_blank">デモンストレーションを見ます</a> | <a href="https://github.com/nagadomi/waifu2x" class="blueLink" target="_blank">GitHubに行きます</a></p>
+		<img src="img/example2-zip.png" class="example">
+		
+		<div class="secondTitle">画像を変換します:</div>
+		
+		<form action="/api" method="POST" enctype="multipart/form-data" target="_blank">
+			<div class="optionBox first">
+				<div class="option-left">画像:</div>
+				<div class="option-right">
+					<input type="text" id="url" name="url" placeholder="URLを書いてか">
+					<div class="option-right-small">ファイルを選んでください: <input type="file" id="file" name="file"></div>
+				</div>
+				<div class="option-hint">制限: サイズ: 3MB, ノイズ除去: 2560x2560px, 拡大後: 2560x2560px</div>
+			</div>
+			
+			<div class="optionBox">
+				<div class="option-left">スタイル:</div>
+				<div class="option-right">
+					<label><input type="radio" name="style" class="radio fisrt" value="art" checked><span class="r-text">イラスト</span></label>
+					<label><input type="radio" name="style" class="radio" value="photo"><span class="r-text">写真</span></label>
+				</div>
+			</div>
+			
+			<div class="optionBox">
+				<div class="option-left">ノイズ除去:<div class="option-left-small">(JPEGノイズを想定)</div></div>
+				<div class="option-right">
+					<label><input type="radio" name="noise" class="radio fisrt" value="0"><span class="r-text">なし</span></label>
+					<label><input type="radio" name="noise" class="radio" value="1" checked><span class="r-text">弱</span></label>
+					<label><input type="radio" name="noise" class="radio" value="2"><span class="r-text">強</span></label>
+					<label><input type="radio" name="noise" class="radio" value="3"><span class="r-text">スーパー</span></label>
+				</div>
+				<div class="option-hint">画像はノイズがなければノイズ除去すると逆効果を引き起こす可能性があります。</div>
+			</div>
+			
+			<div class="optionBox">
+				<div class="option-left">拡大:<div class="option-left-small"></div></div>
+				<div class="option-right">
+					<label><input type="radio" name="scale" class="radio fisrt" value="0" checked><span class="r-text">なし</span></label>
+					<label><input type="radio" name="scale" class="radio" value="1"><span class="r-text">1.6x</span></label>
+					<label><input type="radio" name="scale" class="radio" value="2"><span class="r-text">2x</span></label>
+				</div>
+			</div>
+			
+			<input type="submit" class="button" value="実行">
+			<input type="submit" name="download" value="結果を保存" class="button">
+			
+			<div class="bottomHint">Firefoxの方は、右クリから画像が保存できないようなので、CTRL+SキーかALTキー後 ファイル - ページを保存 で画像を保存してください。</div>
+			<!--<div class="bottomHint">本サイトは、コンテンツ改善のために Google Analytics を使用しています。 </div>-->
+		</form>
+	</body>
 </html>

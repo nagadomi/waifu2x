@@ -1,65 +1,71 @@
 <!DOCTYPE html> 
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <title>waifu2x</title>
-    <link href="style.css" rel="stylesheet" type="text/css">
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
-    <script type="text/javascript" src="ui.js"></script>
-  </head>
-  <body>
-    <h1>waifu2x</h1>
-    <div class="header">
-      <div class="github-banner">
-        <img class="github-banner-image" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png">
-        <a class="github-banner-link" href="https://github.com/nagadomi/waifu2x" target="_blank"></a>
-      </div>
-      <a href="index.html">en</a>/<a href="index.ja.html">ja</a>/<a href="index.ru.html">ru</a>
-    </div>
-    <div class="about">
-      <div>Single-Image Super-Resolution for Anime-Style Art using Deep Convolutional Neural Networks. And it supports photo. <a href="https://raw.githubusercontent.com/nagadomi/waifu2x/master/images/slide.png" target="_blank">about</a>.</div>
-    </div>
-    <form action="/api" method="POST" enctype="multipart/form-data" target="_blank">
-      <fieldset>
-        <legend>Image</legend>
-        <div>
-          URL: <input id="url" type="text" name="url" style="width:400px"> or
-        </div>
-        <div>
-          FILE: <input id="file" type="file" name="file">
-        </div>
-        <div class="help">
-          Limits: Size: 2MB, Noise Reduction: 2560x2560px, Upscaling: 1280x1280px
-        </div>
-      </fieldset>
-      <fieldset>
-        <legend>Style</legend>
-        <label><input type="radio" name="style" value="art" checked>Art</label>
-        <label><input type="radio" name="style" value="photo">Photo</label>
-      </fieldset>
-      <fieldset class="noise-field">
-        <legend>Noise Reduction (expect JPEG Artifact)</legend>
-        <label><input type="radio" name="noise" value="0"> None</label>
-        <label><input type="radio" name="noise" value="1" checked="checked"> Medium</label>
-        <label><input type="radio" name="noise" value="2"> High</label>
-        <div class="help">
-	  When using 2x scaling, we never recommend to use high level of noise reduction, it almost always makes image worse, it makes sense for only some rare cases when image had really bad quality from the beginning.
-	</div>
-      </fieldset>
-      <fieldset>
-        <legend>Upscaling</legend>
-        <label><input type="radio" name="scale" value="0" checked="checked"> None</label>
-        <label><input type="radio" name="scale" value="1"> 1.6x</label>
-        <label><input type="radio" name="scale" value="2"> 2x</label>
-      </fieldset>
-      <input type="submit" class="button"/><br>
-      <input type="submit" name="download" value="Download" class="button"/>
-    </form>
-    <div class="help">
-      <ul class="padding-left">
-        <li>If you are using Firefox, Please press the CTRL+S key to save image. "Save Image" option doesn't work.
-      </ul>
-    </div>
-  </body>
+<html lang="en-us">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta charset="utf-8">
+		<title>waifu2x</title>
+		<link rel="shortcut icon" href="favicon.ico"/>
+		<link href="style.css" rel="stylesheet" type="text/css">
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+		<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+		<script type="text/javascript" src="ui.js"></script>
+	</head>
+	<body>
+		<div class="mainTitle"><!--
+			--><div class="mainTitle-text">waifu2x</div><!--
+			--><a href="index.html" class="flagLink first"><img src="img/flags/US.png" class="chooseLang"></a><!--
+			--><a href="index.ja.html" class="flagLink"><img src="img/flags/JP.png" class="chooseLang"></a><!--
+			--><a href="index.ru.html" class="flagLink"><img src="img/flags/RU.png" class="chooseLang"></a><!--
+		--></div>
+		<p>Single-Image Super-Resolution for Anime-Style Art using Deep Convolutional Neural Networks. And it supports photo.</p>
+		<p class="margin1 linksBox"><a href="https://raw.githubusercontent.com/nagadomi/waifu2x/master/images/slide.png" class="blueLink" target="_blank">Show full demonstration</a> | <a href="https://github.com/nagadomi/waifu2x" class="blueLink" target="_blank">Go to GitHub</a></p>
+		<img src="img/example2-zip.png" class="example">
+		
+		<div class="secondTitle">Convert image:</div>
+		
+		<form action="/api" method="POST" enctype="multipart/form-data" target="_blank">
+			<div class="optionBox first">
+				<div class="option-left">Image choosing:</div>
+				<div class="option-right">
+					<input type="text" id="url" name="url" placeholder="Type URL">
+					<div class="option-right-small">Or choose a file: <input type="file" id="file" name="file"></div>
+				</div>
+				<div class="option-hint">Limits: Size: 3MB, Noise Reduction: 2560x2560px, Upscaling: 1280x1280px.</div>
+			</div>
+			
+			<div class="optionBox">
+				<div class="option-left">Style:</div>
+				<div class="option-right">
+					<label><input type="radio" name="style" class="radio fisrt" value="art" checked><span class="r-text">Artwork</span></label>
+					<label><input type="radio" name="style" class="radio" value="photo"><span class="r-text">Photo</span></label>
+				</div>
+			</div>
+			
+			<div class="optionBox">
+				<div class="option-left">Noise Reduction:<div class="option-left-small">(expect JPEG artifact)</div></div>
+				<div class="option-right">
+					<label><input type="radio" name="noise" class="radio fisrt" value="0"><span class="r-text">None</span></label>
+					<label><input type="radio" name="noise" class="radio" value="1" checked><span class="r-text">Medium</span></label>
+					<label><input type="radio" name="noise" class="radio" value="2"><span class="r-text">High</span></label>
+					<label><input type="radio" name="noise" class="radio" value="3"><span class="r-text">Super (tmp)</span></label>
+				</div>
+				<div class="option-hint">You need use noise reduction if image actually has noise or it may cause opposite effect.</div>
+			</div>
+			
+			<div class="optionBox">
+				<div class="option-left">Upscaling:<div class="option-left-small"></div></div>
+				<div class="option-right">
+					<label><input type="radio" name="scale" class="radio fisrt" value="0" checked><span class="r-text">None</span></label>
+					<label><input type="radio" name="scale" class="radio" value="1"><span class="r-text">1.6x</span></label>
+					<label><input type="radio" name="scale" class="radio" value="2"><span class="r-text">2x</span></label>
+				</div>
+			</div>
+			
+			<input type="submit" class="button" value="Convert">
+			<input type="submit" name="download" value="Download" class="button">
+			
+			<div class="bottomHint">If you are using Firefox, Please press the CTRL+S key to save image. "Save Image" option doesn't work.</div>
+			<!--<div class="bottomHint">This website uses Google Analytics to help us improve the website content.</div>-->
+		</form>
+	</body>
 </html>
