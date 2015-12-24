@@ -4,8 +4,9 @@ a { text-decoration: none; cursor: pointer; color: inherit; } a:hover { text-dec
 div, span, a, input	 { background-repeat: no-repeat; }
 
 
+
 body {
-	width: 780px;
+	width: 782px;
 	margin: 0 auto;
 	background: #f5f5f5;
 	color: #000;
@@ -16,12 +17,11 @@ body {
 }
 
 .allPage {
-	display: inline-block;
 	width: 700px;
 	margin: 15px auto;
 	padding: 5px 25px 10px 25px;
 	background: #fff;
-	border: 1px solid #000;
+	border: 2px solid #999;
 	text-align: left;
 }
 
@@ -50,7 +50,6 @@ body {
 }
 
 p {
-	max-width: 700px;
 	margin: 0.4em 0;
 }
 p.margin1 { margin: 0.9em 0; }
@@ -82,7 +81,6 @@ p.margin1 { margin: 0.9em 0; }
 }
 
 .optionBox {
-	max-width: 800px;
 	margin: 1.5em 0;
 	white-space: nowrap;
 }
@@ -119,11 +117,28 @@ p.margin1 { margin: 0.9em 0; }
 
 #url {
 	width: 300px;
+	height: 23px;
+	padding: 0 3px;
+	border: 1px solid #b0b0b0;
 }
 
-.radio.fisrt {
-	margin-left: 0;
+label {
+	margin: 0 5px 0 0;
+	padding: 0;
+	cursor: pointer;
 }
+
+.radio {
+	margin: 0 4px 0 0;
+	padding: 0;
+	cursor: pointer;
+	vertical-align: middle;
+}
+
+.r-text {
+	vertical-align: middle;
+}
+
 .radio:checked + .r-text { color: #494; }
 
 .button {
@@ -131,16 +146,18 @@ p.margin1 { margin: 0.9em 0; }
 	height: 26px;
 	margin: 0 10px 3px 0;
 	padding-bottom: 1px;
+	
+	background: #f2f2f2;
+	background-image: linear-gradient(to bottom, #f9f9f9, #dadada);
+	border: 1px solid #999;
+	border-radius: 1px;
+	cursor: pointer;
 }
+.button:hover { background: #f7f7f7; background-image: linear-gradient(to bottom, #fefefe, #e2e2e2); }
 
 .bottomHint {
-	max-width: 700px;
 	margin: 0.85em 0;
 	color: #999;
 	font-size: 0.85em;
 	line-height: 1.5em;
-}
-
-.bottomInfo {
-	text-align: center;
 }
