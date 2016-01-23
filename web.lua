@@ -286,6 +286,7 @@ local app = turbo.web.Application:new(
       {"^/index.html", turbo.web.StaticFileHandler, path.join(ROOT, "assets", "index.html")},
       {"^/index.ja.html", turbo.web.StaticFileHandler, path.join(ROOT, "assets", "index.ja.html")},
       {"^/index.ru.html", turbo.web.StaticFileHandler, path.join(ROOT, "assets", "index.ru.html")},
+      {"^/index.pt.html", turbo.web.StaticFileHandler, path.join(ROOT, "assets", "index.pt.html")},
       {"^/api$", APIHandler},
    }
 )
