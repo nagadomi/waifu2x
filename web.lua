@@ -251,6 +251,7 @@ end
 local FormHandler = class("FormHandler", turbo.web.RequestHandler)
 local index_ja = file.read(path.join(ROOT, "assets", "index.ja.html"))
 local index_ru = file.read(path.join(ROOT, "assets", "index.ru.html"))
+local index_pt = file.read(path.join(ROOT, "assets", "index.pt.html"))
 local index_en = file.read(path.join(ROOT, "assets", "index.html"))
 function FormHandler:get()
    local lang = self.request.headers:get("Accept-Language")
@@ -263,6 +264,8 @@ function FormHandler:get()
 	 self:write(index_ja)
       elseif langs[1] == "ru" then
 	 self:write(index_ru)
+      elseif langs[1] == "pt" or langs[1] == "pt-BR" then
+	 self:write(index_pt)
       else
 	 self:write(index_en)
       end
