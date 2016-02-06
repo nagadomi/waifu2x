@@ -1,0 +1,28 @@
+body {
+    width: 98%;
+    font-size: 100%;
+}
+.all-page {
+    width: auto;
+    margin: 1em auto;
+    padding: 1em;
+}
+.main-title {
+    display: block;
+}
+.option-left {
+    width: auto;
+    display: block;
+}
+#url {
+    width: 100%;
+    height: 2em;
+}
+.option-right {
+    display: block;
+}
+.button {
+    min-width: 10px;
+    width: 100%;
+    height: 3em;
+}

@@ -284,13 +284,8 @@ turbo.log.categories = {
 local app = turbo.web.Application:new(
    {
       {"^/$", FormHandler},
-      {"^/style.css", turbo.web.StaticFileHandler, path.join(ROOT, "assets", "style.css")},
-      {"^/ui.js", turbo.web.StaticFileHandler, path.join(ROOT, "assets", "ui.js")},
-      {"^/index.html", turbo.web.StaticFileHandler, path.join(ROOT, "assets", "index.html")},
-      {"^/index.ja.html", turbo.web.StaticFileHandler, path.join(ROOT, "assets", "index.ja.html")},
-      {"^/index.ru.html", turbo.web.StaticFileHandler, path.join(ROOT, "assets", "index.ru.html")},
-      {"^/index.pt.html", turbo.web.StaticFileHandler, path.join(ROOT, "assets", "index.pt.html")},
       {"^/api$", APIHandler},
+      {"^/([%a%.]+)$", turbo.web.StaticFileHandler, path.join(ROOT, "assets/")},
    }
 )
 app:listen(opt.port, "0.0.0.0", {max_body_size = CURL_MAX_SIZE})
