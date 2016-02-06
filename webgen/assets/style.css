@@ -30,7 +30,7 @@ div, span, a, input {
 body {
     width: 782px;
     margin: 0 auto;
-    background: #ccc;
+    background: #ccc url(bg.png) no-repeat center;
     color: #000;
     font-size: 14px;
     font-family: Tahoma, Arial, Verdana, Meiryo, "MS Gothic", sans-serif, Lucida Sans;

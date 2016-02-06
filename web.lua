@@ -285,7 +285,7 @@ local app = turbo.web.Application:new(
    {
       {"^/$", FormHandler},
       {"^/api$", APIHandler},
-      {"^/([%a%.]+)$", turbo.web.StaticFileHandler, path.join(ROOT, "assets/")},
+      {"^/([%a%d%.%-_]+)$", turbo.web.StaticFileHandler, path.join(ROOT, "assets/")},
    }
 )
 app:listen(opt.port, "0.0.0.0", {max_body_size = CURL_MAX_SIZE})
