@@ -30,7 +30,7 @@ div, span, a, input {
 body {
     width: 782px;
     margin: 0 auto;
-    background: #ccc url(bg.png) no-repeat center;
+    background: #ccc url(bg.png) no-repeat center bottom;
     color: #000;
     font-size: 14px;
     font-family: Tahoma, Arial, Verdana, Meiryo, "MS Gothic", sans-serif, Lucida Sans;
@@ -187,4 +187,5 @@ label {
     color: #888;
     font-size: 0.85em;
     line-height: 1.5em;
+    text-align: center;
 }
