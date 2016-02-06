@@ -49,12 +49,12 @@ local CACHE_DIR = path.join(ROOT, "cache")
 local MAX_NOISE_IMAGE = 2560 * 2560
 local MAX_SCALE_IMAGE = 1280 * 1280
 local CURL_OPTIONS = {
-   request_timeout = 15,
-   connect_timeout = 10,
+   request_timeout = 60,
+   connect_timeout = 60,
    allow_redirects = true,
    max_redirects = 2
 }
-local CURL_MAX_SIZE = 2 * 1024 * 1024
+local CURL_MAX_SIZE = 3 * 1024 * 1024
 
 local function valid_size(x, scale)
    if scale == 0 then

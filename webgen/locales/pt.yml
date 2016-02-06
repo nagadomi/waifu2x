@@ -6,7 +6,7 @@ go_to_github: Ir para Github
 image_choosing: Imagem
 type_url: URL
 choose_file: ARQUIVO
-file_limits: "Limites: Tamanho: 2MB, Redução de ruído: 2560x2560px, Aumento de escala: 1280x1280px."
+file_limits: "Limites: Tamanho: 3MB, Redução de ruído: 2560x2560px, Aumento de escala: 1280x1280px."
 style: Estilo
 artwork: Arte
 photo: Foto
