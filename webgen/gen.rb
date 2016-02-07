@@ -3,11 +3,15 @@ require 'yaml'
 require 'optparse'
 require 'fileutils'
 
+def to_h(a)
+  Hash[a]
+end
+
 def symbolize_keys(val)
   if val.is_a?(Hash)
-    val.map{|k,v| 
+    to_h(val.map{|k,v| 
       [k.to_sym, symbolize_keys(v)] 
-    }.to_h
+    })
   elsif val.is_a?(Array)
     val = val.map{|v| symbolize_keys(v)}
   else
