@@ -1,5 +1,4 @@
 ---
-title: Waifu2x
 description: 深層畳み込みニューラルネットワークによる二次元画像のための超解像システム。 写真にも対応。
 show_demonstration: 実行例を表示
 go_to_github: プロジェクトページ(GitHub)
