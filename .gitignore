@@ -1,4 +1,16 @@
 *~
+work/
 cache/*.png
-models/*.png
+cache/url_*
+data/*
+!data/.gitkeep
+
+models/*
+!models/anime_style_art
+!models/anime_style_art_rgb
+!models/ukbench
+!models/photo
+models/*/*.png
+
 waifu2x.log
+waifu2x-*.log

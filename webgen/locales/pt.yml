@@ -1,0 +1,23 @@
+---
+description: Single-Image Super-Resolution for Anime-Style Art using Deep Convolutional Neural Networks. And it supports photo.
+show_demonstration: Sobre
+go_to_github: Ir para Github
+image_choosing: Imagem
+type_url: URL
+choose_file: ARQUIVO
+file_limits: "Limites: Tamanho: 3MB, Redução de ruído: 2560x2560px, Aumento de escala: 1280x1280px."
+style: Estilo
+artwork: Arte
+photo: Foto
+noise_reduction: Redução de ruído
+expect_jpeg: Exceto artefato JPEG
+nr_none: Nenhuma
+nr_medium: Média
+nr_high: Alta
+nr_hint: "Quando usando a escala 2x, Nós nunca recomendamos usar um nível alto de redução de ruído, quase sempre deixa a imagem pior, faz sentido apenas para casos raros quando a imagem tinha uma qualidade muito má desde o começo."
+upscaling: Aumento de escala
+up_none: Nenhum
+button_convert: Converter
+button_download: Baixar
+hints:
+  - "Se Você estiver usando o Firefox, por favor, aperte CTRL+S para salvar a imagem. A opção \"Salvar Imagem\" não funciona"

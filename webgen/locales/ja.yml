@@ -1,0 +1,23 @@
+---
+description: 深層畳み込みニューラルネットワークによる二次元画像のための超解像システム。 写真にも対応。
+show_demonstration: 実行例を表示
+go_to_github: プロジェクトページ(GitHub)
+image_choosing: 画像を選択
+type_url: URLを入力
+choose_file: ファイルを選択
+file_limits: "制限: サイズ: 3MB, ノイズ除去: 2560x2560px, 拡大(前): 1280x1280px."
+style: スタイル
+artwork: イラスト
+photo: 写真
+noise_reduction: ノイズ除去
+expect_jpeg: JPEGノイズを想定
+nr_none: なし
+nr_medium: 中
+nr_high: 高
+nr_hint: "ノイズ除去は細部が消えることがあります。JPEGノイズがある場合に使用します。"
+upscaling: 拡大
+up_none: なし
+button_convert: 実行
+button_download: 実行結果を保存
+hints:
+  - "Firefoxの方は、右クリから画像が保存できないようなので、CTRL+SキーかALTキー後 ファイル - ページを保存 で画像を保存してください。"

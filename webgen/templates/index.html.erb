@@ -1,0 +1,148 @@
+<!DOCTYPE html> 
+<html lang="<%= t[:lang] %>">
+  <!-- <%= t[:dont_make_change] %> -->
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta charset="utf-8">
+    <link rel="shortcut icon" href="favicon.ico"/>
+    <meta name="viewport" content="initial-scale=1.0,width=device-width">
+    <link href="//cdnjs.cloudflare.com/ajax/libs/normalize/3.0.3/normalize.min.css" rel="stylesheet" type="text/css">
+    <link href="style.css" rel="stylesheet" type="text/css">
+    <link href="mobile.css" rel="stylesheet" type="text/css" media="screen and (max-width: 768px) and (min-width: 0px)">
+    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+    <script type="text/javascript" src="ui.js"></script>
+    <title>waifu2x</title>
+  </head>
+  <body>
+    <div class="all-page">
+      <h1 class="main-title">waifu2x</h1>
+      <div class="choose-lang">
+	<a href="index.html">
+	  English
+	</a>
+	/
+	<a href="index.ja.html">
+	  日本語
+	</a>
+	/
+	<a href="index.ru.html">
+	  Русский
+	</a>
+	/
+	<a href="index.pt.html">
+	  Português
+	</a>
+      </div>
+      <p><%= t[:description] %></p>
+      <p class="margin1 link-box">
+	<a href="https://raw.githubusercontent.com/nagadomi/waifu2x/master/images/slide.png" class="blue-link" target="_blank">
+	  <%= t[:show_demonstration] %>
+	</a>
+	| 
+	<a href="https://github.com/nagadomi/waifu2x" class="blue-link" target="_blank">
+	  <%= t[:go_to_github] %>
+	</a>
+      </p>
+      <form action="/api" method="POST" enctype="multipart/form-data" target="_blank">
+	<div class="option-box first">
+	  <div class="option-left"><%= t[:image_choosing] %>:</div>
+	  <div class="option-right">
+	    <input type="text" id="url" name="url" placeholder="<%= t[:type_url] %>">
+	    <div class="option-right-small">
+	      <%= t[:choose_file] %>: 
+	      <input type="file" id="file" name="file"></div>
+	  </div>
+	  <div class="option-hint">
+	    <%= t[:file_limits] %>
+	  </div>
+	</div>
+	<div class="option-box">
+	  <div class="option-left">
+	    <%= t[:style] %>:
+	  </div>
+	  <div class="option-right">
+	    <label><input type="radio" name="style" class="radio" value="art" checked>
+	      <span class="r-text">
+		<%= t[:artwork] %>
+	      </span>
+	    </label>
+	    <label><input type="radio" name="style" class="radio" value="photo">
+	      <span class="r-text">
+		<%= t[:photo] %>
+	      </span>
+	    </label>
+	  </div>
+	</div>
+	<div class="option-box">
+	  <div class="option-left">
+	    <%= t[:noise_reduction] %>:
+	    <div class="option-left-small">
+	      (<%= t[:expect_jpeg] %>)
+	    </div>
+	  </div>
+	  <div class="option-right">
+	    <label><input type="radio" name="noise" class="radio" value="0">
+	      <span class="r-text">
+		<%= t[:nr_none] %>
+	      </span>
+	    </label>
+	    <label><input type="radio" name="noise" class="radio" value="1" checked>
+	      <span class="r-text">
+		<%= t[:nr_medium] %>
+	      </span>
+	    </label>
+	    <label>
+	      <input type="radio" name="noise" class="radio" value="2">
+	      <span class="r-text">
+		<%= t[:nr_high] %>
+	      </span>
+	    </label>
+	  </div>
+	  <div class="option-hint">
+	    <%= t[:nr_hint] %>
+	  </div>
+	</div>
+	<div class="option-box">
+	  <div class="option-left">
+	    <%= t[:upscaling] %>:
+	    <div class="option-left-small"></div>
+	  </div>
+	  <div class="option-right">
+	    <label><input type="radio" name="scale" class="radio" value="0" checked>
+	      <span class="r-text">
+		<%= t[:up_none] %>
+	      </span>
+	    </label>
+	    <label><input type="radio" name="scale" class="radio" value="1">
+	      <span class="r-text">
+		1.6x
+	      </span>
+	    </label>
+	    <label><input type="radio" name="scale" class="radio" value="2">
+	      <span class="r-text">
+		2x
+	      </span>
+	    </label>
+	  </div>
+	</div>
+	<% if t[:button_convert] && !t[:button_convert].empty? %>
+	  <input type="submit" class="button" value="<%= t[:button_convert] %>">
+	<% else %>
+	  <input type="submit" class="button">
+	<% end %>
+	<input type="submit" name="download" value="<%= t[:button_download]%>" class="button">
+	<div class="bottom-hint">
+	  <ul>
+	    <% t[:hints].each do |hint| %>
+	      <li><%= hint %></li>
+	    <% end %>
+	  </ul>
+	</div>
+      </form>
+    </div>
+    <div class="bottom-info">
+      <a href="https://github.com/nagadomi/waifu2x" class="gray-link" target="_blank">waifu2x</a>
+    </div>
+  </body>
+</html>
