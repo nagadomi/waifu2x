@@ -1,0 +1,23 @@
+---
+description: Mejora la resolución de ilustraciones de tipo anime utilizando redes neuronales convolucionales. También es compatible con fotografías.
+show_demonstration: Ver una demostración
+go_to_github: Ir a GitHub
+image_choosing: Selección de imagen
+type_url: Escribe una URL
+choose_file: O selecciona un archivo
+file_limits: "Límites: Tamaño: 3 MB, Reducción de ruido: 2560x2560px, Aumento de resolución: 1280x1280px."
+style: Estilo
+artwork: Ilustración
+photo: Fotografía
+noise_reduction: Reducción de ruido
+expect_jpeg: se esperarán artefactos de compresión JPEG
+nr_none: Ninguno
+nr_medium: Medio
+nr_high: Alto
+nr_hint: "Es necesario utilizar la reducción de ruido si la imagen dispone de artefactos de compresión; de lo contrario podría producir el efecto opuesto."
+upscaling: Aumento de resolución
+up_none: Ninguno
+button_convert: Convertir
+button_download: Descargar
+hints:
+  - "Si estás utilizando el navegador Firefox, utiliza la combinación de botones Control+S para guardar la imagen. La opción «Guardar imagen como...» no funciona."
