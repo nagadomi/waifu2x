@@ -227,7 +227,7 @@ function APIHandler:post()
 	    end
 	 end
       end
-      local name = uuid() .. ".PNG"
+      local name = uuid() .. ".png"
       local blob = image_loader.encode_png(alpha_util.composite(x, alpha))
 
       self:set_header("Content-Length", string.format("%d", #blob))
