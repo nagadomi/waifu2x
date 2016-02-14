@@ -229,12 +229,14 @@ function APIHandler:post()
       end
       local name = uuid() .. ".png"
       local blob = image_loader.encode_png(alpha_util.composite(x, alpha))
-      self:set_header("Content-Disposition", string.format('filename="%s"', name))
+
       self:set_header("Content-Length", string.format("%d", #blob))
       if download > 0 then
 	 self:set_header("Content-Type", "application/octet-stream")
+	 self:set_header("Content-Disposition", string.format('attachment; filename="%s"', name))
       else
 	 self:set_header("Content-Type", "image/png")
+	 self:set_header("Content-Disposition", string.format('inline; filename="%s"', name))
       end
       self:write(blob)
    else
