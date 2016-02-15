@@ -177,9 +177,14 @@ label {
     border-radius: 1px;
     cursor: pointer;
 }
-.button:hover {
+.button:hover:enabled {
     background: #f7f7f7;
     background-image: linear-gradient(to bottom, #fefefe, #e2e2e2); 
+}
+.button:disabled {
+    background-image: none;
+    background-color: #ccc;
+    border-color: #ccc;
 }
 
 .bottom-hint {
@@ -187,5 +192,7 @@ label {
     color: #888;
     font-size: 0.85em;
     line-height: 1.5em;
+}
+.address {
     text-align: center;
 }

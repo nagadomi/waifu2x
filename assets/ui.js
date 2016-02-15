@@ -39,11 +39,53 @@ $(function (){
 	    $("input[name=scale]").filter("[value=" + $.cookie("scale") + "]").prop("checked", true)
 	}
     }
+    function uuid() 
+    {
+	// ref: http://stackoverflow.com/a/2117523
+	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+	    var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+	    return v.toString(16);
+	});
+    }
+    function download_with_xhr(e) 
+    {
+	if (typeof window.URL.createObjectURL == "undefined" ||
+	    typeof window.Blob == "undefined" ||
+	    typeof window.XMLHttpRequest == "undefined" ||
+	    typeof window.URL.revokeObjectURL == "undefined")
+	{
+	    return;
+	}
+	$("input[name=download]").attr("disabled", "disabled");
+	e.preventDefault();
+	e.stopPropagation();
+	var xhr = new XMLHttpRequest();
+	xhr.open('POST', '/api', true);
+	xhr.responseType = 'arraybuffer';
+	xhr.onload= function(e) {
+	    if (this.status == 200) {
+		var blob = new Blob([this.response], {type : 'image/png'});
+		var a = document.createElement("a");
+		var url = URL.createObjectURL(blob);
+		a.href = url;
+		a.target = "_blank";
+		a.download = uuid() + ".png";
+		a.click();
+		URL.revokeObjectURL(url);
+		$("input[name=download]").removeAttr("disabled");
+	    } else {
+		alert("Download Error");
+		$("input[name=download]").removeAttr("disabled");
+	    }
+	};
+	xhr.send(new FormData($("form").get(0)));
+    }
     $("#url").change(clear_file);
     $("#file").change(clear_url);
     $("input[name=style]").change(on_change_style);
     $("input[name=noise]").change(on_change_noise_level);
     $("input[name=scale]").change(on_change_scale_factor);
+    $("input[name=download]").click(download_with_xhr);
 
     restore_from_cookie();
     on_change_style();
