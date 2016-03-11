@@ -78,7 +78,11 @@ local function create_criterion(model)
       weight[3]:fill(0.11448 * 3) -- B
       return w2nn.ClippedWeightedHuberCriterion(weight, 0.1, {0.0, 1.0}):cuda()
    else
-      return nn.MSECriterion():cuda()
+      local offset = reconstruct.offset_size(model)
+      local output_w = settings.crop_size - offset * 2
+      local weight = torch.Tensor(1, output_w * output_w)
+      weight[1]:fill(1.0)
+      return w2nn.ClippedWeightedHuberCriterion(weight, 0.1, {0.0, 1.0}):cuda()
    end
 end
 local function transformer(x, is_validation, n, offset)
