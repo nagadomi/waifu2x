@@ -95,8 +95,8 @@ local function transformer(x, is_validation, n, offset)
    local active_cropping_rate = nil
    local active_cropping_tries = nil
    if is_validation then
-      active_cropping_rate = 0
-      active_cropping_tries = 0
+      active_cropping_rate = settings.active_cropping_rate
+      active_cropping_tries = settings.active_cropping_tries
       random_color_noise_rate = 0.0
       random_overlay_rate = 0.0
    else
