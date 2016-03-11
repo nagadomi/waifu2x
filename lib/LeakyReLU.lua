@@ -17,7 +17,7 @@ function LeakyReLU:updateOutput(input)
    
    return self.output
 end
- 
+
 function LeakyReLU:updateGradInput(input, gradOutput)
    self.gradInput:resizeAs(gradOutput)
    -- filter positive
@@ -28,4 +28,9 @@ function LeakyReLU:updateGradInput(input, gradOutput)
    self.gradInput:add(self.negative)
    
    return self.gradInput
+end
+
+function LeakyReLU:clearState()
+   nn.utils.clear(self, 'negative')
+   return parent.clearState(self)
 end
