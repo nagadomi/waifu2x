@@ -2,12 +2,13 @@ require 'optim'
 require 'cutorch'
 require 'xlua'
 
-local function minibatch_adam(model, criterion,
+local function minibatch_adam(model, criterion, eval_metric,
 			      train_x, train_y,
 			      config)
    local parameters, gradParameters = model:getParameters()
    config = config or {}
    local sum_loss = 0
+   local sum_eval = 0
    local count_loss = 0
    local batch_size = config.xBatchSize or 32
    local shuffle = torch.randperm(train_x:size(1))
@@ -39,6 +40,7 @@ local function minibatch_adam(model, criterion,
 	 gradParameters:zero()
 	 local output = model:forward(inputs)
 	 local f = criterion:forward(output, targets)
+	 sum_eval = sum_eval + eval_metric:forward(output, targets)
 	 sum_loss = sum_loss + f
 	 count_loss = count_loss + 1
 	 model:backward(inputs, criterion:backward(output, targets))
@@ -52,7 +54,7 @@ local function minibatch_adam(model, criterion,
    end
    xlua.progress(train_x:size(1), train_x:size(1))
    
-   return { loss = sum_loss / count_loss}
+   return { loss = sum_loss / count_loss, PSNR = sum_eval / count_loss}
 end
 
 return minibatch_adam
