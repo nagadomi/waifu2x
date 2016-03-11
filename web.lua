@@ -103,7 +103,7 @@ local function get_image(req)
 end
 local function cleanup_model(model)
    if CLEANUP_MODEL then
-      w2nn.cleanup_model(model) -- release GPU memory
+      model:clearState() -- release GPU memory
    end
 end
 local function convert(x, alpha, options)
