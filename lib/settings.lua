@@ -47,10 +47,17 @@ cmd:option("-active_cropping_rate", 0.5, 'active cropping rate')
 cmd:option("-active_cropping_tries", 10, 'active cropping tries')
 cmd:option("-nr_rate", 0.75, 'trade-off between reducing noise and erasing details (0.0-1.0)')
 cmd:option("-save_history", 0, 'save all model (0|1)')
+cmd:option("-plot", 0, 'plot loss chart(0|1)')
 
 local opt = cmd:parse(arg)
 for k, v in pairs(opt) do
    settings[k] = v
+end
+if settings.plot == 1 then
+   settings.plot = true
+   require 'gnuplot'
+else
+   settings.plot = false
 end
 if settings.save_history == 1 then
    settings.save_history = true
