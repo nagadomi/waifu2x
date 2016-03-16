@@ -27,7 +27,7 @@ TODO
 
 [Third-Party](https://github.com/nagadomi/waifu2x/wiki/Third-Party)
 
-If you are a windows user, I recommend you to use [waifu2x-caffe](https://github.com/lltcggie/waifu2x-caffe) or [waifu2x-conver-cpp](https://github.com/tanakamura/waifu2x-converter-cpp).
+If you are a windows user, I recommend you to use [waifu2x-caffe](https://github.com/lltcggie/waifu2x-caffe)(Just download from `releases` tab) or [waifu2x-conver-cpp](https://github.com/tanakamura/waifu2x-converter-cpp).
 
 ## Dependencies
 
