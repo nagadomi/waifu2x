@@ -48,6 +48,7 @@ cmd:option("-active_cropping_tries", 10, 'active cropping tries')
 cmd:option("-nr_rate", 0.75, 'trade-off between reducing noise and erasing details (0.0-1.0)')
 cmd:option("-save_history", 0, 'save all model (0|1)')
 cmd:option("-plot", 0, 'plot loss chart(0|1)')
+cmd:option("-downsampling_filters", "Box,Lanczos,Catrom", '(comma separated)downsampling filters for 2x scale training. (Point,Box,Triangle,Hermite,Hanning,Hamming,Blackman,Gaussian,Quadratic,Cubic,Catrom,Mitchell,Lanczos,Bessel,Sinc)')
 
 local opt = cmd:parse(arg)
 for k, v in pairs(opt) do
@@ -95,9 +96,13 @@ if not (settings.style == "art" or
 	settings.style == "photo") then
    error(string.format("unknown style: %s", settings.style))
 end
-
 if settings.thread > 0 then
    torch.setnumthreads(tonumber(settings.thread))
+end
+if settings.downsampling_filters and settings.downsampling_filters:len() > 0 then
+   settings.downsampling_filters = settings.downsampling_filters:split(",")
+else
+   settings.downsampling_filters = {"Box", "Lanczos", "Catrom"}
 end
 
 settings.images = string.format("%s/images.t7", settings.data_dir)

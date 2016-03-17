@@ -112,6 +112,7 @@ local function transformer(x, is_validation, n, offset)
 				      settings.crop_size, offset,
 				      n,
 				      {
+					 downsampling_filters = settings.downsampling_filters,
 					 random_half_rate = settings.random_half_rate,
 					 random_color_noise_rate = random_color_noise_rate,
 					 random_overlay_rate = random_overlay_rate,
