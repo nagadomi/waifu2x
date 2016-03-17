@@ -168,7 +168,8 @@ function pairwise_transform.jpeg(src, style, level, size, offset, n, options)
       if level == 1 then
 	 return pairwise_transform.jpeg_(src, {torch.random(65, 85)},
 					 size, offset, n, options)
-      elseif level == 2 then
+      elseif level == 2 or level == 3 then
+	 -- level 2/3 adjusting by -nr_rate. for level3, -nr_rate=1
 	 local r = torch.uniform()
 	 if r > 0.6 then
 	    return pairwise_transform.jpeg_(src, {torch.random(27, 70)},
