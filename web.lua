@@ -259,7 +259,7 @@ function APIHandler:post()
       else
 	 name = uuid() .. ".png"
       end
-      local blob = image_loader.encode_png(alpha_util.composite(x, alpha))
+      local blob = image_loader.encode_png(alpha_util.composite(x, alpha), 8, true)
 
       self:set_header("Content-Length", string.format("%d", #blob))
       if download > 0 then

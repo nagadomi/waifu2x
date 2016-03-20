@@ -9,19 +9,30 @@ local clip_eps8 = (1.0 / 255.0) * 0.5 - (1.0e-7 * (1.0 / 255.0) * 0.5)
 local clip_eps16 = (1.0 / 65535.0) * 0.5 - (1.0e-7 * (1.0 / 65535.0) * 0.5)
 local background_color = 0.5
 
-function image_loader.encode_png(rgb, depth)
+function image_loader.encode_png(rgb, depth, inplace)
+   if inplace == nil then
+      inplace = false
+   end
    depth = depth or 8
    rgb = iproc.byte2float(rgb)
    if depth < 16 then
-      rgb = rgb:clone():add(clip_eps8)
+      if inplace then
+	 rgb:add(clip_eps8)
+      else
+	 rgb = rgb:clone():add(clip_eps8)
+      end
       rgb[torch.lt(rgb, 0.0)] = 0.0
       rgb[torch.gt(rgb, 1.0)] = 1.0
-      rgb = rgb:mul(255):long():float():div(255)
+      rgb = rgb:mul(255):floor():div(255)
    else
-      rgb = rgb:clone():add(clip_eps16)
+      if inplace then
+	 rgb:add(clip_eps16)
+      else
+	 rgb = rgb:clone():add(clip_eps16)
+      end
       rgb[torch.lt(rgb, 0.0)] = 0.0
       rgb[torch.gt(rgb, 1.0)] = 1.0
-      rgb = rgb:mul(65535):long():float():div(65535)
+      rgb = rgb:mul(65535):floor():div(65535)
    end
    local im
    if rgb:size(1) == 4 then -- RGBA
@@ -34,9 +45,8 @@ function image_loader.encode_png(rgb, depth)
    end
    return im:depth(depth):format("PNG"):toString(9)
 end
-function image_loader.save_png(filename, rgb, depth)
-   depth = depth or 8
-   local blob = image_loader.encode_png(rgb, depth)
+function image_loader.save_png(filename, rgb, depth, inplace)
+   local blob = image_loader.encode_png(rgb, depth, inplace)
    local fp = io.open(filename, "wb")
    if not fp then
       error("IO error: " .. filename)

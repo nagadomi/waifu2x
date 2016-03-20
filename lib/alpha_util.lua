@@ -36,6 +36,9 @@ function alpha_util.make_border(rgb, alpha, offset)
       mask = mask_weight:clone()
       mask[torch.gt(mask_weight, 0.0)] = 1
       mask_nega = (mask - 1):abs():byte()
+      if border:size(2) * border:size(3) > 1024*1024 then
+	 collectgarbage()
+      end
    end
    rgb[torch.gt(rgb, 1.0)] = 1.0
    rgb[torch.lt(rgb, 0.0)] = 0.0
