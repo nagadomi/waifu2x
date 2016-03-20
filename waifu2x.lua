@@ -65,7 +65,7 @@ local function convert_image(opt)
    else
       error("undefined method:" .. opt.method)
    end
-   image_loader.save_png(opt.o, new_x, opt.depth)
+   image_loader.save_png(opt.o, new_x, opt.depth, true)
    print(opt.o .. ": " .. (sys.clock() - t) .. " sec")
 end
 local function convert_frames(opt)
@@ -141,7 +141,7 @@ local function convert_frames(opt)
 	 else
 	    output = string.format(opt.o, i)
 	 end
-	 image_loader.save_png(output, new_x, opt.depth)
+	 image_loader.save_png(output, new_x, opt.depth, true)
 	 xlua.progress(i, #lines)
 	 if i % 10 == 0 then
 	    collectgarbage()

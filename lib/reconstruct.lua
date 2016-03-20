@@ -16,7 +16,7 @@ local function reconstruct_y(model, x, offset, block_size)
 			   {i, i + block_size - 1},
 			   {j, j + block_size - 1}}
 	    input:copy(x[index])
-	    local output = model:forward(input):float():view(1, output_size, output_size)
+	    local output = model:forward(input):view(1, output_size, output_size)
 	    local output_index = {{},
 				  {i + offset, offset + i + output_size - 1},
 				  {offset + j, offset + j + output_size - 1}}
@@ -38,7 +38,7 @@ local function reconstruct_rgb(model, x, offset, block_size)
 			   {i, i + block_size - 1},
 			   {j, j + block_size - 1}}
 	    input:copy(x[index])
-	    local output = model:forward(input):float():view(3, output_size, output_size)
+	    local output = model:forward(input):view(3, output_size, output_size)
 	    local output_index = {{},
 				  {i + offset, offset + i + output_size - 1},
 				  {offset + j, offset + j + output_size - 1}}
@@ -89,16 +89,18 @@ function reconstruct.image_y(model, x, offset, block_size)
    local pad_w1 = offset
    local pad_h2 = (h - offset) - x:size(2)
    local pad_w2 = (w - offset) - x:size(3)
-   local yuv = image.rgb2yuv(iproc.padding(x, pad_w1, pad_w2, pad_h1, pad_h2))
-   local y = reconstruct_y(model, yuv[1], offset, block_size)
+   x = image.rgb2yuv(iproc.padding(x, pad_w1, pad_w2, pad_h1, pad_h2))
+   local y = reconstruct_y(model, x[1], offset, block_size)
    y[torch.lt(y, 0)] = 0
    y[torch.gt(y, 1)] = 1
-   yuv[1]:copy(y)
-   local output = image.yuv2rgb(iproc.crop(yuv,
+   x[1]:copy(y)
+   local output = image.yuv2rgb(iproc.crop(x,
 					   pad_w1, pad_h1,
-					   yuv:size(3) - pad_w2, yuv:size(2) - pad_h2))
+					   x:size(3) - pad_w2, x:size(2) - pad_h2))
    output[torch.lt(output, 0)] = 0
    output[torch.gt(output, 1)] = 1
+   x = nil
+   y = nil
    collectgarbage()
    
    return output
@@ -107,7 +109,9 @@ function reconstruct.scale_y(model, scale, x, offset, block_size)
    block_size = block_size or 128
    local x_lanczos = iproc.scale(x, x:size(3) * scale, x:size(2) * scale, "Lanczos")
    x = iproc.scale(x, x:size(3) * scale, x:size(2) * scale, "Box")
-
+   if x:size(2) * x:size(3) > 2048*2048 then
+      collectgarbage()
+   end
    local output_size = block_size - offset * 2
    local h_blocks = math.floor(x:size(2) / output_size) +
       ((x:size(2) % output_size == 0 and 0) or 1)
@@ -120,17 +124,20 @@ function reconstruct.scale_y(model, scale, x, offset, block_size)
    local pad_w1 = offset
    local pad_h2 = (h - offset) - x:size(2)
    local pad_w2 = (w - offset) - x:size(3)
-   local yuv_nn = image.rgb2yuv(iproc.padding(x, pad_w1, pad_w2, pad_h1, pad_h2))
-   local yuv_lanczos = image.rgb2yuv(iproc.padding(x_lanczos, pad_w1, pad_w2, pad_h1, pad_h2))
-   local y = reconstruct_y(model, yuv_nn[1], offset, block_size)
+   x = image.rgb2yuv(iproc.padding(x, pad_w1, pad_w2, pad_h1, pad_h2))
+   x_lanczos = image.rgb2yuv(iproc.padding(x_lanczos, pad_w1, pad_w2, pad_h1, pad_h2))
+   local y = reconstruct_y(model, x[1], offset, block_size)
    y[torch.lt(y, 0)] = 0
    y[torch.gt(y, 1)] = 1
-   yuv_lanczos[1]:copy(y)
-   local output = image.yuv2rgb(iproc.crop(yuv_lanczos,
+   x_lanczos[1]:copy(y)
+   local output = image.yuv2rgb(iproc.crop(x_lanczos,
 					   pad_w1, pad_h1,
-					   yuv_lanczos:size(3) - pad_w2, yuv_lanczos:size(2) - pad_h2))
+					   x_lanczos:size(3) - pad_w2, x_lanczos:size(2) - pad_h2))
    output[torch.lt(output, 0)] = 0
    output[torch.gt(output, 1)] = 1
+   x = nil
+   x_lanczos = nil
+   y = nil
    collectgarbage()
    
    return output
@@ -149,21 +156,29 @@ function reconstruct.image_rgb(model, x, offset, block_size)
    local pad_w1 = offset
    local pad_h2 = (h - offset) - x:size(2)
    local pad_w2 = (w - offset) - x:size(3)
-   local input = iproc.padding(x, pad_w1, pad_w2, pad_h1, pad_h2)
-   local y = reconstruct_rgb(model, input, offset, block_size)
+
+   x = iproc.padding(x, pad_w1, pad_w2, pad_h1, pad_h2)
+   if x:size(2) * x:size(3) > 2048*2048 then
+      collectgarbage()
+   end
+   local y = reconstruct_rgb(model, x, offset, block_size)
    local output = iproc.crop(y,
 			     pad_w1, pad_h1,
 			     y:size(3) - pad_w2, y:size(2) - pad_h2)
-   collectgarbage()
    output[torch.lt(output, 0)] = 0
    output[torch.gt(output, 1)] = 1
-   
+   x = nil
+   y = nil
+   collectgarbage()
+
    return output
 end
 function reconstruct.scale_rgb(model, scale, x, offset, block_size)
    block_size = block_size or 128
    x = iproc.scale(x, x:size(3) * scale, x:size(2) * scale, "Box")
-
+   if x:size(2) * x:size(3) > 2048*2048 then
+      collectgarbage()
+   end
    local output_size = block_size - offset * 2
    local h_blocks = math.floor(x:size(2) / output_size) +
       ((x:size(2) % output_size == 0 and 0) or 1)
@@ -176,15 +191,20 @@ function reconstruct.scale_rgb(model, scale, x, offset, block_size)
    local pad_w1 = offset
    local pad_h2 = (h - offset) - x:size(2)
    local pad_w2 = (w - offset) - x:size(3)
-   local input = iproc.padding(x, pad_w1, pad_w2, pad_h1, pad_h2)
-   local y = reconstruct_rgb(model, input, offset, block_size)
+   x = iproc.padding(x, pad_w1, pad_w2, pad_h1, pad_h2)
+   if x:size(2) * x:size(3) > 2048*2048 then
+      collectgarbage()
+   end
+   local y = reconstruct_rgb(model, x, offset, block_size)
    local output = iproc.crop(y,
 			     pad_w1, pad_h1,
 			     y:size(3) - pad_w2, y:size(2) - pad_h2)
    output[torch.lt(output, 0)] = 0
    output[torch.gt(output, 1)] = 1
+   x = nil
+   y = nil
    collectgarbage()
-   
+
    return output
 end
 
