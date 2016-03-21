@@ -125,6 +125,13 @@ th waifu2x.lua -m noise_scale -noise_level 1 -i input_image.png -o output_image.
 th waifu2x.lua -m noise_scale -noise_level 2 -i input_image.png -o output_image.png
 ```
 
+### Batch conversion
+
+```
+find /path/to/imagedir -name "*.png" -o -name "*.jpg" > image_list.txt
+th waifu2x.lua -m scale -l ./image_list.txt -o /path/to/outputdir/prefix_%d.png
+```
+
 See also `th waifu2x.lua -h`.
 
 ### Using photo model
@@ -163,7 +170,7 @@ Generating a video from waifu2xed images and audio.
 avconv -f image2 -r 24 -i new_frames/%d.png -i audio.mp3 -r 24 -vcodec libx264 -crf 16 video.mp4
 ```
 
-## Training Your Own Model
+## Train Your Own Model
 Notes: If you have cuDNN library, you can use cudnn kernel with `-backend cudnn` option. And you can convert trained cudnn model to cunn model with `tools/cudnn2cunn.lua`.
 
 ### Data Preparation
@@ -179,7 +186,7 @@ Converting training data.
 th convert_data.lua
 ```
 
-### Training a Noise Reduction(level1) model
+### Train a Noise Reduction(level1) model
 
 ```
 mkdir models/my_model
@@ -190,7 +197,7 @@ th waifu2x.lua -model_dir models/my_model -m noise -noise_level 1 -i images/miku
 ```
 You can check the performance of model with `models/my_model/noise1_best.png`.
 
-### Training a Noise Reduction(level2) model
+### Train a Noise Reduction(level2) model
 
 ```
 th train.lua -model_dir models/my_model -method noise -noise_level 2 -test images/miku_noisy.png
@@ -200,7 +207,7 @@ th waifu2x.lua -model_dir models/my_model -m noise -noise_level 2 -i images/miku
 ```
 You can check the performance of model with `models/my_model/noise2_best.png`.
 
-### Training a 2x UpScaling model
+### Train a 2x UpScaling model
 
 ```
 th train.lua -model_dir models/my_model -method scale -scale 2 -test images/miku_small.png
