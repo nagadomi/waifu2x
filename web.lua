@@ -38,12 +38,14 @@ if cudnn then
 end
 local ART_MODEL_DIR = path.join(ROOT, "models", "anime_style_art_rgb")
 local PHOTO_MODEL_DIR = path.join(ROOT, "models", "photo")
+local art_scale2_model = torch.load(path.join(ART_MODEL_DIR, "scale2.0x_model.t7"), "ascii")
 local art_noise1_model = torch.load(path.join(ART_MODEL_DIR, "noise1_model.t7"), "ascii")
 local art_noise2_model = torch.load(path.join(ART_MODEL_DIR, "noise2_model.t7"), "ascii")
-local art_scale2_model = torch.load(path.join(ART_MODEL_DIR, "scale2.0x_model.t7"), "ascii")
+local art_noise3_model = torch.load(path.join(ART_MODEL_DIR, "noise3_model.t7"), "ascii")
 local photo_scale2_model = torch.load(path.join(PHOTO_MODEL_DIR, "scale2.0x_model.t7"), "ascii")
 local photo_noise1_model = torch.load(path.join(PHOTO_MODEL_DIR, "noise1_model.t7"), "ascii")
 local photo_noise2_model = torch.load(path.join(PHOTO_MODEL_DIR, "noise2_model.t7"), "ascii")
+local photo_noise3_model = torch.load(path.join(PHOTO_MODEL_DIR, "noise3_model.t7"), "ascii")
 local CLEANUP_MODEL = false -- if you are using the low memory GPU, you could use this flag.
 local CACHE_DIR = path.join(ROOT, "cache")
 local MAX_NOISE_IMAGE = 2560 * 2560
@@ -151,9 +153,12 @@ local function convert(x, alpha, options)
 	 elseif options.method == "noise1" then
 	    x = reconstruct.image(art_noise1_model, x)
 	    cleanup_model(art_noise1_model)
-	 else -- options.method == "noise2"
+	 elseif options.method == "noise2" then
 	    x = reconstruct.image(art_noise2_model, x)
 	    cleanup_model(art_noise2_model)
+	 elseif options.method == "noise3" then
+	    x = reconstruct.image(art_noise3_model, x)
+	    cleanup_model(art_noise3_model)
 	 end
       else -- photo
 	 if options.border then
@@ -174,6 +179,9 @@ local function convert(x, alpha, options)
 	 elseif options.method == "noise2" then
 	    x = reconstruct.image(photo_noise2_model, x)
 	    cleanup_model(photo_noise2_model)
+	 elseif options.method == "noise3" then
+	    x = reconstruct.image(photo_noise3_model, x)
+	    cleanup_model(photo_noise3_model)
 	 end
       end
       image_loader.save_png(cache_file, x)
@@ -229,8 +237,14 @@ function APIHandler:post()
 				   alpha_prefix = alpha_prefix, border = border})
 	    border = false
 	 elseif noise == 2 then
-	    prefix = style .. "_noise1_"
+	    prefix = style .. "_noise2_"
 	    x = convert(x, alpha, {method = "noise2", style = style,
+				   prefix = prefix .. hash, 
+				   alpha_prefix = alpha_prefix, border = border})
+	    border = false
+	 elseif noise == 3 then
+	    prefix = style .. "_noise3_"
+	    x = convert(x, alpha, {method = "noise3", style = style,
 				   prefix = prefix .. hash, 
 				   alpha_prefix = alpha_prefix, border = border})
 	    border = false
@@ -240,6 +254,8 @@ function APIHandler:post()
 	       prefix = style .. "_noise1_scale_"
 	    elseif noise == 2 then
 	       prefix = style .. "_noise2_scale_"
+	    elseif noise == 3 then
+	       prefix = style .. "_noise3_scale_"
 	    else
 	       prefix = style .. "_scale_"
 	    end
