@@ -30,6 +30,11 @@ Created at: 2016-03-22
 ```
 See ~/README.md
 
+Please update the git repo first.
+```
+git pull
+```
+
 ## Third Party Software
 
 [Third-Party](https://github.com/nagadomi/waifu2x/wiki/Third-Party)
@@ -117,6 +122,7 @@ th waifu2x.lua -m noise -noise_level 1 -i input_image.png -o output_image.png
 ```
 ```
 th waifu2x.lua -m noise -noise_level 2 -i input_image.png -o output_image.png
+th waifu2x.lua -m noise -noise_level 3 -i input_image.png -o output_image.png
 ```
 
 ### 2x Upscaling
@@ -130,6 +136,7 @@ th waifu2x.lua -m noise_scale -noise_level 1 -i input_image.png -o output_image.
 ```
 ```
 th waifu2x.lua -m noise_scale -noise_level 2 -i input_image.png -o output_image.png
+th waifu2x.lua -m noise_scale -noise_level 3 -i input_image.png -o output_image.png
 ```
 
 ### Batch conversion
