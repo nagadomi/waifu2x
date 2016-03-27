@@ -14,6 +14,7 @@ expect_jpeg: JPEGノイズを想定
 nr_none: なし
 nr_medium: 中
 nr_high: 高
+nr_highest: 最高
 nr_hint: "ノイズ除去は細部が消えることがあります。JPEGノイズがある場合に使用します。"
 upscaling: 拡大
 up_none: なし

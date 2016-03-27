@@ -14,6 +14,7 @@ expect_jpeg: expect JPEG artifact
 nr_none: None
 nr_medium: Medium
 nr_high: High
+nr_highest: Highest
 nr_hint: "You need use noise reduction if image actually has noise or it may cause opposite effect."
 upscaling: Upscaling
 up_none: None

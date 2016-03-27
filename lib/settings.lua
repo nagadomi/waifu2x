@@ -24,7 +24,7 @@ cmd:option("-backend", "cunn", '(cunn|cudnn)')
 cmd:option("-test", "images/miku_small.png", 'path to test image')
 cmd:option("-model_dir", "./models", 'model directory')
 cmd:option("-method", "scale", 'method to training (noise|scale)')
-cmd:option("-noise_level", 1, '(1|2)')
+cmd:option("-noise_level", 1, '(1|2|3)')
 cmd:option("-style", "art", '(art|photo)')
 cmd:option("-color", 'rgb', '(y|rgb)')
 cmd:option("-random_color_noise_rate", 0.0, 'data augmentation using color noise (0.0-1.0)')
@@ -42,15 +42,23 @@ cmd:option("-epoch", 30, 'number of epochs to run')
 cmd:option("-thread", -1, 'number of CPU threads')
 cmd:option("-jpeg_chroma_subsampling_rate", 0.0, 'the rate of YUV 4:2:0/YUV 4:4:4 in denoising training (0.0-1.0)')
 cmd:option("-validation_rate", 0.05, 'validation-set rate (number_of_training_images * validation_rate > 1)')
-cmd:option("-validation_crops", 80, 'number of cropping region per image in validation')
+cmd:option("-validation_crops", 160, 'number of cropping region per image in validation')
 cmd:option("-active_cropping_rate", 0.5, 'active cropping rate')
 cmd:option("-active_cropping_tries", 10, 'active cropping tries')
 cmd:option("-nr_rate", 0.75, 'trade-off between reducing noise and erasing details (0.0-1.0)')
 cmd:option("-save_history", 0, 'save all model (0|1)')
+cmd:option("-plot", 0, 'plot loss chart(0|1)')
+cmd:option("-downsampling_filters", "Box,Catrom", '(comma separated)downsampling filters for 2x scale training. (Point,Box,Triangle,Hermite,Hanning,Hamming,Blackman,Gaussian,Quadratic,Cubic,Catrom,Mitchell,Lanczos,Bessel,Sinc)')
 
 local opt = cmd:parse(arg)
 for k, v in pairs(opt) do
    settings[k] = v
+end
+if settings.plot == 1 then
+   settings.plot = true
+   require 'gnuplot'
+else
+   settings.plot = false
 end
 if settings.save_history == 1 then
    settings.save_history = true
@@ -88,9 +96,13 @@ if not (settings.style == "art" or
 	settings.style == "photo") then
    error(string.format("unknown style: %s", settings.style))
 end
-
 if settings.thread > 0 then
    torch.setnumthreads(tonumber(settings.thread))
+end
+if settings.downsampling_filters and settings.downsampling_filters:len() > 0 then
+   settings.downsampling_filters = settings.downsampling_filters:split(",")
+else
+   settings.downsampling_filters = {"Box", "Lanczos", "Catrom"}
 end
 
 settings.images = string.format("%s/images.t7", settings.data_dir)

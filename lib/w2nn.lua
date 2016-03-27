@@ -19,8 +19,7 @@ else
    require 'LeakyReLU'
    require 'LeakyReLU_deprecated'
    require 'DepthExpand2x'
-   require 'WeightedMSECriterion'
+   require 'PSNRCriterion'
    require 'ClippedWeightedHuberCriterion'
-   require 'cleanup_model'
    return w2nn
 end
