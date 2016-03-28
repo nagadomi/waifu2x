@@ -120,7 +120,8 @@ local function transformer(x, is_validation, n, offset)
 					 max_size = settings.max_size,
 					 active_cropping_rate = active_cropping_rate,
 					 active_cropping_tries = active_cropping_tries,
-					 rgb = (settings.color == "rgb")
+					 rgb = (settings.color == "rgb"),
+					 gamma_correction = settings.gamma_correction
 				      })
    elseif settings.method == "noise" then
       return pairwise_transform.jpeg(x,

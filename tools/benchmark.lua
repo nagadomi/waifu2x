@@ -24,12 +24,18 @@ cmd:option("-jpeg_quality", 75, 'jpeg quality')
 cmd:option("-jpeg_times", 1, 'jpeg compression times')
 cmd:option("-jpeg_quality_down", 5, 'value of jpeg quality to decrease each times')
 cmd:option("-range_bug", 0, 'Reproducing the dynamic range bug that is caused by MATLAB\'s rgb2ycbcr(1|0)')
+cmd:option("-gamma_correction", 0, 'Resizing with colorspace correction(sRGB:gamma 2.2) (0|1)')
 
 local opt = cmd:parse(arg)
 torch.setdefaulttensortype('torch.FloatTensor')
 if cudnn then
    cudnn.fastest = true
    cudnn.benchmark = false
+end
+if opt.gamma_correction == 1 then
+   opt.gamma_correction = true
+else
+   opt.gamma_correction = false
 end
 
 local function rgb2y_matlab(x)
@@ -87,10 +93,17 @@ local function baseline_scale(x, filter)
 		      filter)
 end
 local function transform_scale(x, opt)
-   return iproc.scale(x,
-		      x:size(3) * 0.5,
-		      x:size(2) * 0.5,
-		      opt.filter)
+   if opt.gamma_correction then
+      return iproc.scale_with_gamma22(x,
+			 x:size(3) * 0.5,
+			 x:size(2) * 0.5,
+			 opt.filter)
+   else
+      return iproc.scale(x,
+			 x:size(3) * 0.5,
+			 x:size(2) * 0.5,
+			 opt.filter)
+   end
 end
 
 local function benchmark(opt, x, input_func, model1, model2)

@@ -73,7 +73,7 @@ function iproc.scale_with_gamma22(src, width, height, filter)
    im:gammaCorrection(1.0 / 2.2):
       size(math.ceil(width), math.ceil(height), filter):
       gammaCorrection(2.2)
-   local dest = im:toTensor("float", "RGB", "DHW")
+   local dest = im:toTensor("float", "RGB", "DHW"):clamp(0.0, 1.0)
    if conversion then
       dest = iproc.float2byte(dest)
    end

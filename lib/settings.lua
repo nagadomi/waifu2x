@@ -49,21 +49,26 @@ cmd:option("-nr_rate", 0.75, 'trade-off between reducing noise and erasing detai
 cmd:option("-save_history", 0, 'save all model (0|1)')
 cmd:option("-plot", 0, 'plot loss chart(0|1)')
 cmd:option("-downsampling_filters", "Box,Catrom", '(comma separated)downsampling filters for 2x scale training. (Point,Box,Triangle,Hermite,Hanning,Hamming,Blackman,Gaussian,Quadratic,Cubic,Catrom,Mitchell,Lanczos,Bessel,Sinc)')
+cmd:option("-gamma_correction", 0, 'Resizing with colorspace correction(sRGB:gamma 2.2) in scale training (0|1)')
+
+local function to_bool(settings, name)
+   if settings[name] == 1 then
+      settings[name] = true
+   else
+      settings[name] = false
+   end
+end
 
 local opt = cmd:parse(arg)
 for k, v in pairs(opt) do
    settings[k] = v
 end
-if settings.plot == 1 then
-   settings.plot = true
+to_bool(settings, "plot")
+to_bool(settings, "save_history")
+to_bool(settings, "gamma_correction")
+
+if settings.plot then
    require 'gnuplot'
-else
-   settings.plot = false
-end
-if settings.save_history == 1 then
-   settings.save_history = true
-else
-   settings.save_history = false
 end
 if settings.save_history then
    if settings.method == "noise" then
