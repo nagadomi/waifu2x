@@ -19,10 +19,10 @@ end
 
 function nn.SpatialConvolutionMM:clearState()
    if self.gradWeight then
-      self.gradWeight = torch.Tensor(self.nOutputPlane, self.nInputPlane * self.kH * self.kW):typeAs(self.gradWeight):zero()
+      self.gradWeight:resize(self.nOutputPlane, self.nInputPlane * self.kH * self.kW):zero()
    end
    if self.gradBias then
-      self.gradBias = torch.Tensor(self.nOutputPlane):typeAs(self.gradBias):zero()
+      self.gradBias:resize(self.nOutputPlane):zero()
    end
    return nn.utils.clear(self, 'finput', 'fgradInput', '_input', '_gradOutput', 'output', 'gradInput')
 end
