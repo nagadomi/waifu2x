@@ -44,7 +44,7 @@ local function convert_image(opt)
 	 error("Load Error: " .. model_path)
       end
       x = alpha_util.make_border(x, alpha, reconstruct.offset_size(model))
-      new_x = scale_f(model, opt.scale, x, opt.crop_size)
+      new_x = scale_f(model, opt.scale, x, opt.crop_size, opt.upsampling_filter)
       new_x = alpha_util.composite(new_x, alpha, model)
    elseif opt.m == "noise_scale" then
       local noise_model_path = path.join(opt.model_dir, ("noise%d_model.t7"):format(opt.noise_level))
@@ -60,7 +60,7 @@ local function convert_image(opt)
       end
       x = alpha_util.make_border(x, alpha, reconstruct.offset_size(scale_model))
       x = image_f(noise_model, x, opt.crop_size)
-      new_x = scale_f(scale_model, opt.scale, x, opt.crop_size)
+      new_x = scale_f(scale_model, opt.scale, x, opt.crop_size, opt.upsampling_filter)
       new_x = alpha_util.composite(new_x, alpha, scale_model)
    else
       error("undefined method:" .. opt.method)
@@ -122,12 +122,12 @@ local function convert_frames(opt)
 	    new_x = alpha_util.composite(new_x, alpha)
 	 elseif opt.m == "scale" then
 	    x = alpha_util.make_border(x, alpha, reconstruct.offset_size(scale_model))
-	    new_x = scale_f(scale_model, opt.scale, x, opt.crop_size)
+	    new_x = scale_f(scale_model, opt.scale, x, opt.crop_size, opt.upsampling_filter)
 	    new_x = alpha_util.composite(new_x, alpha, scale_model)
 	 elseif opt.m == "noise_scale" then
 	    x = alpha_util.make_border(x, alpha, reconstruct.offset_size(scale_model))
 	    x = image_f(noise_model[opt.noise_level], x, opt.crop_size)
-	    new_x = scale_f(scale_model, opt.scale, x, opt.crop_size)
+	    new_x = scale_f(scale_model, opt.scale, x, opt.crop_size, upsampling_filter)
 	    new_x = alpha_util.composite(new_x, alpha, scale_model)
 	 else
 	    error("undefined method:" .. opt.method)
@@ -169,6 +169,7 @@ local function waifu2x()
    cmd:option("-resume", 0, "skip existing files (0|1)")
    cmd:option("-thread", -1, "number of CPU threads")
    cmd:option("-tta", 0, '8x slower and slightly high quality (0|1)')
+   cmd:option("-upsampling_filter", "Box", 'upsampling filter (for dev)')
    
    local opt = cmd:parse(arg)
    if opt.thread > 0 then

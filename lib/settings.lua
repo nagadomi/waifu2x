@@ -50,6 +50,7 @@ cmd:option("-save_history", 0, 'save all model (0|1)')
 cmd:option("-plot", 0, 'plot loss chart(0|1)')
 cmd:option("-downsampling_filters", "Box,Catrom", '(comma separated)downsampling filters for 2x scale training. (Point,Box,Triangle,Hermite,Hanning,Hamming,Blackman,Gaussian,Quadratic,Cubic,Catrom,Mitchell,Lanczos,Bessel,Sinc)')
 cmd:option("-gamma_correction", 0, 'Resizing with colorspace correction(sRGB:gamma 2.2) in scale training (0|1)')
+cmd:option("-upsampling_filter", "Box", 'upsampling filter for 2x scale training (dev)')
 
 local function to_bool(settings, name)
    if settings[name] == 1 then

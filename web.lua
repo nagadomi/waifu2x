@@ -25,6 +25,8 @@ cmd:text("waifu2x-api")
 cmd:text("Options:")
 cmd:option("-port", 8812, 'listen port')
 cmd:option("-gpu", 1, 'Device ID')
+cmd:option("-upsampling_filter", "Box", 'Upsampling filter (for dev)')
+cmd:option("-crop_size", 128, 'patch size per process')
 cmd:option("-thread", -1, 'number of CPU threads')
 local opt = cmd:parse(arg)
 cutorch.setDevice(opt.gpu)
@@ -142,10 +144,12 @@ local function convert(x, alpha, options)
 	    x = alpha_util.make_border(x, alpha_orig, reconstruct.offset_size(art_scale2_model))
 	 end
 	 if options.method == "scale" then
-	    x = reconstruct.scale(art_scale2_model, 2.0, x)
+	    x = reconstruct.scale(art_scale2_model, 2.0, x,
+				  opt.crop_size, opt.upsampling_filter)
 	    if alpha then
 	       if not (alpha:size(2) == x:size(2) and alpha:size(3) == x:size(3)) then
-		  alpha = reconstruct.scale(art_scale2_model, 2.0, alpha)
+		  alpha = reconstruct.scale(art_scale2_model, 2.0, alpha,
+					    opt.crop_size, opt.upsampling_filter)
 		  image_loader.save_png(alpha_cache_file, alpha)
 	       end
 	    end
@@ -165,10 +169,12 @@ local function convert(x, alpha, options)
 	    x = alpha_util.make_border(x, alpha, reconstruct.offset_size(photo_scale2_model))
 	 end
 	 if options.method == "scale" then
-	    x = reconstruct.scale(photo_scale2_model, 2.0, x)
+	    x = reconstruct.scale(photo_scale2_model, 2.0, x,
+				  opt.crop_size, opt.upsampling_filter)
 	    if alpha then
 	       if not (alpha:size(2) == x:size(2) and alpha:size(3) == x:size(3)) then
-		  alpha = reconstruct.scale(photo_scale2_model, 2.0, alpha)
+		  alpha = reconstruct.scale(photo_scale2_model, 2.0, alpha,
+					    opt.crop_size, opt.upsampling_filter)
 		  image_loader.save_png(alpha_cache_file, alpha)
 	       end
 	    end

@@ -92,11 +92,11 @@ function pairwise_transform.scale(src, scale, size, offset, n, options)
    if options.gamma_correction then
       x = iproc.scale(iproc.scale_with_gamma22(y, y:size(3) * down_scale,
 					       y:size(2) * down_scale, downsampling_filter),
-		      y:size(3), y:size(2))
+		      y:size(3), y:size(2), options.upsampling_filter)
    else
       x = iproc.scale(iproc.scale(y, y:size(3) * down_scale,
 				  y:size(2) * down_scale, downsampling_filter),
-		      y:size(3), y:size(2))
+		      y:size(3), y:size(2), options.upsampling_filter)
    end
    x = iproc.crop(x, unstable_region_offset, unstable_region_offset,
 		  x:size(3) - unstable_region_offset, x:size(2) - unstable_region_offset)

@@ -15,7 +15,7 @@ local pairwise_transform = require 'pairwise_transform'
 local image_loader = require 'image_loader'
 
 local function save_test_scale(model, rgb, file)
-   local up = reconstruct.scale(model, settings.scale, rgb)
+   local up = reconstruct.scale(model, settings.scale, rgb, 128, settings.upsampling_filter)
    image.save(file, up)
 end
 local function save_test_jpeg(model, rgb, file)
@@ -113,6 +113,7 @@ local function transformer(x, is_validation, n, offset)
 				      n,
 				      {
 					 downsampling_filters = settings.downsampling_filters,
+					 upsampling_filter = settings.upsampling_filter,
 					 random_half_rate = settings.random_half_rate,
 					 random_color_noise_rate = random_color_noise_rate,
 					 random_overlay_rate = random_overlay_rate,
