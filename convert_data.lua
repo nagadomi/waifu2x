@@ -8,6 +8,25 @@ local settings = require 'settings'
 local image_loader = require 'image_loader'
 local iproc = require 'iproc'
 
+local function crop_if_large(src, max_size)
+   local tries = 4
+   if src:size(2) >= max_size and src:size(3) >= max_size then
+      local rect
+      for i = 1, tries do
+	 local yi = torch.random(0, src:size(2) - max_size)
+	 local xi = torch.random(0, src:size(3) - max_size)
+	 rect = iproc.crop(src, xi, yi, xi + max_size, yi + max_size)
+	 -- ignore simple background
+	 if rect:float():std() >= 0 then
+	    break
+	 end
+      end
+      return rect
+   else
+      return src
+   end
+end
+
 local function load_images(list)
    local MARGIN = 32
    local lines = utils.split(file.read(list), "\n")
@@ -18,6 +37,9 @@ local function load_images(list)
       if alpha then
 	 io.stderr:write(string.format("\n%s: skip: image has alpha channel.\n", line))
       else
+	 if settings.max_training_image_size > 0 then
+	    im = crop_if_large(im, settings.max_training_image_size)
+	 end
 	 im = iproc.crop_mod4(im)
 	 local scale = 1.0
 	 if settings.random_half_rate > 0.0 then

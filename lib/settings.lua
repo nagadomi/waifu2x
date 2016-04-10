@@ -34,7 +34,7 @@ cmd:option("-random_unsharp_mask_rate", 0.0, 'data augmentation using unsharp ma
 cmd:option("-scale", 2.0, 'scale factor (2)')
 cmd:option("-learning_rate", 0.0005, 'learning rate for adam')
 cmd:option("-crop_size", 46, 'crop size')
-cmd:option("-max_size", 256, 'if image is larger than max_size, image will be crop to max_size randomly')
+cmd:option("-max_size", 256, 'if image is larger than N, image will be crop randomly')
 cmd:option("-batch_size", 8, 'mini batch size')
 cmd:option("-patches", 16, 'number of patch samples')
 cmd:option("-inner_epoch", 4, 'number of inner epochs')
@@ -51,6 +51,7 @@ cmd:option("-plot", 0, 'plot loss chart(0|1)')
 cmd:option("-downsampling_filters", "Box,Catrom", '(comma separated)downsampling filters for 2x scale training. (Point,Box,Triangle,Hermite,Hanning,Hamming,Blackman,Gaussian,Quadratic,Cubic,Catrom,Mitchell,Lanczos,Bessel,Sinc)')
 cmd:option("-gamma_correction", 0, 'Resizing with colorspace correction(sRGB:gamma 2.2) in scale training (0|1)')
 cmd:option("-upsampling_filter", "Box", 'upsampling filter for 2x scale training (dev)')
+cmd:option("-max_training_image_size", -1, 'if training image is larger than N, image will be crop randomly when data converting')
 
 local function to_bool(settings, name)
    if settings[name] == 1 then
