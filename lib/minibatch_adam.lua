@@ -25,8 +25,6 @@ local function minibatch_adam(model, criterion, eval_metric,
       if t + batch_size -1 > train_x:size(1) then
 	 break
       end
-      xlua.progress(t, train_x:size(1))
-
       for i = 1, batch_size do
          inputs_tmp[i]:copy(train_x[shuffle[t + i - 1]])
 	 targets_tmp[i]:copy(train_y[shuffle[t + i - 1]])
@@ -50,6 +48,7 @@ local function minibatch_adam(model, criterion, eval_metric,
       c = c + 1
       if c % 50 == 0 then
 	 collectgarbage()
+	 xlua.progress(t, train_x:size(1))
       end
    end
    xlua.progress(train_x:size(1), train_x:size(1))
