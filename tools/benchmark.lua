@@ -32,6 +32,7 @@ cmd:option("-output_dir", "./", 'output directroy')
 cmd:option("-show_progress", 1, 'show progressbar')
 cmd:option("-baseline_filter", "Catrom", 'baseline interpolation (Box|Lanczos|Catrom(Bicubic))')
 cmd:option("-save_info", 0, 'save score and parameters to benchmark.txt')
+cmd:option("-save_all", 0, 'group -save_info, -save_image and -save_baseline_image option')
 
 local function to_bool(settings, name)
    if settings[name] == 1 then
@@ -47,9 +48,16 @@ if cudnn then
    cudnn.benchmark = false
 end
 to_bool(opt, "gamma_correction")
-to_bool(opt, "save_image")
-to_bool(opt, "save_info")
-to_bool(opt, "save_baseline_image")
+to_bool(opt, "save_all")
+if opt.save_all then
+   opt.save_image = true
+   opt.save_info = true
+   opt.save_baseline_image = true
+else
+   to_bool(opt, "save_image")
+   to_bool(opt, "save_info")
+   to_bool(opt, "save_baseline_image")
+end
 to_bool(opt, "show_progress")
 
 local function rgb2y_matlab(x)
