@@ -5,9 +5,9 @@ local data_augmentation = require 'data_augmentation'
 
 local pairwise_transform = {}
 
-local function random_half(src, p)
+local function random_half(src, p, filters)
    if torch.uniform() < p then
-      local filter = ({"Box","Box","Blackman","Sinc","Lanczos", "Catrom"})[torch.random(1, 6)]
+      local filter = filters[torch.random(1, #filters)]
       return iproc.scale(src, src:size(3) * 0.5, src:size(2) * 0.5, filter)
    else
       return src
@@ -33,7 +33,7 @@ local function crop_if_large(src, max_size)
 end
 local function preprocess(src, crop_size, options)
    local dest = src
-   dest = random_half(dest, options.random_half_rate)
+   dest = random_half(dest, options.random_half_rate, options.downsampling_filters)
    dest = crop_if_large(dest, math.max(crop_size * 2, options.max_size))
    dest = data_augmentation.flip(dest)
    dest = data_augmentation.color_noise(dest, options.random_color_noise_rate)
