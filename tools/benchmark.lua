@@ -72,7 +72,7 @@ local function MSE(x1, x2, color)
    end
 end
 local function PSNR(x1, x2, color)
-   local mse = MSE(x1, x2, color)
+   local mse = math.max(MSE(x1, x2, color), 1)
    return 10 * math.log10((255.0 * 255.0) / mse)
 end
 local function transform_jpeg(x, opt)
