@@ -1,0 +1,24 @@
+---
+description: Derin Sarmalı Sinirsel Ağ ile çalışan anime stili çalışmalar için süper çözünürlük yükselticidir. Normal fotoğrafları da destekler.
+show_demonstration: Bütün ispatı göster
+go_to_github: "Github'a Git"
+image_choosing: Resim seç
+type_url: Adres Girin
+choose_file: Veya bir dosya seçin
+file_limits: "Limitler: Boyut: 3MB, Gürültü Azaltma: 2560x2560px, Çözünürlük Yükseltme: 1280x1280px."
+style: Stil
+artwork: Dijital Çizim
+photo: Fotoğraf
+noise_reduction: Gürültü Azaltma
+expect_jpeg: sonuç JPEG olarak çıkabilir
+nr_none: Yok
+nr_medium: Orta
+nr_high: Yüksek
+nr_highest: En Yüksek
+nr_hint: "Resimde gürültü varsa gürültü azaltmayı kullanmanızı tavsiye ederiz, yoksa tam tersi etkiler bulunabilir."
+upscaling: Çözünürlük Yükseltme
+up_none: Yok
+button_convert: Başlat
+button_download: İndir
+hints:
+  - "Firefox kullanıyorsanız, lütfen CTRL+S tuşu ile resmi indirin. \"Resmi Kaydet\" opsiyonu çalışmaz."
