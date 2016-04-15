@@ -33,8 +33,8 @@ local function load_images(list)
    local x = {}
    for i = 1, #lines do
       local line = lines[i]
-      local im, alpha = image_loader.load_byte(line)
-      if alpha then
+      local im, meta = image_loader.load_byte(line)
+      if meta and meta.alpha then
 	 io.stderr:write(string.format("\n%s: skip: image has alpha channel.\n", line))
       else
 	 if settings.max_training_image_size > 0 then

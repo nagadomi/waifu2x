@@ -11,7 +11,8 @@ local alpha_util = require 'alpha_util'
 torch.setdefaulttensortype('torch.FloatTensor')
 
 local function convert_image(opt)
-   local x, alpha = image_loader.load_float(opt.i)
+   local x, meta = image_loader.load_float(opt.i)
+   local alpha = meta.alpha
    local new_x = nil
    local t = sys.clock()
    local scale_f, image_f
@@ -65,7 +66,7 @@ local function convert_image(opt)
    else
       error("undefined method:" .. opt.method)
    end
-   image_loader.save_png(opt.o, new_x, opt.depth, true)
+   image_loader.save_png(opt.o, new_x, {depth = opt.depth, inplace = true, gamma = meta.gamma})
    print(opt.o .. ": " .. (sys.clock() - t) .. " sec")
 end
 local function convert_frames(opt)
@@ -115,7 +116,8 @@ local function convert_frames(opt)
    fp:close()
    for i = 1, #lines do
       if opt.resume == 0 or path.exists(string.format(opt.o, i)) == false then
-	 local x, alpha = image_loader.load_float(lines[i])
+	 local x, meta = image_loader.load_float(lines[i])
+	 local alpha = meta.alpha
 	 local new_x = nil
 	 if opt.m == "noise" then
 	    new_x = image_f(noise_model[opt.noise_level], x, opt.crop_size)
@@ -141,7 +143,8 @@ local function convert_frames(opt)
 	 else
 	    output = string.format(opt.o, i)
 	 end
-	 image_loader.save_png(output, new_x, opt.depth, true)
+	 image_loader.save_png(output, new_x, 
+			       {depth = opt.depth, inplace = true, gamma = meta.gamma})
 	 xlua.progress(i, #lines)
 	 if i % 10 == 0 then
 	    collectgarbage()
