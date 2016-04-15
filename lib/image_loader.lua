@@ -38,11 +38,17 @@ function image_loader.encode_png(rgb, options)
    local im
    if rgb:size(1) == 4 then -- RGBA
       im = gm.Image(rgb, "RGBA", "DHW")
+      if options.grayscale then
+	 im:type("GrayscaleMatte")
+      end
    elseif rgb:size(1) == 3 then -- RGB
       im = gm.Image(rgb, "RGB", "DHW")
+      if options.grayscale then
+	 im:type("Grayscale")
+      end
    elseif rgb:size(1) == 1 then -- Y
       im = gm.Image(rgb, "I", "DHW")
-      -- im:colorspace("GRAY") -- it does not work
+      im:type("Grayscale")
    end
    if options.gamma then
       im:gamma(options.gamma)
@@ -73,19 +79,19 @@ function image_loader.decode_float(blob)
       if gamma ~= 0 and math.floor(im:gamma() * 1000000) / 1000000 ~= gamma_lcd then
 	 meta.gamma = im:gamma()
       end
-      -- FIXME: How to detect that a image has an alpha channel?
-      if blob:sub(1, 4) == "\x89PNG" or blob:sub(1, 3) == "GIF" then
+      local image_type = im:type()
+      if image_type == "Grayscale" or image_type == "GrayscaleMatte" then
+	 meta.grayscale = true
+      end
+      if image_type == "TrueColorMatte" or image_type == "GrayscaleMatte" then
 	 -- split alpha channel
 	 im = im:toTensor('float', 'RGBA', 'DHW')
-	 local sum_alpha = (im[4] - 1.0):sum()
-	 if sum_alpha < 0 then
-	    meta.alpha = im[4]:reshape(1, im:size(2), im:size(3))
-	    -- drop full transparent background
-	    local mask = torch.le(meta.alpha, 0.0)
-	    im[1][mask] = background_color
-	    im[2][mask] = background_color
-	    im[3][mask] = background_color
-	 end
+	 meta.alpha = im[4]:reshape(1, im:size(2), im:size(3))
+	 -- drop full transparent background
+	 local mask = torch.le(meta.alpha, 0.0)
+	 im[1][mask] = background_color
+	 im[2][mask] = background_color
+	 im[3][mask] = background_color
 	 local new_im = torch.FloatTensor(3, im:size(2), im:size(3))
 	 new_im[1]:copy(im[1])
 	 new_im[2]:copy(im[2])
