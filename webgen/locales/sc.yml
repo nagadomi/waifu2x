@@ -21,4 +21,4 @@ up_none: 不放大
 button_convert: 转换
 button_download: 下载
 hints:
-  - "Firefox用户请手动使用Ctrl+S保存图像。右键菜单“保存图像”此处发无法使用。"
+  - "Firefox无法用右键菜单中的“保存图像”，请按Ctrl+S保存图像。"
