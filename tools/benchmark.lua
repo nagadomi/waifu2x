@@ -33,6 +33,7 @@ cmd:option("-show_progress", 1, 'show progressbar')
 cmd:option("-baseline_filter", "Catrom", 'baseline interpolation (Box|Lanczos|Catrom(Bicubic))')
 cmd:option("-save_info", 0, 'save score and parameters to benchmark.txt')
 cmd:option("-save_all", 0, 'group -save_info, -save_image and -save_baseline_image option')
+cmd:option("-thread", -1, 'number of CPU threads')
 
 local function to_bool(settings, name)
    if settings[name] == 1 then
@@ -59,6 +60,9 @@ else
    to_bool(opt, "save_baseline_image")
 end
 to_bool(opt, "show_progress")
+if opt.thread > 0 then
+   torch.setnumthreads(tonumber(opt.thread))
+end
 
 local function rgb2y_matlab(x)
    local y = torch.Tensor(1, x:size(2), x:size(3)):zero()
