@@ -66,7 +66,7 @@ local function convert_image(opt)
    else
       error("undefined method:" .. opt.method)
    end
-   image_loader.save_png(opt.o, new_x, {depth = opt.depth, inplace = true, gamma = meta.gamma})
+   image_loader.save_png(opt.o, new_x, tablex.update({depth = opt.depth, inplace = true}, meta))
    print(opt.o .. ": " .. (sys.clock() - t) .. " sec")
 end
 local function convert_frames(opt)
@@ -144,7 +144,7 @@ local function convert_frames(opt)
 	    output = string.format(opt.o, i)
 	 end
 	 image_loader.save_png(output, new_x, 
-			       {depth = opt.depth, inplace = true, gamma = meta.gamma})
+			       tablex.update({depth = opt.depth, inplace = true}, meta))
 	 xlua.progress(i, #lines)
 	 if i % 10 == 0 then
 	    collectgarbage()

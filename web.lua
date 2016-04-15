@@ -138,7 +138,9 @@ local function convert(x, meta, options)
    end
    if path.exists(cache_file) then
       x = image_loader.load_float(cache_file)
-      return x, {alpha = alpha, gamma = meta.gamma, blob = meta.blob}
+      meta = tablex.copy(meta)
+      meta.alpha = alpha
+      return x, meta
    else
       if options.style == "art" then
 	 if options.border then
@@ -192,8 +194,10 @@ local function convert(x, meta, options)
 	 end
       end
       image_loader.save_png(cache_file, x)
+      meta = tablex.copy(meta)
+      meta.alpha = alpha
 
-      return x, {alpha = alpha, gamma = meta.gamma, blob = meta.blob}
+      return x, meta
    end
 end
 local function client_disconnected(handler)
@@ -283,7 +287,7 @@ function APIHandler:post()
 	 name = uuid() .. ".png"
       end
       local blob = image_loader.encode_png(alpha_util.composite(x, meta.alpha),
-					   { depth = 8, inplace = true, gamma = meta.gamma})
+					   tablex.update({depth = 8, inplace = true}, meta))
 
       self:set_header("Content-Length", string.format("%d", #blob))
       if download > 0 then

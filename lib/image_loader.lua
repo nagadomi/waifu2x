@@ -38,11 +38,17 @@ function image_loader.encode_png(rgb, options)
    local im
    if rgb:size(1) == 4 then -- RGBA
       im = gm.Image(rgb, "RGBA", "DHW")
+      if options.grayscale then
+	 im:type("GrayscaleMatte")
+      end
    elseif rgb:size(1) == 3 then -- RGB
       im = gm.Image(rgb, "RGB", "DHW")
+      if options.grayscale then
+	 im:type("Grayscale")
+      end
    elseif rgb:size(1) == 1 then -- Y
       im = gm.Image(rgb, "I", "DHW")
-      -- im:colorspace("GRAY") -- it does not work
+      im:type("Grayscale")
    end
    if options.gamma then
       im:gamma(options.gamma)
@@ -74,6 +80,9 @@ function image_loader.decode_float(blob)
 	 meta.gamma = im:gamma()
       end
       local image_type = im:type()
+      if image_type == "Grayscale" or image_type == "GrayscaleMatte" then
+	 meta.grayscale = true
+      end
       if image_type == "TrueColorMatte" or image_type == "GrayscaleMatte" then
 	 -- split alpha channel
 	 im = im:toTensor('float', 'RGBA', 'DHW')
