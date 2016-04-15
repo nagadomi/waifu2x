@@ -93,7 +93,7 @@ local function cache_url(url)
 	 end
       end
    end
-   return nil, nil, nil
+   return nil, nil
 end
 local function get_image(req)
    local file_info = req:get_arguments("file")
@@ -108,22 +108,23 @@ local function get_image(req)
       end
    end
    if file and file:len() > 0 then
-      local x, alpha, blob = image_loader.decode_float(file)
-      return x, alpha, blob, filename
+      local x, meta = image_loader.decode_float(file)
+      return x, meta, filename
    elseif url and url:len() > 0 then
-      local x, alpha, blob = cache_url(url)
-      return x, alpha, blob, filename
+      local x, meta = cache_url(url)
+      return x, meta, filename
    end
-   return nil, nil, nil, nil
+   return nil, nil, nil
 end
 local function cleanup_model(model)
    if CLEANUP_MODEL then
       model:clearState() -- release GPU memory
    end
 end
-local function convert(x, alpha, options)
+local function convert(x, meta, options)
    local cache_file = path.join(CACHE_DIR, options.prefix .. ".png")
    local alpha_cache_file = path.join(CACHE_DIR, options.alpha_prefix .. ".png")
+   local alpha = meta.alpha
    local alpha_orig = alpha
 
    if path.exists(alpha_cache_file) then
@@ -137,7 +138,7 @@ local function convert(x, alpha, options)
    end
    if path.exists(cache_file) then
       x = image_loader.load_float(cache_file)
-      return x, alpha
+      return x, {alpha = alpha, gamma = meta.gamma, blob = meta.blob}
    else
       if options.style == "art" then
 	 if options.border then
@@ -192,7 +193,7 @@ local function convert(x, alpha, options)
       end
       image_loader.save_png(cache_file, x)
 
-      return x, alpha
+      return x, {alpha = alpha, gamma = meta.gamma, blob = meta.blob}
    end
 end
 local function client_disconnected(handler)
@@ -218,7 +219,7 @@ function APIHandler:post()
       self:write("client disconnected")
       return
    end
-   local x, alpha, blob, filename = get_image(self)
+   local x, meta, filename = get_image(self)
    local scale = tonumber(self:get_argument("scale", "0"))
    local noise = tonumber(self:get_argument("noise", "0"))
    local style = self:get_argument("style", "art")
@@ -230,29 +231,29 @@ function APIHandler:post()
    if x and valid_size(x, scale) then
       local prefix = nil
       if (noise ~= 0 or scale ~= 0) then
-	 local hash = md5.sumhexa(blob)
+	 local hash = md5.sumhexa(meta.blob)
 	 local alpha_prefix = style .. "_" .. hash .. "_alpha"
 	 local border = false
-	 if scale ~= 0 and alpha then
+	 if scale ~= 0 and meta.alpha then
 	    border = true
 	 end
 	 if noise == 1 then
 	    prefix = style .. "_noise1_"
-	    x = convert(x, alpha, {method = "noise1", style = style,
-				   prefix = prefix .. hash,
-				   alpha_prefix = alpha_prefix, border = border})
+	    x = convert(x, meta, {method = "noise1", style = style,
+				  prefix = prefix .. hash,
+				  alpha_prefix = alpha_prefix, border = border})
 	    border = false
 	 elseif noise == 2 then
 	    prefix = style .. "_noise2_"
-	    x = convert(x, alpha, {method = "noise2", style = style,
-				   prefix = prefix .. hash, 
-				   alpha_prefix = alpha_prefix, border = border})
+	    x = convert(x, meta, {method = "noise2", style = style,
+				  prefix = prefix .. hash, 
+				  alpha_prefix = alpha_prefix, border = border})
 	    border = false
 	 elseif noise == 3 then
 	    prefix = style .. "_noise3_"
-	    x = convert(x, alpha, {method = "noise3", style = style,
-				   prefix = prefix .. hash, 
-				   alpha_prefix = alpha_prefix, border = border})
+	    x = convert(x, meta, {method = "noise3", style = style,
+				  prefix = prefix .. hash, 
+				  alpha_prefix = alpha_prefix, border = border})
 	    border = false
 	 end
 	 if scale == 1 or scale == 2 then
@@ -265,7 +266,7 @@ function APIHandler:post()
 	    else
 	       prefix = style .. "_scale_"
 	    end
-	    x, alpha = convert(x, alpha, {method = "scale", style = style, prefix = prefix .. hash, alpha_prefix = alpha_prefix, border = border})
+	    x, meta = convert(x, meta, {method = "scale", style = style, prefix = prefix .. hash, alpha_prefix = alpha_prefix, border = border})
 	    if scale == 1 then
 	       x = iproc.scale(x, x:size(3) * (1.6 / 2.0), x:size(2) * (1.6 / 2.0), "Sinc")
 	    end
@@ -281,7 +282,8 @@ function APIHandler:post()
       else
 	 name = uuid() .. ".png"
       end
-      local blob = image_loader.encode_png(alpha_util.composite(x, alpha), 8, true)
+      local blob = image_loader.encode_png(alpha_util.composite(x, meta.alpha),
+					   { depth = 8, inplace = true, gamma = meta.gamma})
 
       self:set_header("Content-Length", string.format("%d", #blob))
       if download > 0 then
@@ -309,6 +311,8 @@ local index_ru = file.read(path.join(ROOT, "assets", "index.ru.html"))
 local index_pt = file.read(path.join(ROOT, "assets", "index.pt.html"))
 local index_es = file.read(path.join(ROOT, "assets", "index.es.html"))
 local index_fr = file.read(path.join(ROOT, "assets", "index.fr.html"))
+local index_de = file.read(path.join(ROOT, "assets", "index.de.html"))
+local index_tr = file.read(path.join(ROOT, "assets", "index.tr.html"))
 local index_en = file.read(path.join(ROOT, "assets", "index.html"))
 function FormHandler:get()
    local lang = self.request.headers:get("Accept-Language")
@@ -327,6 +331,10 @@ function FormHandler:get()
 	 self:write(index_es)
       elseif langs[1] == "fr" then
 	 self:write(index_fr)
+      elseif langs[1] == "de" then
+	 self:write(index_de)
+      elseif langs[1] == "tr" then
+	 self:write(index_tr)
       else
 	 self:write(index_en)
       end
