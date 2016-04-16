@@ -52,8 +52,7 @@ local function minibatch_adam(model, criterion, eval_metric,
       end
    end
    xlua.progress(train_x:size(1), train_x:size(1))
-   
-   return { loss = sum_loss / count_loss, PSNR = sum_eval / count_loss}
+   return { loss = sum_loss / count_loss, MSE = sum_eval / count_loss, PSNR = 10 * math.log10(1 / (sum_eval / count_loss))}
 end
 
 return minibatch_adam
