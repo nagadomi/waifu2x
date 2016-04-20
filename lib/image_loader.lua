@@ -43,7 +43,7 @@ function image_loader.encode_png(rgb, depth, inplace)
       im = gm.Image(rgb, "I", "DHW")
       -- im:colorspace("GRAY") -- it does not work
    end
-   return im:depth(depth):format("PNG"):toString(9)
+   return im:depth(depth):format("PNG"):toString()
 end
 function image_loader.save_png(filename, rgb, depth, inplace)
    local blob = image_loader.encode_png(rgb, depth, inplace)
