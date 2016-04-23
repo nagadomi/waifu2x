@@ -1,5 +1,6 @@
 require 'image'
 local iproc = require 'iproc'
+local srcnn = require 'srcnn'
 
 local function reconstruct_y(model, x, offset, block_size)
    if x:dim() == 2 then
@@ -50,7 +51,7 @@ local function reconstruct_rgb(model, x, offset, block_size)
 end
 local reconstruct = {}
 function reconstruct.is_rgb(model)
-   if model:get(model:size() - 1).weight:size(1) == 3 then
+   if srcnn.channels(model) == 3 then
       -- 3ch RGB
       return true
    else
@@ -59,21 +60,7 @@ function reconstruct.is_rgb(model)
    end
 end
 function reconstruct.offset_size(model)
-   local conv = model:findModules("nn.SpatialConvolutionMM")
-   if #conv > 0 then
-      local offset = 0
-      for i = 1, #conv do
-	 offset = offset + (conv[i].kW - 1) / 2
-      end
-      return math.floor(offset)
-   else
-      conv = model:findModules("cudnn.SpatialConvolution")
-      local offset = 0
-      for i = 1, #conv do
-	 offset = offset + (conv[i].kW - 1) / 2
-      end
-      return math.floor(offset)
-   end
+   return srcnn.offset_size(model)
 end
 function reconstruct.image_y(model, x, offset, block_size)
    block_size = block_size or 128

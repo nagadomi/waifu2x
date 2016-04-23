@@ -192,7 +192,7 @@ local function train()
    local hist_train = {}
    local hist_valid = {}
    local LR_MIN = 1.0e-5
-   local model = srcnn.create(settings.method, settings.backend, settings.color)
+   local model = srcnn.create(settings.model, settings.backend, settings.color)
    local offset = reconstruct.offset_size(model)
    local pairwise_func = function(x, is_validation, n)
       return transformer(x, is_validation, n, offset)
@@ -200,7 +200,7 @@ local function train()
    local criterion = create_criterion(model)
    local eval_metric = nn.MSECriterion():cuda()
    local x = torch.load(settings.images)
-   local train_x, valid_x = split_data(x, math.floor(settings.validation_rate * #x))
+   local train_x, valid_x = split_data(x, math.max(math.floor(settings.validation_rate * #x), 1))
    local adam_config = {
       learningRate = settings.learning_rate,
       xBatchSize = settings.batch_size,

@@ -5,8 +5,8 @@ require 'os'
 require 'w2nn'
 local srcnn = require 'srcnn'
 
-local function rebuild(old_model)
-   local new_model = srcnn.waifu2x_cunn(srcnn.channels(old_model))
+local function rebuild(old_model, model)
+   local new_model = srcnn.create(model, srcnn.backend(old_model), srcnn.color(old_model))
    local weight_from = old_model:findModules("nn.SpatialConvolutionMM")
    local weight_to = new_model:findModules("nn.SpatialConvolutionMM")
 
@@ -30,6 +30,7 @@ cmd:text("waifu2x rebuild cunn model")
 cmd:text("Options:")
 cmd:option("-i", "", 'Specify the input model')
 cmd:option("-o", "", 'Specify the output model')
+cmd:option("-model", "vgg_7", 'Specify the model architecture (vgg_7|vgg_12)')
 cmd:option("-iformat", "ascii", 'Specify the input format (ascii|binary)')
 cmd:option("-oformat", "ascii", 'Specify the output format (ascii|binary)')
 
@@ -39,5 +40,5 @@ if not path.isfile(opt.i) then
    os.exit(-1)
 end
 local old_model = torch.load(opt.i, opt.iformat)
-local new_model = rebuild(old_model)
+local new_model = rebuild(old_model, opt.model)
 torch.save(opt.o, new_model, opt.oformat)
