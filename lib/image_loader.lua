@@ -53,7 +53,7 @@ function image_loader.encode_png(rgb, options)
    if options.gamma then
       im:gamma(options.gamma)
    end
-   return im:depth(options.depth):format("PNG"):toString(9)
+   return im:depth(options.depth):format("PNG"):toString()
 end
 function image_loader.save_png(filename, rgb, options)
    local blob = image_loader.encode_png(rgb, options)

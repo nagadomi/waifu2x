@@ -21,7 +21,7 @@ end
 def load_locales(dir)
   locales = {}
   Dir.entries(dir).each do |ent|
-    if ent =~ /^\w\w.yml$/
+    if ent =~ /\.yml$/
       lang = File.basename(ent, ".yml")
       yml = YAML.load_file(File.join(dir, ent))
       if yml
