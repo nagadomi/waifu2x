@@ -191,7 +191,6 @@ end
 local function train()
    local hist_train = {}
    local hist_valid = {}
-   local LR_MIN = 1.0e-5
    local model = srcnn.create(settings.model, settings.backend, settings.color)
    local offset = reconstruct.offset_size(model)
    local pairwise_func = function(x, is_validation, n)
@@ -274,7 +273,7 @@ local function train()
 	    end
 	 else
 	    lrd_count = lrd_count + 1
-	    if lrd_count > 2 and adam_config.learningRate > LR_MIN then
+	    if lrd_count > 2 then
 	       adam_config.learningRate = adam_config.learningRate * 0.8
 	       print("* learning rate decay: " .. adam_config.learningRate)
 	       lrd_count = 0
