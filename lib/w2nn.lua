@@ -13,7 +13,10 @@ end
 if w2nn then
    return w2nn
 else
-   pcall(load_cunn)
+   local state, ret = pcall(load_cunn)
+   if not state then
+      error("Failed to load CUDA modules. Please check the CUDA Settings.")
+   end
    pcall(load_cudnn)
    w2nn = {}
    require 'LeakyReLU'
