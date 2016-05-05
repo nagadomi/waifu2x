@@ -8,8 +8,8 @@ th tools/benchmark.lua -dir path/to/dataset_dir -method scale -color y -model1_d
 
 ## Dataset
 
-    photo_set: 300 various photos.
-    art_set  : 90 artworks (PNG only).
+    photo_test: 300 various photos.
+    art_test  : 90 artworks (PNG only).
 
 ## 2x upscaling model
 
