@@ -15,7 +15,7 @@ if w2nn then
 else
    local state, ret = pcall(load_cunn)
    if not state then
-      error("Failed to load CUDA modules. Please check the CUDA Settings.")
+      error("Failed to load CUDA modules. Please check the CUDA Settings.\n---\n" .. ret)
    end
    pcall(load_cudnn)
    w2nn = {}
