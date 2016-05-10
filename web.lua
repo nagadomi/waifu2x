@@ -306,6 +306,7 @@ local index_fr = file.read(path.join(ROOT, "assets", "index.fr.html"))
 local index_de = file.read(path.join(ROOT, "assets", "index.de.html"))
 local index_tr = file.read(path.join(ROOT, "assets", "index.tr.html"))
 local index_zh_cn = file.read(path.join(ROOT, "assets", "index.zh-CN.html"))
+local index_ko = file.read(path.join(ROOT, "assets", "index.ko.html"))
 local index_en = file.read(path.join(ROOT, "assets", "index.html"))
 function FormHandler:get()
    local lang = self.request.headers:get("Accept-Language")
@@ -330,6 +331,8 @@ function FormHandler:get()
 	 self:write(index_tr)
       elseif langs[1] == "zh-CN" or langs[1] == "zh" then
 	 self:write(index_zh_cn)
+      elseif langs[1] == "ko" then
+	 self:write(index_ko)
       else
 	 self:write(index_en)
       end
