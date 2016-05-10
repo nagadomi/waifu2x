@@ -4,7 +4,7 @@ show_demonstration: 모든 데모 보기
 go_to_github: GitHub으로
 image_choosing: 이미지 선택
 type_url: URL 입력
-choose_file: 또는 파일 업로드하기:
+choose_file: 또는 파일 업로드하기
 file_limits: "제한: 크기: 3MB, Noise Reduction: 2560x2560px, Upscaling: 1280x1280px."
 style: 스타일
 artwork: 그림
