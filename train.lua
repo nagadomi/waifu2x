@@ -15,7 +15,9 @@ local pairwise_transform = require 'pairwise_transform'
 local image_loader = require 'image_loader'
 
 local function save_test_scale(model, rgb, file)
-   local up = reconstruct.scale(model, settings.scale, rgb, 128, settings.upsampling_filter)
+   local up = reconstruct.scale(model, settings.scale, rgb,
+				settings.scale * settings.crop_size,
+				settings.upsampling_filter)
    image.save(file, up)
 end
 local function save_test_jpeg(model, rgb, file)
@@ -96,6 +98,7 @@ local function create_criterion(model)
       local offset = reconstruct.offset_size(model)
       local output_w = settings.crop_size - offset * 2
       local weight = torch.Tensor(3, output_w * output_w)
+
       weight[1]:fill(0.29891 * 3) -- R
       weight[2]:fill(0.58661 * 3) -- G
       weight[3]:fill(0.11448 * 3) -- B
@@ -108,7 +111,7 @@ local function create_criterion(model)
       return w2nn.ClippedWeightedHuberCriterion(weight, 0.1, {0.0, 1.0}):cuda()
    end
 end
-local function transformer(x, is_validation, n, offset)
+local function transformer(model, x, is_validation, n, offset)
    x = compression.decompress(x)
    n = n or settings.patches
 
@@ -145,7 +148,8 @@ local function transformer(x, is_validation, n, offset)
 					 active_cropping_rate = active_cropping_rate,
 					 active_cropping_tries = active_cropping_tries,
 					 rgb = (settings.color == "rgb"),
-					 gamma_correction = settings.gamma_correction
+					 gamma_correction = settings.gamma_correction,
+					 x_upsampling = not srcnn.has_resize(model)
 				      })
    elseif settings.method == "noise" then
       return pairwise_transform.jpeg(x,
@@ -183,6 +187,22 @@ local function resampling(x, y, train_x, transformer, input_size, target_size)
       end
    end
 end
+local function remove_small_image(x)
+   local new_x = {}
+   for i = 1, #x do
+      local x_s = compression.size(x[i])
+      if x_s[2] / settings.scale > settings.crop_size + 16 and
+      x_s[3] / settings.scale > settings.crop_size + 16 then
+	 table.insert(new_x, x[i])
+      end
+      if i % 100 == 0 then
+	 collectgarbage()
+      end
+   end
+   print(string.format("removed %d small images", #x - #new_x))
+
+   return new_x
+end
 local function plot(train, valid)
    gnuplot.plot({
 	 {'training', torch.Tensor(train), '-'},
@@ -194,11 +214,11 @@ local function train()
    local model = srcnn.create(settings.model, settings.backend, settings.color)
    local offset = reconstruct.offset_size(model)
    local pairwise_func = function(x, is_validation, n)
-      return transformer(x, is_validation, n, offset)
+      return transformer(model, x, is_validation, n, offset)
    end
    local criterion = create_criterion(model)
    local eval_metric = nn.MSECriterion():cuda()
-   local x = torch.load(settings.images)
+   local x = remove_small_image(torch.load(settings.images))
    local train_x, valid_x = split_data(x, math.max(math.floor(settings.validation_rate * #x), 1))
    local adam_config = {
       learningRate = settings.learning_rate,
@@ -222,10 +242,16 @@ local function train()
    model:cuda()
    print("load .. " .. #train_x)
 
-   local x = torch.Tensor(settings.patches * #train_x,
-			  ch, settings.crop_size, settings.crop_size)
+   local x = nil
    local y = torch.Tensor(settings.patches * #train_x,
 			  ch * (settings.crop_size - offset * 2) * (settings.crop_size - offset * 2)):zero()
+   if srcnn.has_resize(model) then
+      x = torch.Tensor(settings.patches * #train_x,
+		       ch, settings.crop_size / settings.scale, settings.crop_size / settings.scale)
+   else
+      x = torch.Tensor(settings.patches * #train_x,
+		       ch, settings.crop_size, settings.crop_size)
+   end
    for epoch = 1, settings.epoch do
       model:training()
       print("# " .. epoch)
