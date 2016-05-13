@@ -13,5 +13,8 @@ compression.decompress = function(data)
    bt:storage():string(dec)
    return bt
 end
+compression.size = function(data)
+   return data[1]
+end
 
 return compression
