@@ -38,7 +38,7 @@ if cudnn then
    cudnn.fastest = true
    cudnn.benchmark = false
 end
-local ART_MODEL_DIR = path.join(ROOT, "models", "anime_style_art_rgb")
+local ART_MODEL_DIR = path.join(ROOT, "models", "upconv_7", "art")
 local PHOTO_MODEL_DIR = path.join(ROOT, "models", "photo")
 local art_scale2_model = torch.load(path.join(ART_MODEL_DIR, "scale2.0x_model.t7"), "ascii")
 local art_noise1_model = torch.load(path.join(ART_MODEL_DIR, "noise1_model.t7"), "ascii")

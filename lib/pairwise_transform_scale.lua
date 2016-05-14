@@ -46,10 +46,10 @@ function pairwise_transform.scale(src, scale, size, offset, n, options)
 
    for i = 1, n do
       local xc, yc = pairwise_utils.active_cropping(x, y,
-							size,
-							scale_inner,
-							options.active_cropping_rate,
-							options.active_cropping_tries)
+						    size,
+						    scale_inner,
+						    options.active_cropping_rate,
+						    options.active_cropping_tries)
       xc = iproc.byte2float(xc)
       yc = iproc.byte2float(yc)
       if options.rgb then

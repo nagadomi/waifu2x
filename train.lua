@@ -149,7 +149,7 @@ local function transformer(model, x, is_validation, n, offset)
 					 active_cropping_tries = active_cropping_tries,
 					 rgb = (settings.color == "rgb"),
 					 gamma_correction = settings.gamma_correction,
-					 x_upsampling = not srcnn.has_resize(model)
+					 x_upsampling = not reconstruct.has_resize(model)
 				      })
    elseif settings.method == "noise" then
       return pairwise_transform.jpeg(x,
@@ -245,7 +245,7 @@ local function train()
    local x = nil
    local y = torch.Tensor(settings.patches * #train_x,
 			  ch * (settings.crop_size - offset * 2) * (settings.crop_size - offset * 2)):zero()
-   if srcnn.has_resize(model) then
+   if reconstruct.has_resize(model) then
       x = torch.Tensor(settings.patches * #train_x,
 		       ch, settings.crop_size / settings.scale, settings.crop_size / settings.scale)
    else
