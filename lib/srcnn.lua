@@ -59,7 +59,7 @@ function srcnn.color(model)
    end
 end
 function srcnn.name(model)
-   if model.w2nn_arch_name then
+   if model.w2nn_arch_name ~= nil then
       return model.w2nn_arch_name
    else
       local conv = model:findModules("nn.SpatialConvolutionMM")
@@ -71,7 +71,7 @@ function srcnn.name(model)
       elseif #conv == 12 then
 	 return "vgg_12"
       else
-	 error("unsupported model name")
+	 error("unsupported model")
       end
    end
 end
@@ -91,19 +91,21 @@ function srcnn.offset_size(model)
 	 end
 	 return math.floor(offset)
       else
-	 error("unsupported model name")
+	 error("unsupported model")
       end
    end
 end
-function srcnn.has_resize(model)
-   if model.w2nn_resize ~= nil then
-      return model.w2nn_resize
+function srcnn.scale_factor(model)
+   if model.w2nn_scale_factor ~= nil then
+      return model.w2nn_scale_factor
    else
       local name = srcnn.name(model)
-      if name:match("upconv") ~= nil then
-	 return true
+      if name == "upconv_7" then
+	 return 2
+      elseif name == "upconv_8_4x" then
+	 return 4
       else
-	 return false
+	 return 1
       end
    end
 end
@@ -146,7 +148,7 @@ function srcnn.vgg_7(backend, ch)
 
    model.w2nn_arch_name = "vgg_7"
    model.w2nn_offset = 7
-   model.w2nn_resize = false
+   model.w2nn_scale_factor = 1
    model.w2nn_channels = ch
    --model:cuda()
    --print(model:forward(torch.Tensor(32, ch, 92, 92):uniform():cuda()):size())
@@ -183,6 +185,7 @@ function srcnn.vgg_12(backend, ch)
 
    model.w2nn_arch_name = "vgg_12"
    model.w2nn_offset = 12
+   model.w2nn_scale_factor = 1
    model.w2nn_resize = false
    model.w2nn_channels = ch
    --model:cuda()
@@ -211,6 +214,7 @@ function srcnn.dilated_7(backend, ch)
 
    model.w2nn_arch_name = "dilated_7"
    model.w2nn_offset = 12
+   model.w2nn_scale_factor = 1
    model.w2nn_resize = false
    model.w2nn_channels = ch
 
@@ -240,6 +244,7 @@ function srcnn.upconv_7(backend, ch)
 
    model.w2nn_arch_name = "upconv_7"
    model.w2nn_offset = 12
+   model.w2nn_scale_factor = 2
    model.w2nn_resize = true
    model.w2nn_channels = ch
 
@@ -269,6 +274,7 @@ function srcnn.upconv_8_4x(backend, ch)
 
    model.w2nn_arch_name = "upconv_8_4x"
    model.w2nn_offset = 12
+   model.w2nn_scale_factor = 4
    model.w2nn_resize = true
    model.w2nn_channels = ch
 
