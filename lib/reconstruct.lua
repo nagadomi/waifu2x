@@ -96,7 +96,7 @@ function reconstruct.scale_y(model, scale, x, offset, block_size, upsampling_fil
    block_size = block_size or 128
    local x_lanczos
    if reconstruct.has_resize(model) then
-      x_lanczos = x:clone()
+      x_lanczos = iproc.scale(x, x:size(3) * scale, x:size(2) * scale, "Lanczos")
    else
       x_lanczos = iproc.scale(x, x:size(3) * scale, x:size(2) * scale, "Lanczos")
       x = iproc.scale(x, x:size(3) * scale, x:size(2) * scale, upsampling_filter)
