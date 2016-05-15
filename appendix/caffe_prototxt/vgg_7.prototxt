@@ -1,0 +1,188 @@
+# adapted from https://github.com/lltcggie/waifu2x-caffe
+name: "vgg_7"
+layer {
+  name: "input"
+  type: "Input"
+  top: "input"
+  input_param { shape: { dim: 1 dim: 3 dim: 142 dim: 142 } }
+}
+layer {
+  name: "conv1_layer"
+  type: "Convolution"
+  bottom: "input"
+  top: "conv1"
+  convolution_param {
+    num_output: 32
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+  }
+}
+layer {
+  name: "conv1_relu_layer"
+  type: "ReLU"
+  bottom: "conv1"
+  top: "conv1"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "conv2_layer"
+  type: "Convolution"
+  bottom: "conv1"
+  top: "conv2"
+  convolution_param {
+    num_output: 32
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+  }
+}
+layer {
+  name: "conv2_relu_layer"
+  type: "ReLU"
+  bottom: "conv2"
+  top: "conv2"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "conv3_layer"
+  type: "Convolution"
+  bottom: "conv2"
+  top: "conv3"
+  convolution_param {
+    num_output: 64
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+  }
+}
+layer {
+  name: "conv3_relu_layer"
+  type: "ReLU"
+  bottom: "conv3"
+  top: "conv3"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "conv4_layer"
+  type: "Convolution"
+  bottom: "conv3"
+  top: "conv4"
+  convolution_param {
+    num_output: 64
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+  }
+}
+layer {
+  name: "conv4_relu_layer"
+  type: "ReLU"
+  bottom: "conv4"
+  top: "conv4"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "conv5_layer"
+  type: "Convolution"
+  bottom: "conv4"
+  top: "conv5"
+  convolution_param {
+    num_output: 128
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+  }
+}
+layer {
+  name: "conv5_relu_layer"
+  type: "ReLU"
+  bottom: "conv5"
+  top: "conv5"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "conv6_layer"
+  type: "Convolution"
+  bottom: "conv5"
+  top: "conv6"
+  convolution_param {
+    num_output: 128
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+  }
+}
+layer {
+  name: "conv6_relu_layer"
+  type: "ReLU"
+  bottom: "conv6"
+  top: "conv6"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "conv7_layer"
+  type: "Convolution"
+  bottom: "conv6"
+  top: "conv7"
+  convolution_param {
+    num_output: 3
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "gaussian"
+      std: 0.01
+    }
+  }
+}
+layer {
+  name: "target"
+  type: "MemoryData"
+  top: "target"
+  top: "dummy_label2"
+  memory_data_param {
+    batch_size: 1
+    channels: 3
+    height: 142
+    width: 142
+  }
+  include: { phase: TRAIN }
+}
+layer {
+  name: "loss"
+  type: "EuclideanLoss"
+  bottom: "conv7"
+  bottom: "target"
+  top: "loss"
+  include: { phase: TRAIN }
+}
