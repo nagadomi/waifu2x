@@ -53,6 +53,7 @@ cmd:option("-downsampling_filters", "Box,Lanczos,Sinc", '(comma separated)downsa
 cmd:option("-gamma_correction", 0, 'Resizing with colorspace correction(sRGB:gamma 2.2) in scale training (0|1)')
 cmd:option("-upsampling_filter", "Box", 'upsampling filter for 2x scale training (dev)')
 cmd:option("-max_training_image_size", -1, 'if training image is larger than N, image will be crop randomly when data converting')
+cmd:option("-use_transparent_png", 0, 'use transparent png (0|1)')
 
 local function to_bool(settings, name)
    if settings[name] == 1 then
@@ -69,6 +70,7 @@ end
 to_bool(settings, "plot")
 to_bool(settings, "save_history")
 to_bool(settings, "gamma_correction")
+to_bool(settings, "use_transparent_png")
 
 if settings.plot then
    require 'gnuplot'
