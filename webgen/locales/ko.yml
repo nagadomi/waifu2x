@@ -1,5 +1,5 @@
 ---
-description: 2차원 이미지를 위한 초고해상도 합성곱 심층 신경망 시스템. 사진에도 대응합니다.
+description: 컨볼루젼 신경망(CNN) 시스템을 통한 딥 러닝으로 2차원 이미지의 해상도를 개선합니다. 그림 뿐만 아니라 사진에도 대응합니다.
 show_demonstration: 모든 데모 보기
 go_to_github: GitHub으로
 image_choosing: 이미지 선택
@@ -15,10 +15,11 @@ nr_none: 없음
 nr_medium: 중간
 nr_high: 높음
 nr_highest: 최상
-nr_hint: "실제로 노이즈가 있는 이미지에만 사용해야 하며,  아닐 경우 부작용이 발생할 수 있습니다."
+nr_hint: "실제로 노이즈가 있는 이미지에만 사용해야 하며, 그렇지 않을 경우 사진의 세세한 부분이 뭉개질 수 있습니다."
 upscaling: 업스케일링
 up_none: 없음
 button_convert: 변환
 button_download: 다운로드
 hints:
-  - "FireFox에서 이미지를 저장하려면 Ctrl+S를 누르세요. 오른쪽 클릭 > \"이미지 저장\"은 동작하지 않습니다."
+  - "FireFox에서 이미지를 저장하려면 Ctrl+S를 누르세요. 오른쪽 클릭 > \"이미지 저장\"는 정상적으로 동작하지 않습니다."
+  
