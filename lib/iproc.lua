@@ -48,7 +48,7 @@ function iproc.float2byte(src)
    end
    return dest, conversion
 end
-function iproc.scale(src, width, height, filter)
+function iproc.scale(src, width, height, filter, blur)
    local conversion, color
    src, conversion = iproc.byte2float(src)
    filter = filter or "Box"
@@ -58,20 +58,20 @@ function iproc.scale(src, width, height, filter)
       color = "I"
    end
    local im = gm.Image(src, color, "DHW")
-   im:size(math.ceil(width), math.ceil(height), filter)
+   im:size(math.ceil(width), math.ceil(height), filter, blur)
    local dest = im:toTensor("float", color, "DHW")
    if conversion then
       dest = iproc.float2byte(dest)
    end
    return dest
 end
-function iproc.scale_with_gamma22(src, width, height, filter)
+function iproc.scale_with_gamma22(src, width, height, filter, blur)
    local conversion
    src, conversion = iproc.byte2float(src)
    filter = filter or "Box"
    local im = gm.Image(src, "RGB", "DHW")
    im:gammaCorrection(1.0 / 2.2):
-      size(math.ceil(width), math.ceil(height), filter):
+      size(math.ceil(width), math.ceil(height), filter, blur):
       gammaCorrection(2.2)
    local dest = im:toTensor("float", "RGB", "DHW"):clamp(0.0, 1.0)
    if conversion then

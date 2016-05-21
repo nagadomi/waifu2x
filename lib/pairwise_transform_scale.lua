@@ -6,13 +6,14 @@ function pairwise_transform.scale(src, scale, size, offset, n, options)
    local filters = options.downsampling_filters
    local unstable_region_offset = 8
    local downsampling_filter = filters[torch.random(1, #filters)]
+   local blur = torch.uniform(options.resize_blur_min, options.resize_blur_max)
    local y = pairwise_utils.preprocess(src, size, options)
    assert(y:size(2) % 4 == 0 and y:size(3) % 4 == 0)
    local down_scale = 1.0 / scale
    local x
    if options.gamma_correction then
       local small = iproc.scale_with_gamma22(y, y:size(3) * down_scale,
-					     y:size(2) * down_scale, downsampling_filter)
+					     y:size(2) * down_scale, downsampling_filter, blur)
       if options.x_upsampling then
 	 x = iproc.scale(small, y:size(3), y:size(2), options.upsampling_filter)
       else
@@ -20,7 +21,7 @@ function pairwise_transform.scale(src, scale, size, offset, n, options)
       end
    else
       local small = iproc.scale(y, y:size(3) * down_scale,
-				  y:size(2) * down_scale, downsampling_filter)
+				  y:size(2) * down_scale, downsampling_filter, blur)
       if options.x_upsampling then
 	 x = iproc.scale(small, y:size(3), y:size(2), options.upsampling_filter)
       else

@@ -54,6 +54,8 @@ cmd:option("-gamma_correction", 0, 'Resizing with colorspace correction(sRGB:gam
 cmd:option("-upsampling_filter", "Box", 'upsampling filter for 2x scale training (dev)')
 cmd:option("-max_training_image_size", -1, 'if training image is larger than N, image will be crop randomly when data converting')
 cmd:option("-use_transparent_png", 0, 'use transparent png (0|1)')
+cmd:option("-resize_blur_min", 0.85, 'min blur parameter for ResizeImage')
+cmd:option("-resize_blur_max", 1.05, 'max blur parameter for ResizeImage')
 
 local function to_bool(settings, name)
    if settings[name] == 1 then
