@@ -302,7 +302,7 @@ local function train()
 	 else
 	    lrd_count = lrd_count + 1
 	    if lrd_count > 2 then
-	       adam_config.learningRate = adam_config.learningRate * 0.8
+	       adam_config.learningRate = adam_config.learningRate * 0.874
 	       print("* learning rate decay: " .. adam_config.learningRate)
 	       lrd_count = 0
 	    end
