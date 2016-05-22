@@ -1,7 +1,7 @@
 ---
 description: 컨볼루젼 신경망(CNN) 시스템을 통한 딥 러닝으로 2차원 이미지의 해상도를 개선합니다. 그림 뿐만 아니라 사진에도 대응합니다.
-show_demonstration: 모든 데모 보기
-go_to_github: GitHub으로
+show_demonstration: 실제 데모 보기
+go_to_github: GitHub에서 보기
 image_choosing: 이미지 선택
 type_url: URL 입력
 choose_file: 또는 파일 업로드
