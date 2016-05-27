@@ -21,5 +21,6 @@ else
    require 'DepthExpand2x'
    require 'PSNRCriterion'
    require 'ClippedWeightedHuberCriterion'
+   require 'ClippedMSECriterion'
    return w2nn
 end
