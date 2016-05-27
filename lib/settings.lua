@@ -56,6 +56,8 @@ cmd:option("-max_training_image_size", -1, 'if training image is larger than N, 
 cmd:option("-use_transparent_png", 0, 'use transparent png (0|1)')
 cmd:option("-resize_blur_min", 0.85, 'min blur parameter for ResizeImage')
 cmd:option("-resize_blur_max", 1.05, 'max blur parameter for ResizeImage')
+cmd:option("-oracle_rate", 0.0, '')
+cmd:option("-oracle_drop_rate", 0.5, '')
 
 local function to_bool(settings, name)
    if settings[name] == 1 then
