@@ -57,10 +57,6 @@ function pairwise_transform_utils.active_cropping(x, y, size, scale, p, tries)
       local xc = iproc.crop(x, xi, yi, xi + size / scale, yi + size / scale)
       return xc, yc
    else
-      local test_scale = 2
-      if test_scale < scale then
-	 test_scale = scale
-      end
       local lowres = gm.Image(y, "RGB", "DHW"):
 	    size(y:size(3) * 0.5, y:size(2) * 0.5, "Box"):
 	    size(y:size(3), y:size(2), "Box"):

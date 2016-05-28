@@ -28,23 +28,21 @@ function pairwise_transform.scale(src, scale, size, offset, n, options)
 	 x = small
       end
    end
-
+   local scale_inner = scale
    if options.x_upsampling then
-      x = iproc.crop(x, unstable_region_offset, unstable_region_offset,
-		     x:size(3) - unstable_region_offset, x:size(2) - unstable_region_offset)
-      y = iproc.crop(y, unstable_region_offset, unstable_region_offset,
-		     y:size(3) - unstable_region_offset, y:size(2) - unstable_region_offset)
+      scale_inner = 1
+   end
+   x = iproc.crop(x, unstable_region_offset, unstable_region_offset,
+		  x:size(3) - unstable_region_offset, x:size(2) - unstable_region_offset)
+   y = iproc.crop(y, unstable_region_offset * scale_inner, unstable_region_offset * scale_inner,
+		  y:size(3) - unstable_region_offset * scale_inner, y:size(2) - unstable_region_offset * scale_inner)
+   if options.x_upsampling then
       assert(x:size(2) % 4 == 0 and x:size(3) % 4 == 0)
       assert(x:size(1) == y:size(1) and x:size(2) == y:size(2) and x:size(3) == y:size(3))
    else
       assert(x:size(1) == y:size(1) and x:size(2) * scale == y:size(2) and x:size(3) * scale == y:size(3))
    end
-   local scale_inner = scale
-   if options.x_upsampling then
-      scale_inner = 1
-   end
    local batch = {}
-
    for i = 1, n do
       local xc, yc = pairwise_utils.active_cropping(x, y,
 						    size,
