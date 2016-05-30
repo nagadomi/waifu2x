@@ -30,8 +30,12 @@ function pairwise_transform.jpeg_(src, quality, size, offset, n, options)
    assert(x:size(1) == y:size(1) and x:size(2) == y:size(2) and x:size(3) == y:size(3))
    
    local batch = {}
+   local lowres_y = gm.Image(y, "RGB", "DHW"):
+      size(y:size(3) * 0.5, y:size(2) * 0.5, "Box"):
+      size(y:size(3), y:size(2), "Box"):
+      toTensor(t, "RGB", "DHW")
    for i = 1, n do
-      local xc, yc = pairwise_utils.active_cropping(x, y, size, 1,
+      local xc, yc = pairwise_utils.active_cropping(x, y, lowres_y, size, 1,
 						    options.active_cropping_rate,
 						    options.active_cropping_tries)
       xc = iproc.byte2float(xc)

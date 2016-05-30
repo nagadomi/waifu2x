@@ -1,5 +1,6 @@
 local pairwise_utils = require 'pairwise_transform_utils'
 local iproc = require 'iproc'
+local gm = require 'graphicsmagick'
 local pairwise_transform = {}
 
 function pairwise_transform.scale(src, scale, size, offset, n, options)
@@ -43,8 +44,12 @@ function pairwise_transform.scale(src, scale, size, offset, n, options)
       assert(x:size(1) == y:size(1) and x:size(2) * scale == y:size(2) and x:size(3) * scale == y:size(3))
    end
    local batch = {}
+   local lowres_y = gm.Image(y, "RGB", "DHW"):
+      size(y:size(3) * 0.5, y:size(2) * 0.5, "Box"):
+      size(y:size(3), y:size(2), "Box"):
+      toTensor(t, "RGB", "DHW")
    for i = 1, n do
-      local xc, yc = pairwise_utils.active_cropping(x, y,
+      local xc, yc = pairwise_utils.active_cropping(x, y, lowres_y,
 						    size,
 						    scale_inner,
 						    options.active_cropping_rate,

@@ -1,5 +1,4 @@
 require 'image'
-local gm = require 'graphicsmagick'
 local iproc = require 'iproc'
 local data_augmentation = require 'data_augmentation'
 local pairwise_transform_utils = {}
@@ -42,7 +41,7 @@ function pairwise_transform_utils.preprocess(src, crop_size, options)
    
    return dest
 end
-function pairwise_transform_utils.active_cropping(x, y, size, scale, p, tries)
+function pairwise_transform_utils.active_cropping(x, y, lowres_y, size, scale, p, tries)
    assert("x:size == y:size", x:size(2) * scale == y:size(2) and x:size(3) * scale == y:size(3))
    assert("crop_size % scale == 0", size % scale == 0)
    local r = torch.uniform()
@@ -57,10 +56,6 @@ function pairwise_transform_utils.active_cropping(x, y, size, scale, p, tries)
       local xc = iproc.crop(x, xi, yi, xi + size / scale, yi + size / scale)
       return xc, yc
    else
-      local lowres = gm.Image(y, "RGB", "DHW"):
-	    size(y:size(3) * 0.5, y:size(2) * 0.5, "Box"):
-	    size(y:size(3), y:size(2), "Box"):
-	    toTensor(t, "RGB", "DHW")
       local best_se = 0.0
       local best_xi, best_yi
       local m = torch.FloatTensor(y:size(1), size, size)
@@ -68,7 +63,7 @@ function pairwise_transform_utils.active_cropping(x, y, size, scale, p, tries)
 	 local xi = torch.random(0, x:size(3) - (size + 1)) * scale
 	 local yi = torch.random(0, x:size(2) - (size + 1)) * scale
 	 local xc = iproc.crop(y, xi, yi, xi + size, yi + size)
-	 local lc = iproc.crop(lowres, xi, yi, xi + size, yi + size)
+	 local lc = iproc.crop(lowres_y, xi, yi, xi + size, yi + size)
 	 local xcf = iproc.byte2float(xc)
 	 local lcf = iproc.byte2float(lc)
 	 local se = m:copy(xcf):add(-1.0, lcf):pow(2):sum()
