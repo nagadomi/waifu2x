@@ -41,7 +41,6 @@ local function convert_image(opt)
    local x, meta = image_loader.load_float(opt.i)
    local alpha = meta.alpha
    local new_x = nil
-   local t = sys.clock()
    local scale_f, image_f
 
    if opt.tta == 1 then
@@ -58,17 +57,21 @@ local function convert_image(opt)
       if not model then
 	 error("Load Error: " .. model_path)
       end
+      local t = sys.clock()
       new_x = image_f(model, x, opt.crop_size)
       new_x = alpha_util.composite(new_x, alpha)
+      print(opt.o .. ": " .. (sys.clock() - t) .. " sec")
    elseif opt.m == "scale" then
       local model_path = path.join(opt.model_dir, ("scale%.1fx_model.t7"):format(opt.scale))
       local model = torch.load(model_path, "ascii")
       if not model then
 	 error("Load Error: " .. model_path)
       end
+      local t = sys.clock()
       x = alpha_util.make_border(x, alpha, reconstruct.offset_size(model))
       new_x = scale_f(model, opt.scale, x, opt.crop_size, opt.upsampling_filter)
       new_x = alpha_util.composite(new_x, alpha, model)
+      print(opt.o .. ": " .. (sys.clock() - t) .. " sec")
    elseif opt.m == "noise_scale" then
       local noise_model_path = path.join(opt.model_dir, ("noise%d_model.t7"):format(opt.noise_level))
       local noise_model = torch.load(noise_model_path, "ascii")
@@ -81,15 +84,16 @@ local function convert_image(opt)
       if not scale_model then
 	 error("Load Error: " .. scale_model_path)
       end
+      local t = sys.clock()
       x = alpha_util.make_border(x, alpha, reconstruct.offset_size(scale_model))
       x = image_f(noise_model, x, opt.crop_size)
       new_x = scale_f(scale_model, opt.scale, x, opt.crop_size, opt.upsampling_filter)
       new_x = alpha_util.composite(new_x, alpha, scale_model)
+      print(opt.o .. ": " .. (sys.clock() - t) .. " sec")
    else
       error("undefined method:" .. opt.method)
    end
    image_loader.save_png(opt.o, new_x, tablex.update({depth = opt.depth, inplace = true}, meta))
-   print(opt.o .. ": " .. (sys.clock() - t) .. " sec")
 end
 local function convert_frames(opt)
    local model_path, scale_model
