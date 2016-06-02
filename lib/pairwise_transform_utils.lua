@@ -50,18 +50,18 @@ function pairwise_transform_utils.active_cropping(x, y, lowres_y, size, scale, p
       t = "byte"
    end
    if p < r then
-      local xi = torch.random(0, x:size(3) - (size + 1))
-      local yi = torch.random(0, x:size(2) - (size + 1))
-      local yc = iproc.crop(y, xi * scale, yi * scale, xi * scale + size, yi * scale + size)
-      local xc = iproc.crop(x, xi, yi, xi + size / scale, yi + size / scale)
+      local xi = torch.random(1, x:size(3) - (size + 1)) * scale
+      local yi = torch.random(1, x:size(2) - (size + 1)) * scale
+      local yc = iproc.crop(y, xi, yi, xi + size, yi + size)
+      local xc = iproc.crop(x, xi / scale, yi / scale, xi / scale + size / scale, yi / scale + size / scale)
       return xc, yc
    else
       local best_se = 0.0
       local best_xi, best_yi
       local m = torch.FloatTensor(y:size(1), size, size)
       for i = 1, tries do
-	 local xi = torch.random(0, x:size(3) - (size + 1)) * scale
-	 local yi = torch.random(0, x:size(2) - (size + 1)) * scale
+	 local xi = torch.random(1, x:size(3) - (size + 1)) * scale
+	 local yi = torch.random(1, x:size(2) - (size + 1)) * scale
 	 local xc = iproc.crop(y, xi, yi, xi + size, yi + size)
 	 local lc = iproc.crop(lowres_y, xi, yi, xi + size, yi + size)
 	 local xcf = iproc.byte2float(xc)
