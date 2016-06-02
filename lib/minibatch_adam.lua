@@ -7,6 +7,11 @@ local function minibatch_adam(model, criterion, eval_metric,
 			      config)
    local parameters, gradParameters = model:getParameters()
    config = config or {}
+   if config.xEvalCount == nil then
+      config.xEvalCount = 0
+      config.learningRate = config.xLearningRate
+   end
+
    local sum_loss = 0
    local sum_eval = 0
    local count_loss = 0
@@ -52,11 +57,14 @@ local function minibatch_adam(model, criterion, eval_metric,
 	 return f, gradParameters
       end
       optim.adam(feval, parameters, config)
+      config.xEvalCount = config.xEvalCount + batch_size
+      config.learningRate = config.xLearningRate / (1 + config.xEvalCount * config.xLearningRateDecay)
       c = c + 1
       if c % 50 == 0 then
 	 collectgarbage()
 	 xlua.progress(t, train_x:size(1))
       end
+
    end
    xlua.progress(train_x:size(1), train_x:size(1))
    return { loss = sum_loss / count_loss, MSE = sum_eval / count_loss, PSNR = 10 * math.log10(1 / (sum_eval / count_loss))}, instance_loss

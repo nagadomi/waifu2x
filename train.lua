@@ -100,7 +100,6 @@ local function create_criterion(model)
       local offset = reconstruct.offset_size(model)
       local output_w = settings.crop_size - offset * 2
       local weight = torch.Tensor(3, output_w * output_w)
-
       weight[1]:fill(0.29891 * 3) -- R
       weight[2]:fill(0.58661 * 3) -- G
       weight[3]:fill(0.11448 * 3) -- B
@@ -223,8 +222,8 @@ local function remove_small_image(x)
    local new_x = {}
    for i = 1, #x do
       local x_s = compression.size(x[i])
-      if x_s[2] / settings.scale > settings.crop_size + 16 and
-      x_s[3] / settings.scale > settings.crop_size + 16 then
+      if x_s[2] / settings.scale > settings.crop_size + 32 and
+      x_s[3] / settings.scale > settings.crop_size + 32 then
 	 table.insert(new_x, x[i])
       end
       if i % 100 == 0 then
@@ -253,10 +252,10 @@ local function train()
    local x = remove_small_image(torch.load(settings.images))
    local train_x, valid_x = split_data(x, math.max(math.floor(settings.validation_rate * #x), 1))
    local adam_config = {
-      learningRate = settings.learning_rate,
+      xLearningRate = settings.learning_rate,
       xBatchSize = settings.batch_size,
+      xLearningRateDecay = settings.learning_rate_decay
    }
-   local lrd_count = 0
    local ch = nil
    if settings.color == "y" then
       ch = 1
@@ -285,10 +284,12 @@ local function train()
 		       ch, settings.crop_size, settings.crop_size)
    end
    local instance_loss = nil
-
    for epoch = 1, settings.epoch do
       model:training()
       print("# " .. epoch)
+      if adam_config.learningRate then
+	 print("learning rate: " .. adam_config.learningRate)
+      end
       print("## resampling")
       if instance_loss then
 	 -- active learning
@@ -323,7 +324,6 @@ local function train()
 	 end
 	 if score.loss < best_score then
 	    local test_image = image_loader.load_float(settings.test) -- reload
-	    lrd_count = 0
 	    best_score = score.loss
 	    print("* update best model")
 	    if settings.save_history then
@@ -350,13 +350,6 @@ local function train()
 					("scale%.1f_best.png"):format(settings.scale))
 		  save_test_scale(model, test_image, log)
 	       end
-	    end
-	 else
-	    lrd_count = lrd_count + 1
-	    if lrd_count > 2 then
-	       adam_config.learningRate = adam_config.learningRate * 0.874
-	       print("* learning rate decay: " .. adam_config.learningRate)
-	       lrd_count = 0
 	    end
 	 end
 	 print("PSNR: " .. score.PSNR .. ", loss: " .. score.loss .. ", Minimum loss: " .. best_score)
