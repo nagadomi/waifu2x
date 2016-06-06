@@ -95,14 +95,18 @@ local function validate(model, criterion, eval_metric, data, batch_size)
    return {loss = loss / loss_count, MSE = mse / loss_count, PSNR = 10 * math.log10(1 / (mse / loss_count))}
 end
 
-local function create_criterion(model)
+local function create_criterion(model, loss)
    if reconstruct.is_rgb(model) then
       local offset = reconstruct.offset_size(model)
       local output_w = settings.crop_size - offset * 2
       local weight = torch.Tensor(3, output_w * output_w)
-      weight[1]:fill(0.29891 * 3) -- R
-      weight[2]:fill(0.58661 * 3) -- G
-      weight[3]:fill(0.11448 * 3) -- B
+      if loss == "y" then
+	 weight[1]:fill(0.29891 * 3) -- R
+	 weight[2]:fill(0.58661 * 3) -- G
+	 weight[3]:fill(0.11448 * 3) -- B
+      else
+	 weight:fill(1)
+      end
       return w2nn.ClippedWeightedHuberCriterion(weight, 0.1, {0.0, 1.0}):cuda()
    else
       local offset = reconstruct.offset_size(model)
@@ -113,9 +117,14 @@ local function create_criterion(model)
    end
 end
 local function transformer(model, x, is_validation, n, offset)
-   x = compression.decompress(x)
+   local meta = {data = {}}
+   if type(x) == "table" and type(x[2]) == "table" then
+      meta = x[2]
+      x = compression.decompress(x[1])
+   else
+      x = compression.decompress(x)
+   end
    n = n or settings.patches
-
    if is_validation == nil then is_validation = false end
    local random_color_noise_rate = nil 
    local random_overlay_rate = nil
@@ -132,46 +141,43 @@ local function transformer(model, x, is_validation, n, offset)
       random_color_noise_rate = settings.random_color_noise_rate
       random_overlay_rate = settings.random_overlay_rate
    end
-   
    if settings.method == "scale" then
+      local conf = tablex.update({
+	    downsampling_filters = settings.downsampling_filters,
+	    upsampling_filter = settings.upsampling_filter,
+	    random_half_rate = settings.random_half_rate,
+	    random_color_noise_rate = random_color_noise_rate,
+	    random_overlay_rate = random_overlay_rate,
+	    random_unsharp_mask_rate = settings.random_unsharp_mask_rate,
+	    max_size = settings.max_size,
+	    active_cropping_rate = active_cropping_rate,
+	    active_cropping_tries = active_cropping_tries,
+	    rgb = (settings.color == "rgb"),
+	    gamma_correction = settings.gamma_correction,
+	    x_upsampling = not reconstruct.has_resize(model),
+	    resize_blur_min = settings.resize_blur_min,
+	 resize_blur_max = settings.resize_blur_max}, meta)
       return pairwise_transform.scale(x,
 				      settings.scale,
 				      settings.crop_size, offset,
-				      n,
-				      {
-					 downsampling_filters = settings.downsampling_filters,
-					 upsampling_filter = settings.upsampling_filter,
-					 random_half_rate = settings.random_half_rate,
-					 random_color_noise_rate = random_color_noise_rate,
-					 random_overlay_rate = random_overlay_rate,
-					 random_unsharp_mask_rate = settings.random_unsharp_mask_rate,
-					 max_size = settings.max_size,
-					 active_cropping_rate = active_cropping_rate,
-					 active_cropping_tries = active_cropping_tries,
-					 rgb = (settings.color == "rgb"),
-					 gamma_correction = settings.gamma_correction,
-					 x_upsampling = not reconstruct.has_resize(model),
-					 resize_blur_min = settings.resize_blur_min,
-					 resize_blur_max = settings.resize_blur_max,
-				      })
+				      n, conf)
    elseif settings.method == "noise" then
+      local conf = tablex.update({
+	    random_half_rate = settings.random_half_rate,
+	    random_color_noise_rate = random_color_noise_rate,
+	    random_overlay_rate = random_overlay_rate,
+	    random_unsharp_mask_rate = settings.random_unsharp_mask_rate,
+	    max_size = settings.max_size,
+	    jpeg_chroma_subsampling_rate = settings.jpeg_chroma_subsampling_rate,
+	    active_cropping_rate = active_cropping_rate,
+	    active_cropping_tries = active_cropping_tries,
+	    nr_rate = settings.nr_rate,
+	    rgb = (settings.color == "rgb")}, meta)
       return pairwise_transform.jpeg(x,
 				     settings.style,
 				     settings.noise_level,
 				     settings.crop_size, offset,
-				     n,
-				     {
-					random_half_rate = settings.random_half_rate,
-					random_color_noise_rate = random_color_noise_rate,
-					random_overlay_rate = random_overlay_rate,
-					random_unsharp_mask_rate = settings.random_unsharp_mask_rate,
-					max_size = settings.max_size,
-					jpeg_chroma_subsampling_rate = settings.jpeg_chroma_subsampling_rate,
-					active_cropping_rate = active_cropping_rate,
-					active_cropping_tries = active_cropping_tries,
-					nr_rate = settings.nr_rate,
-					rgb = (settings.color == "rgb")
-				     })
+				     n, conf)
    end
 end
 
@@ -221,7 +227,13 @@ end
 local function remove_small_image(x)
    local new_x = {}
    for i = 1, #x do
-      local x_s = compression.size(x[i])
+      local xe, meta, x_s
+      xe = x[i]
+      if type(xe) == "table" and type(xe[2]) == "table" then
+	 x_s = compression.size(xe[1])
+      else
+	 x_s = compression.size(xe)
+      end
       if x_s[2] / settings.scale > settings.crop_size + 32 and
       x_s[3] / settings.scale > settings.crop_size + 32 then
 	 table.insert(new_x, x[i])
@@ -247,7 +259,7 @@ local function train()
    local pairwise_func = function(x, is_validation, n)
       return transformer(model, x, is_validation, n, offset)
    end
-   local criterion = create_criterion(model)
+   local criterion = create_criterion(model, settings.loss)
    local eval_metric = w2nn.ClippedMSECriterion(0, 1):cuda()
    local x = remove_small_image(torch.load(settings.images))
    local train_x, valid_x = split_data(x, math.max(math.floor(settings.validation_rate * #x), 1))
@@ -297,9 +309,22 @@ local function train()
 	 local oracle_n = math.min(x:size(1) * settings.oracle_rate, x:size(1))
 	 if oracle_n > 0 then
 	    local oracle_x, oracle_y = get_oracle_data(x, y, instance_loss, oracle_k, oracle_n)
-	    resampling(x, y, train_x, pairwise_func)
+	    resampling(x:narrow(1, oracle_x:size(1) + 1, x:size(1)-oracle_x:size(1)),
+		       y:narrow(1, oracle_x:size(1) + 1, x:size(1) - oracle_x:size(1)), train_x, pairwise_func)
 	    x:narrow(1, 1, oracle_x:size(1)):copy(oracle_x)
 	    y:narrow(1, 1, oracle_y:size(1)):copy(oracle_y)
+
+	    local draw_n = math.floor(math.sqrt(oracle_x:size(1), 0.5))
+	    if draw_n > 100 then
+	       draw_n = 100
+	    end
+	    image.save(path.join(settings.model_dir, "oracle_x.png"), 
+		       image.toDisplayTensor({
+			     input = oracle_x:narrow(1, 1, draw_n * draw_n),
+			     padding = 2,
+			     nrow = draw_n,
+			     min = 0,
+			     max = 1}))
 	 else
 	    resampling(x, y, train_x, pairwise_func)
 	 end
@@ -322,11 +347,12 @@ local function train()
 	 if settings.plot then
 	    plot(hist_train, hist_valid)
 	 end
-	 if score.loss < best_score then
+	 if score.MSE < best_score then
 	    local test_image = image_loader.load_float(settings.test) -- reload
-	    best_score = score.loss
+	    best_score = score.MSE
 	    print("* update best model")
 	    if settings.save_history then
+	       torch.save(settings.model_file_best, model:clearState(), "ascii")
 	       torch.save(string.format(settings.model_file, epoch, i), model:clearState(), "ascii")
 	       if settings.method == "noise" then
 		  local log = path.join(settings.model_dir,
@@ -352,7 +378,7 @@ local function train()
 	       end
 	    end
 	 end
-	 print("PSNR: " .. score.PSNR .. ", loss: " .. score.loss .. ", Minimum loss: " .. best_score)
+	 print("PSNR: " .. score.PSNR .. ", loss: " .. score.loss .. ", MSE: " .. score.MSE .. ", Minimum MSE: " .. best_score)
 	 collectgarbage()
       end
    end

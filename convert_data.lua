@@ -35,7 +35,13 @@ local function load_images(list)
    local skip_notice = false
    for i = 1, #lines do
       local line = lines[i]
-      local im, meta = image_loader.load_byte(line)
+      local v = utils.split(line, ",")
+      local filename = v[1]
+      local filters = v[2]
+      if filters then
+	 filters = utils.split(filters, ":")
+      end
+      local im, meta = image_loader.load_byte(filename)
       local skip = false
       if meta and meta.alpha then
 	 if settings.use_transparent_png then
@@ -60,12 +66,12 @@ local function load_images(list)
 	 end
 	 if im then
 	    if im:size(2) > (settings.crop_size * scale + MARGIN) and im:size(3) > (settings.crop_size * scale + MARGIN) then
-	       table.insert(x, compression.compress(im))
+	       table.insert(x, {compression.compress(im), {data = {filters = filters}}})
 	    else
-	       io.stderr:write(string.format("\n%s: skip: image is too small (%d > size).\n", line, settings.crop_size * scale + MARGIN))
+	       io.stderr:write(string.format("\n%s: skip: image is too small (%d > size).\n", filename, settings.crop_size * scale + MARGIN))
 	    end
 	 else
-	    io.stderr:write(string.format("\n%s: skip: load error.\n", line))
+	    io.stderr:write(string.format("\n%s: skip: load error.\n", filename))
 	 end
       end
       xlua.progress(i, #lines)

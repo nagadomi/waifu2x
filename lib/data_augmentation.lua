@@ -100,7 +100,6 @@ function data_augmentation.flip(src)
    local tr = torch.random(1, 2)
    local src, conversion = iproc.byte2float(src)
    local dest
-   
    src = src:contiguous()
    if tr == 1 then
       -- pass

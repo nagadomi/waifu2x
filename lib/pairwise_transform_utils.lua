@@ -11,13 +11,18 @@ function pairwise_transform_utils.random_half(src, p, filters)
       return src
    end
 end
-function pairwise_transform_utils.crop_if_large(src, max_size)
+function pairwise_transform_utils.crop_if_large(src, max_size, mod)
    local tries = 4
    if src:size(2) > max_size and src:size(3) > max_size then
+      assert(max_size % 4 == 0)
       local rect
       for i = 1, tries do
 	 local yi = torch.random(0, src:size(2) - max_size)
 	 local xi = torch.random(0, src:size(3) - max_size)
+	 if mod then
+	    yi = yi - (yi % mod)
+	    xi = xi - (xi % mod)
+	 end
 	 rect = iproc.crop(src, xi, yi, xi + max_size, yi + max_size)
 	 -- ignore simple background
 	 if rect:float():std() >= 0 then
@@ -31,14 +36,28 @@ function pairwise_transform_utils.crop_if_large(src, max_size)
 end
 function pairwise_transform_utils.preprocess(src, crop_size, options)
    local dest = src
-   dest = pairwise_transform_utils.random_half(dest, options.random_half_rate, options.downsampling_filters)
-   dest = pairwise_transform_utils.crop_if_large(dest, math.max(crop_size * 2, options.max_size))
-   dest = data_augmentation.flip(dest)
-   dest = data_augmentation.color_noise(dest, options.random_color_noise_rate)
-   dest = data_augmentation.overlay(dest, options.random_overlay_rate)
-   dest = data_augmentation.unsharp_mask(dest, options.random_unsharp_mask_rate)
-   dest = data_augmentation.shift_1px(dest)
-   
+   local box_only = false
+   if options.data.filters then
+      if #options.data.filters == 1 and options.data.filters[1] == "Box" then
+	 box_only = true
+      end
+   end
+   if box_only then
+      local mod = 2 -- assert pos % 2 == 0
+      dest = pairwise_transform_utils.crop_if_large(dest, math.max(crop_size * 2, options.max_size), mod)
+      dest = data_augmentation.flip(dest)
+      dest = data_augmentation.color_noise(dest, options.random_color_noise_rate)
+      dest = data_augmentation.overlay(dest, options.random_overlay_rate)
+      dest = data_augmentation.unsharp_mask(dest, options.random_unsharp_mask_rate)
+   else
+      dest = pairwise_transform_utils.random_half(dest, options.random_half_rate, options.downsampling_filters)
+      dest = pairwise_transform_utils.crop_if_large(dest, math.max(crop_size * 2, options.max_size))
+      dest = data_augmentation.flip(dest)
+      dest = data_augmentation.color_noise(dest, options.random_color_noise_rate)
+      dest = data_augmentation.overlay(dest, options.random_overlay_rate)
+      dest = data_augmentation.unsharp_mask(dest, options.random_unsharp_mask_rate)
+      dest = data_augmentation.shift_1px(dest)
+   end
    return dest
 end
 function pairwise_transform_utils.active_cropping(x, y, lowres_y, size, scale, p, tries)

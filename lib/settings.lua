@@ -59,6 +59,7 @@ cmd:option("-resize_blur_max", 1.05, 'max blur parameter for ResizeImage')
 cmd:option("-oracle_rate", 0.0, '')
 cmd:option("-oracle_drop_rate", 0.5, '')
 cmd:option("-learning_rate_decay", 3.0e-7, 'learning rate decay (learning_rate * 1/(1+num_of_data*patches*epoch))')
+cmd:option("-loss", "rgb", 'loss (rgb|y)')
 
 local function to_bool(settings, name)
    if settings[name] == 1 then
@@ -84,9 +85,13 @@ if settings.save_history then
    if settings.method == "noise" then
       settings.model_file = string.format("%s/noise%d_model.%%d-%%d.t7",
 					  settings.model_dir, settings.noise_level)
+      settings.model_file_best = string.format("%s/noise%d_model.t7",
+					       settings.model_dir, settings.noise_level)
    elseif settings.method == "scale" then
       settings.model_file = string.format("%s/scale%.1fx_model.%%d-%%d.t7",
 					  settings.model_dir, settings.scale)
+      settings.model_file_best = string.format("%s/scale%.1fx_model.t7",
+					       settings.model_dir, settings.scale)
    else
       error("unknown method: " .. settings.method)
    end
