@@ -49,26 +49,46 @@ local function dot()
    for i = 1, n do
       local block = torch.Tensor(3, s, s)
       local margin = torch.random(1, 3)
-      local size = torch.random(1, 4)
+      local size = torch.random(1, 5)
       local mod = gen_mod()
-      local fg = color(true)
-      local bg = color()
+      local swap_color = torch.uniform() > 0.5
+      local fg, bg
+      if swap_color then
+	 fg = color()
+	 bg = color(true)
+      else
+	 fg = color(true)
+	 bg = color()
+      end
+      local use_cross_and_skip = torch.uniform() > 0.5
       for j = 1, 3 do
 	 block[j]:fill(bg[j])
       end
       for y = margin, s - margin do
+	 local b = 0
+	 if use_cross_and_skip and torch.random(0, 1) == 1 then
+	    b = torch.random(0, 1)
+	 end
 	 for x = margin, s - margin do
 	    local yc = math.floor(y / size)
 	    local xc = math.floor(x / size)
-	    if mod(yc, xc) then
-	       block[1][y][x] = fg[1]
-	       block[2][y][x] = fg[2]
-	       block[3][y][x] = fg[3]
+	    if use_corss_and_skip then
+	       if torch.uniform() > 0.25 and mod(yc + b, xc + b) then
+		  block[1][y][x] = fg[1]
+		  block[2][y][x] = fg[2]
+		  block[3][y][x] = fg[3]
+	       end
+	    else
+	       if mod(yc + b, xc + b) then
+		  block[1][y][x] = fg[1]
+		  block[2][y][x] = fg[2]
+		  block[3][y][x] = fg[3]
+	       end
 	    end
 	 end
       end
       block = image.scale(block, s * 2, s * 2, "simple")
-      if size >= 3 and torch.uniform() > 0.5 then
+      if (not use_corss_and_skip) and size >= 3 and torch.uniform() > 0.5 then
 	 block = image.rotate(block, math.pi / 4, "bilinear")
       end
       blocks[i] = block
