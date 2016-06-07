@@ -23,7 +23,7 @@ cmd:option("-data_dir", "./data", 'path to data directory')
 cmd:option("-backend", "cunn", '(cunn|cudnn)')
 cmd:option("-test", "images/miku_small.png", 'path to test image')
 cmd:option("-model_dir", "./models", 'model directory')
-cmd:option("-method", "scale", 'method to training (noise|scale)')
+cmd:option("-method", "scale", 'method to training (noise|scale|noise_scale)')
 cmd:option("-model", "vgg_7", 'model architecture (vgg_7|vgg_12|upconv_7|upconv_8_4x|dilated_7)')
 cmd:option("-noise_level", 1, '(1|2|3)')
 cmd:option("-style", "art", '(art|photo)')
@@ -33,13 +33,13 @@ cmd:option("-random_overlay_rate", 0.0, 'data augmentation using flipped image o
 cmd:option("-random_half_rate", 0.0, 'data augmentation using half resolution image (0.0-1.0)')
 cmd:option("-random_unsharp_mask_rate", 0.0, 'data augmentation using unsharp mask (0.0-1.0)')
 cmd:option("-scale", 2.0, 'scale factor (2)')
-cmd:option("-learning_rate", 0.0005, 'learning rate for adam')
+cmd:option("-learning_rate", 0.00025, 'learning rate for adam')
 cmd:option("-crop_size", 48, 'crop size')
 cmd:option("-max_size", 256, 'if image is larger than N, image will be crop randomly')
-cmd:option("-batch_size", 8, 'mini batch size')
-cmd:option("-patches", 16, 'number of patch samples')
-cmd:option("-inner_epoch", 4, 'number of inner epochs')
-cmd:option("-epoch", 50, 'number of epochs to run')
+cmd:option("-batch_size", 16, 'mini batch size')
+cmd:option("-patches", 64, 'number of patch samples')
+cmd:option("-inner_epoch", 1, 'number of inner epochs')
+cmd:option("-epoch", 100, 'number of epochs to run')
 cmd:option("-thread", -1, 'number of CPU threads')
 cmd:option("-jpeg_chroma_subsampling_rate", 0.0, 'the rate of YUV 4:2:0/YUV 4:4:4 in denoising training (0.0-1.0)')
 cmd:option("-validation_rate", 0.05, 'validation-set rate (number_of_training_images * validation_rate > 1)')
@@ -54,12 +54,12 @@ cmd:option("-gamma_correction", 0, 'Resizing with colorspace correction(sRGB:gam
 cmd:option("-upsampling_filter", "Box", 'upsampling filter for 2x scale training (dev)')
 cmd:option("-max_training_image_size", -1, 'if training image is larger than N, image will be crop randomly when data converting')
 cmd:option("-use_transparent_png", 0, 'use transparent png (0|1)')
-cmd:option("-resize_blur_min", 0.85, 'min blur parameter for ResizeImage')
+cmd:option("-resize_blur_min", 0.95, 'min blur parameter for ResizeImage')
 cmd:option("-resize_blur_max", 1.05, 'max blur parameter for ResizeImage')
-cmd:option("-oracle_rate", 0.0, '')
+cmd:option("-oracle_rate", 0.1, '')
 cmd:option("-oracle_drop_rate", 0.5, '')
 cmd:option("-learning_rate_decay", 3.0e-7, 'learning rate decay (learning_rate * 1/(1+num_of_data*patches*epoch))')
-cmd:option("-loss", "rgb", 'loss (rgb|y)')
+cmd:option("-loss", "y", 'loss (rgb|y)')
 
 local function to_bool(settings, name)
    if settings[name] == 1 then
@@ -92,6 +92,15 @@ if settings.save_history then
 					  settings.model_dir, settings.scale)
       settings.model_file_best = string.format("%s/scale%.1fx_model.t7",
 					       settings.model_dir, settings.scale)
+   elseif settings.method == "noise_scale" then
+      settings.model_file = string.format("%s/noise%d_scale%.1fx_model.%%d-%%d.t7",
+					  settings.model_dir,
+					  settings.noise_level,
+					  settings.scale)
+      settings.model_file_best = string.format("%s/noise%d_scale%.1fx_model.t7",
+					       settings.model_dir,
+					       settings.noise_level, 
+					       settings.scale)
    else
       error("unknown method: " .. settings.method)
    end
@@ -102,6 +111,9 @@ else
    elseif settings.method == "scale" then
       settings.model_file = string.format("%s/scale%.1fx_model.t7",
 					  settings.model_dir, settings.scale)
+   elseif settings.method == "noise_scale" then
+      settings.model_file = string.format("%s/noise%d_scale%.1fx_model.t7",
+					  settings.model_dir, settings.noise_level, settings.scale)
    else
       error("unknown method: " .. settings.method)
    end

@@ -178,6 +178,30 @@ local function transformer(model, x, is_validation, n, offset)
 				     settings.noise_level,
 				     settings.crop_size, offset,
 				     n, conf)
+   elseif settings.method == "noise_scale" then
+      local conf = tablex.update({
+	    downsampling_filters = settings.downsampling_filters,
+	    upsampling_filter = settings.upsampling_filter,
+	    random_half_rate = settings.random_half_rate,
+	    random_color_noise_rate = random_color_noise_rate,
+	    random_overlay_rate = random_overlay_rate,
+	    random_unsharp_mask_rate = settings.random_unsharp_mask_rate,
+	    max_size = settings.max_size,
+	    jpeg_chroma_subsampling_rate = settings.jpeg_chroma_subsampling_rate,
+	    nr_rate = settings.nr_rate,
+	    active_cropping_rate = active_cropping_rate,
+	    active_cropping_tries = active_cropping_tries,
+	    rgb = (settings.color == "rgb"),
+	    gamma_correction = settings.gamma_correction,
+	    x_upsampling = not reconstruct.has_resize(model),
+	    resize_blur_min = settings.resize_blur_min,
+	    resize_blur_max = settings.resize_blur_max}, meta)
+      return pairwise_transform.jpeg_scale(x,
+					   settings.scale,
+					   settings.style,
+					   settings.noise_level,
+					   settings.crop_size, offset,
+					   n, conf)
    end
 end
 
@@ -364,6 +388,12 @@ local function train()
 					("scale%.1f_best.%d-%d.png"):format(settings.scale,
 									    epoch, i))
 		  save_test_scale(model, test_image, log)
+	       elseif settings.method == "noise_scale" then
+		  local log = path.join(settings.model_dir,
+					("noise%d_scale%.1f_best.%d-%d.png"):format(settings.noise_level, 
+										    settings.scale,
+										    epoch, i))
+		  save_test_scale(model, test_image, log)
 	       end
 	    else
 	       torch.save(settings.model_file, model:clearState(), "ascii")
@@ -374,6 +404,11 @@ local function train()
 	       elseif settings.method == "scale" then
 		  local log = path.join(settings.model_dir,
 					("scale%.1f_best.png"):format(settings.scale))
+		  save_test_scale(model, test_image, log)
+	       elseif settings.method == "noise_scale" then
+		  local log = path.join(settings.model_dir,
+					("noise%d_scale%.1f_best.png"):format(settings.noise_level, 
+									      settings.scale))
 		  save_test_scale(model, test_image, log)
 	       end
 	    end
