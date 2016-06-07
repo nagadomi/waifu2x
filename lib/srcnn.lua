@@ -5,23 +5,31 @@ require 'w2nn'
 local srcnn = {}
 
 function nn.SpatialConvolutionMM:reset(stdv)
-   stdv = math.sqrt(2 / ((1.0 + 0.1 * 0.1) * self.kW * self.kH * self.nOutputPlane))
+   local fin = self.kW * self.kH * self.nInputPlane
+   local fout = self.kW * self.kH * self.nOutputPlane
+   stdv = math.sqrt(4 / ((1.0 + 0.1 * 0.1) * (fin + fout)))
    self.weight:normal(0, stdv)
    self.bias:zero()
 end
 function nn.SpatialFullConvolution:reset(stdv)
-   stdv = math.sqrt(2 / ((1.0 + 0.1 * 0.1) * self.kW * self.kH * self.nOutputPlane))
+   local fin = self.kW * self.kH * self.nInputPlane
+   local fout = self.kW * self.kH * self.nOutputPlane
+   stdv = math.sqrt(4 / ((1.0 + 0.1 * 0.1) * (fin + fout)))
    self.weight:normal(0, stdv)
    self.bias:zero()
 end
 if cudnn and cudnn.SpatialConvolution then
    function cudnn.SpatialConvolution:reset(stdv)
-      stdv = math.sqrt(2 / ((1.0 + 0.1 * 0.1) * self.kW * self.kH * self.nOutputPlane))
+      local fin = self.kW * self.kH * self.nInputPlane
+      local fout = self.kW * self.kH * self.nOutputPlane
+      stdv = math.sqrt(4 / ((1.0 + 0.1 * 0.1) * (fin + fout)))
       self.weight:normal(0, stdv)
       self.bias:zero()
    end
    function cudnn.SpatialFullConvolution:reset(stdv)
-      stdv = math.sqrt(2 / ((1.0 + 0.1 * 0.1) * self.kW * self.kH * self.nOutputPlane))
+      local fin = self.kW * self.kH * self.nInputPlane
+      local fout = self.kW * self.kH * self.nOutputPlane
+      stdv = math.sqrt(4 / ((1.0 + 0.1 * 0.1) * (fin + fout)))
       self.weight:normal(0, stdv)
       self.bias:zero()
    end
@@ -119,9 +127,9 @@ local function SpatialConvolution(backend, nInputPlane, nOutputPlane, kW, kH, dW
       error("unsupported backend:" .. backend)
    end
 end
-local function SpatialFullConvolution(backend, nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH)
+local function SpatialFullConvolution(backend, nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH, adjW, adjH)
    if backend == "cunn" then
-      return nn.SpatialFullConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH)
+      return nn.SpatialFullConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH, adjW, adjH)
    elseif backend == "cudnn" then
       return cudnn.SpatialFullConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH)
    else
@@ -225,57 +233,27 @@ function srcnn.dilated_7(backend, ch)
    return model
 end
 
--- Up Convolution
+-- Upconvolution
 function srcnn.upconv_7(backend, ch)
    local model = nn.Sequential()
-
-   model:add(SpatialConvolution(backend, ch, 32, 3, 3, 1, 1, 0, 0))
+   model:add(SpatialConvolution(backend, ch, 16, 3, 3, 1, 1, 0, 0))
    model:add(nn.LeakyReLU(0.1, true))
-   model:add(SpatialConvolution(backend, 32, 32, 3, 3, 1, 1, 0, 0))
+   model:add(SpatialConvolution(backend, 16, 32, 3, 3, 1, 1, 0, 0))
    model:add(nn.LeakyReLU(0.1, true))
    model:add(SpatialConvolution(backend, 32, 64, 3, 3, 1, 1, 0, 0))
-   model:add(nn.LeakyReLU(0.1, true))
-   model:add(SpatialConvolution(backend, 64, 64, 3, 3, 1, 1, 0, 0))
    model:add(nn.LeakyReLU(0.1, true))
    model:add(SpatialConvolution(backend, 64, 128, 3, 3, 1, 1, 0, 0))
    model:add(nn.LeakyReLU(0.1, true))
    model:add(SpatialConvolution(backend, 128, 128, 3, 3, 1, 1, 0, 0))
    model:add(nn.LeakyReLU(0.1, true))
-   model:add(SpatialFullConvolution(backend, 128, ch, 4, 4, 2, 2, 1, 1))
+   model:add(SpatialConvolution(backend, 128, 256, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialFullConvolution(backend, 256, ch, 4, 4, 2, 2, 3, 3))
+   model:add(nn.View(-1):setNumInputDims(3))
 
    model.w2nn_arch_name = "upconv_7"
-   model.w2nn_offset = 12
+   model.w2nn_offset = 14
    model.w2nn_scale_factor = 2
-   model.w2nn_resize = true
-   model.w2nn_channels = ch
-
-   --model:cuda()
-   --print(model:forward(torch.Tensor(32, ch, 92, 92):uniform():cuda()):size())
-
-   return model
-end
-function srcnn.upconv_8_4x(backend, ch)
-   local model = nn.Sequential()
-
-   model:add(SpatialFullConvolution(backend, ch, 32, 4, 4, 2, 2, 1, 1))
-   model:add(nn.LeakyReLU(0.1, true))
-   model:add(SpatialConvolution(backend, 32, 32, 3, 3, 1, 1, 0, 0))
-   model:add(nn.LeakyReLU(0.1, true))
-   model:add(SpatialConvolution(backend, 32, 32, 3, 3, 1, 1, 0, 0))
-   model:add(nn.LeakyReLU(0.1, true))
-   model:add(SpatialConvolution(backend, 32, 64, 3, 3, 1, 1, 0, 0))
-   model:add(nn.LeakyReLU(0.1, true))
-   model:add(SpatialConvolution(backend, 64, 64, 3, 3, 1, 1, 0, 0))
-   model:add(nn.LeakyReLU(0.1, true))
-   model:add(SpatialConvolution(backend, 64, 64, 3, 3, 1, 1, 0, 0))
-   model:add(nn.LeakyReLU(0.1, true))
-   model:add(SpatialConvolution(backend, 64, 64, 3, 3, 1, 1, 0, 0))
-   model:add(nn.LeakyReLU(0.1, true))
-   model:add(SpatialFullConvolution(backend, 64, 3, 4, 4, 2, 2, 1, 1))
-
-   model.w2nn_arch_name = "upconv_8_4x"
-   model.w2nn_offset = 12
-   model.w2nn_scale_factor = 4
    model.w2nn_resize = true
    model.w2nn_channels = ch
 
@@ -298,14 +276,14 @@ function srcnn.create(model_name, backend, color)
    end
    if srcnn[model_name] then
       local model = srcnn[model_name](backend, ch)
-      assert(model.w2nn_offset == (model.w2nn_offset / model.w2nn_scale_factor) * model.w2nn_scale_factor)
+      assert(model.w2nn_offset % model.w2nn_scale_factor == 0)
       return model
    else
       error("unsupported model_name: " .. model_name)
    end
 end
 
---local model = srcnn.upconv_8_4x("cunn", 3):cuda()
+--local model = srcnn.upconv_6("cunn", 3):cuda()
 --print(model:forward(torch.Tensor(1, 3, 64, 64):zero():cuda()):size())
 
 return srcnn
