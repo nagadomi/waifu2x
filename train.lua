@@ -278,7 +278,12 @@ end
 local function train()
    local hist_train = {}
    local hist_valid = {}
-   local model = srcnn.create(settings.model, settings.backend, settings.color)
+   local model
+   if settings.resume:len() > 0 then
+      model = torch.load(settings.resume, "ascii")
+   else
+      model = srcnn.create(settings.model, settings.backend, settings.color)
+   end
    local offset = reconstruct.offset_size(model)
    local pairwise_func = function(x, is_validation, n)
       return transformer(model, x, is_validation, n, offset)

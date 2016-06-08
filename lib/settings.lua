@@ -60,6 +60,7 @@ cmd:option("-oracle_rate", 0.1, '')
 cmd:option("-oracle_drop_rate", 0.5, '')
 cmd:option("-learning_rate_decay", 3.0e-7, 'learning rate decay (learning_rate * 1/(1+num_of_data*patches*epoch))')
 cmd:option("-loss", "y", 'loss (rgb|y)')
+cmd:option("-resume", "", 'resume model file')
 
 local function to_bool(settings, name)
    if settings[name] == 1 then
