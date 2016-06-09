@@ -44,8 +44,14 @@ local function convert_image(opt)
    local scale_f, image_f
 
    if opt.tta == 1 then
-      scale_f = reconstruct.scale_tta
-      image_f = reconstruct.image_tta
+      scale_f = function(model, scale, x, block_size, upsampling_filter)
+	 return reconstruct.scale_tta(model, opt.tta_level,
+				      scale, x, block_size, upsampling_filter)
+      end
+      image_f = function(model, x, block_size)
+	 return reconstruct.image_tta(model, opt.tta_level,
+				      x, block_size)
+      end
    else
       scale_f = reconstruct.scale
       image_f = reconstruct.image
@@ -119,8 +125,14 @@ local function convert_frames(opt)
    local noise_model = {}
    local scale_f, image_f
    if opt.tta == 1 then
-      scale_f = reconstruct.scale_tta
-      image_f = reconstruct.image_tta
+      scale_f = function(model, scale, x, block_size, upsampling_filter)
+	 return reconstruct.scale_tta(model, opt.tta_level,
+				      scale, x, block_size, upsampling_filter)
+      end
+      image_f = function(model, x, block_size)
+	 return reconstruct.image_tta(model, opt.tta_level,
+				      x, block_size)
+      end
    else
       scale_f = reconstruct.scale
       image_f = reconstruct.image
@@ -226,6 +238,7 @@ local function waifu2x()
    cmd:option("-resume", 0, "skip existing files (0|1)")
    cmd:option("-thread", -1, "number of CPU threads")
    cmd:option("-tta", 0, '8x slower and slightly high quality (0|1)')
+   cmd:option("-tta_level", 8, 'TTA level (2|4|8)')
    cmd:option("-upsampling_filter", "Box", 'upsampling filter (for dev)')
    
    local opt = cmd:parse(arg)
