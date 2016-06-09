@@ -63,22 +63,12 @@ function pairwise_transform.jpeg_scale(src, scale, style, noise_level, size, off
    assert(y:size(2) % 4 == 0 and y:size(3) % 4 == 0)
    local down_scale = 1.0 / scale
    local x
-   if options.gamma_correction then
-      local small = iproc.scale_with_gamma22(y, y:size(3) * down_scale,
-					     y:size(2) * down_scale, downsampling_filter, blur)
-      if options.x_upsampling then
-	 x = iproc.scale(small, y:size(3), y:size(2), "Box")
-      else
-	 x = small
-      end
+   local small = iproc.scale(y, y:size(3) * down_scale,
+			     y:size(2) * down_scale, downsampling_filter, blur)
+   if options.x_upsampling then
+      x = iproc.scale(small, y:size(3), y:size(2), "Box")
    else
-      local small = iproc.scale(y, y:size(3) * down_scale,
-				  y:size(2) * down_scale, downsampling_filter, blur)
-      if options.x_upsampling then
-	 x = iproc.scale(small, y:size(3), y:size(2), "Box")
-      else
-	 x = small
-      end
+      x = small
    end
    local scale_inner = scale
    if options.x_upsampling then

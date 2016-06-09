@@ -150,7 +150,6 @@ local function transformer(model, x, is_validation, n, offset)
 	    active_cropping_rate = active_cropping_rate,
 	    active_cropping_tries = active_cropping_tries,
 	    rgb = (settings.color == "rgb"),
-	    gamma_correction = settings.gamma_correction,
 	    x_upsampling = not reconstruct.has_resize(model),
 	    resize_blur_min = settings.resize_blur_min,
 	 resize_blur_max = settings.resize_blur_max}, meta)
@@ -188,7 +187,6 @@ local function transformer(model, x, is_validation, n, offset)
 	    active_cropping_rate = active_cropping_rate,
 	    active_cropping_tries = active_cropping_tries,
 	    rgb = (settings.color == "rgb"),
-	    gamma_correction = settings.gamma_correction,
 	    x_upsampling = not reconstruct.has_resize(model),
 	    resize_blur_min = settings.resize_blur_min,
 	    resize_blur_max = settings.resize_blur_max}, meta)

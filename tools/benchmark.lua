@@ -26,7 +26,6 @@ cmd:option("-jpeg_quality", 75, 'jpeg quality')
 cmd:option("-jpeg_times", 1, 'jpeg compression times')
 cmd:option("-jpeg_quality_down", 5, 'value of jpeg quality to decrease each times')
 cmd:option("-range_bug", 0, 'Reproducing the dynamic range bug that is caused by MATLAB\'s rgb2ycbcr(1|0)')
-cmd:option("-gamma_correction", 0, 'Resizing with colorspace correction(sRGB:gamma 2.2) (0|1)')
 cmd:option("-save_image", 0, 'save converted images')
 cmd:option("-save_baseline_image", 0, 'save baseline images')
 cmd:option("-output_dir", "./", 'output directroy')
@@ -50,7 +49,6 @@ if cudnn then
    cudnn.fastest = true
    cudnn.benchmark = false
 end
-to_bool(opt, "gamma_correction")
 to_bool(opt, "save_all")
 to_bool(opt, "tta")
 if opt.save_all then
@@ -122,17 +120,10 @@ local function baseline_scale(x, filter)
 		      filter)
 end
 local function transform_scale(x, opt)
-   if opt.gamma_correction then
-      return iproc.scale_with_gamma22(x,
-			 x:size(3) * 0.5,
-			 x:size(2) * 0.5,
-			 opt.filter, opt.resize_blur)
-   else
-      return iproc.scale(x,
-			 x:size(3) * 0.5,
-			 x:size(2) * 0.5,
-			 opt.filter, opt.resize_blur)
-   end
+   return iproc.scale(x,
+		      x:size(3) * 0.5,
+		      x:size(2) * 0.5,
+		      opt.filter, opt.resize_blur)
 end
 
 local function benchmark(opt, x, input_func, model1, model2)

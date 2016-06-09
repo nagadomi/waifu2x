@@ -50,7 +50,6 @@ cmd:option("-nr_rate", 0.75, 'trade-off between reducing noise and erasing detai
 cmd:option("-save_history", 0, 'save all model (0|1)')
 cmd:option("-plot", 0, 'plot loss chart(0|1)')
 cmd:option("-downsampling_filters", "Box,Lanczos,Sinc", '(comma separated)downsampling filters for 2x scale training. (Point,Box,Triangle,Hermite,Hanning,Hamming,Blackman,Gaussian,Quadratic,Cubic,Catrom,Mitchell,Lanczos,Bessel,Sinc)')
-cmd:option("-gamma_correction", 0, 'Resizing with colorspace correction(sRGB:gamma 2.2) in scale training (0|1)')
 cmd:option("-max_training_image_size", -1, 'if training image is larger than N, image will be crop randomly when data converting')
 cmd:option("-use_transparent_png", 0, 'use transparent png (0|1)')
 cmd:option("-resize_blur_min", 0.95, 'min blur parameter for ResizeImage')
@@ -75,7 +74,6 @@ for k, v in pairs(opt) do
 end
 to_bool(settings, "plot")
 to_bool(settings, "save_history")
-to_bool(settings, "gamma_correction")
 to_bool(settings, "use_transparent_png")
 
 if settings.plot then
