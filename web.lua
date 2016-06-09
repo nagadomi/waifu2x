@@ -27,6 +27,7 @@ cmd:option("-port", 8812, 'listen port')
 cmd:option("-gpu", 1, 'Device ID')
 cmd:option("-upsampling_filter", "Box", 'Upsampling filter (for dev)')
 cmd:option("-crop_size", 128, 'patch size per process')
+cmd:option("-batch_size", 1, 'batch size')
 cmd:option("-thread", -1, 'number of CPU threads')
 local opt = cmd:parse(arg)
 cutorch.setDevice(opt.gpu)
@@ -148,23 +149,23 @@ local function convert(x, meta, options)
 	 end
 	 if options.method == "scale" then
 	    x = reconstruct.scale(art_scale2_model, 2.0, x,
-				  opt.crop_size, opt.upsampling_filter)
+				  opt.crop_size, opt.batch_size, opt.upsampling_filter)
 	    if alpha then
 	       if not (alpha:size(2) == x:size(2) and alpha:size(3) == x:size(3)) then
 		  alpha = reconstruct.scale(art_scale2_model, 2.0, alpha,
-					    opt.crop_size, opt.upsampling_filter)
+					    opt.crop_size, opt.batch_size, opt.upsampling_filter)
 		  image_loader.save_png(alpha_cache_file, alpha)
 	       end
 	    end
 	    cleanup_model(art_scale2_model)
 	 elseif options.method == "noise1" then
-	    x = reconstruct.image(art_noise1_model, x)
+	    x = reconstruct.image(art_noise1_model, x, opt.crop_size, opt.batch_size)
 	    cleanup_model(art_noise1_model)
 	 elseif options.method == "noise2" then
-	    x = reconstruct.image(art_noise2_model, x)
+	    x = reconstruct.image(art_noise2_model, x, opt.crop_size, opt.batch_size)
 	    cleanup_model(art_noise2_model)
 	 elseif options.method == "noise3" then
-	    x = reconstruct.image(art_noise3_model, x)
+	    x = reconstruct.image(art_noise3_model, x, opt.crop_size, opt.batch_size)
 	    cleanup_model(art_noise3_model)
 	 end
       else -- photo
@@ -173,23 +174,23 @@ local function convert(x, meta, options)
 	 end
 	 if options.method == "scale" then
 	    x = reconstruct.scale(photo_scale2_model, 2.0, x,
-				  opt.crop_size, opt.upsampling_filter)
+				  opt.crop_size, opt.batch_size, opt.upsampling_filter)
 	    if alpha then
 	       if not (alpha:size(2) == x:size(2) and alpha:size(3) == x:size(3)) then
 		  alpha = reconstruct.scale(photo_scale2_model, 2.0, alpha,
-					    opt.crop_size, opt.upsampling_filter)
+					    opt.crop_size, opt.batch_size, opt.upsampling_filter)
 		  image_loader.save_png(alpha_cache_file, alpha)
 	       end
 	    end
 	    cleanup_model(photo_scale2_model)
 	 elseif options.method == "noise1" then
-	    x = reconstruct.image(photo_noise1_model, x)
+	    x = reconstruct.image(photo_noise1_model, x, opt.crop_size, opt.batch_size)
 	    cleanup_model(photo_noise1_model)
 	 elseif options.method == "noise2" then
-	    x = reconstruct.image(photo_noise2_model, x)
+	    x = reconstruct.image(photo_noise2_model, x, opt.crop_size, opt.batch_size)
 	    cleanup_model(photo_noise2_model)
 	 elseif options.method == "noise3" then
-	    x = reconstruct.image(photo_noise3_model, x)
+	    x = reconstruct.image(photo_noise3_model, x, opt.crop_size, opt.batch_size)
 	    cleanup_model(photo_noise3_model)
 	 end
       end
