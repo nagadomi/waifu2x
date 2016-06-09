@@ -44,9 +44,9 @@ local function convert_image(opt)
    local scale_f, image_f
 
    if opt.tta == 1 then
-      scale_f = function(model, scale, x, block_size, batch_size, batupsampling_filter)
+      scale_f = function(model, scale, x, block_size, batch_size)
 	 return reconstruct.scale_tta(model, opt.tta_level,
-				      scale, x, block_size, batch_size, upsampling_filter)
+				      scale, x, block_size, batch_size)
       end
       image_f = function(model, x, block_size, batch_size)
 	 return reconstruct.image_tta(model, opt.tta_level,
@@ -75,7 +75,7 @@ local function convert_image(opt)
       end
       local t = sys.clock()
       x = alpha_util.make_border(x, alpha, reconstruct.offset_size(model))
-      new_x = scale_f(model, opt.scale, x, opt.crop_size, opt.batch_size, opt.batch_size, opt.upsampling_filter)
+      new_x = scale_f(model, opt.scale, x, opt.crop_size, opt.batch_size, opt.batch_size)
       new_x = alpha_util.composite(new_x, alpha, model)
       print(opt.o .. ": " .. (sys.clock() - t) .. " sec")
    elseif opt.m == "noise_scale" then
@@ -92,7 +92,7 @@ local function convert_image(opt)
 	 end
 	 local t = sys.clock()
 	 x = alpha_util.make_border(x, alpha, reconstruct.offset_size(scale_model))
-	 new_x = scale_f(model, opt.scale, x, opt.crop_size, opt.batch_size, opt.upsampling_filter)
+	 new_x = scale_f(model, opt.scale, x, opt.crop_size, opt.batch_size)
 	 new_x = alpha_util.composite(new_x, alpha, scale_model)
 	 print(opt.o .. ": " .. (sys.clock() - t) .. " sec")
       else
@@ -110,7 +110,7 @@ local function convert_image(opt)
 	 local t = sys.clock()
 	 x = alpha_util.make_border(x, alpha, reconstruct.offset_size(scale_model))
 	 x = image_f(noise_model, x, opt.crop_size, opt.batch_size)
-	 new_x = scale_f(scale_model, opt.scale, x, opt.crop_size, opt.batch_size, opt.upsampling_filter)
+	 new_x = scale_f(scale_model, opt.scale, x, opt.crop_size, opt.batch_size)
 	 new_x = alpha_util.composite(new_x, alpha, scale_model)
 	 print(opt.o .. ": " .. (sys.clock() - t) .. " sec")
       end
@@ -125,9 +125,9 @@ local function convert_frames(opt)
    local noise_model = {}
    local scale_f, image_f
    if opt.tta == 1 then
-      scale_f = function(model, scale, x, block_size, batch_size, upsampling_filter)
+      scale_f = function(model, scale, x, block_size, batch_size)
 	 return reconstruct.scale_tta(model, opt.tta_level,
-				      scale, x, block_size, batch_size, upsampling_filter)
+				      scale, x, block_size, batch_size)
       end
       image_f = function(model, x, block_size, batch_size)
 	 return reconstruct.image_tta(model, opt.tta_level,
@@ -195,15 +195,15 @@ local function convert_frames(opt)
 	    new_x = alpha_util.composite(new_x, alpha)
 	 elseif opt.m == "scale" then
 	    x = alpha_util.make_border(x, alpha, reconstruct.offset_size(scale_model))
-	    new_x = scale_f(scale_model, opt.scale, x, opt.crop_size, opt.batch_size, opt.upsampling_filter)
+	    new_x = scale_f(scale_model, opt.scale, x, opt.crop_size, opt.batch_size)
 	    new_x = alpha_util.composite(new_x, alpha, scale_model)
 	 elseif opt.m == "noise_scale" then
 	    x = alpha_util.make_border(x, alpha, reconstruct.offset_size(scale_model))
 	    if noise_scale_model[opt.noise_level] then
-	       new_x = scale_f(noise_scale_model[opt.noise_level], opt.scale, x, opt.crop_size, opt.batch_size, upsampling_filter)
+	       new_x = scale_f(noise_scale_model[opt.noise_level], opt.scale, x, opt.crop_size, opt.batch_size)
 	    else
 	       x = image_f(noise_model[opt.noise_level], x, opt.crop_size, opt.batch_size)
-	       new_x = scale_f(scale_model, opt.scale, x, opt.crop_size, opt.batch_size, upsampling_filter)
+	       new_x = scale_f(scale_model, opt.scale, x, opt.crop_size, opt.batch_size)
 	    end
 	    new_x = alpha_util.composite(new_x, alpha, scale_model)
 	 else
@@ -239,7 +239,6 @@ local function waifu2x()
    cmd:option("-thread", -1, "number of CPU threads")
    cmd:option("-tta", 0, '8x slower and slightly high quality (0|1)')
    cmd:option("-tta_level", 8, 'TTA level (2|4|8)')
-   cmd:option("-upsampling_filter", "Box", 'upsampling filter (for dev)')
    
    local opt = cmd:parse(arg)
    if opt.thread > 0 then

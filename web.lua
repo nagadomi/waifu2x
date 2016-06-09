@@ -25,7 +25,6 @@ cmd:text("waifu2x-api")
 cmd:text("Options:")
 cmd:option("-port", 8812, 'listen port')
 cmd:option("-gpu", 1, 'Device ID')
-cmd:option("-upsampling_filter", "Box", 'Upsampling filter (for dev)')
 cmd:option("-crop_size", 128, 'patch size per process')
 cmd:option("-batch_size", 1, 'batch size')
 cmd:option("-thread", -1, 'number of CPU threads')
@@ -149,11 +148,11 @@ local function convert(x, meta, options)
 	 end
 	 if options.method == "scale" then
 	    x = reconstruct.scale(art_scale2_model, 2.0, x,
-				  opt.crop_size, opt.batch_size, opt.upsampling_filter)
+				  opt.crop_size, opt.batch_size)
 	    if alpha then
 	       if not (alpha:size(2) == x:size(2) and alpha:size(3) == x:size(3)) then
 		  alpha = reconstruct.scale(art_scale2_model, 2.0, alpha,
-					    opt.crop_size, opt.batch_size, opt.upsampling_filter)
+					    opt.crop_size, opt.batch_size)
 		  image_loader.save_png(alpha_cache_file, alpha)
 	       end
 	    end
@@ -174,11 +173,11 @@ local function convert(x, meta, options)
 	 end
 	 if options.method == "scale" then
 	    x = reconstruct.scale(photo_scale2_model, 2.0, x,
-				  opt.crop_size, opt.batch_size, opt.upsampling_filter)
+				  opt.crop_size, opt.batch_size)
 	    if alpha then
 	       if not (alpha:size(2) == x:size(2) and alpha:size(3) == x:size(3)) then
 		  alpha = reconstruct.scale(photo_scale2_model, 2.0, alpha,
-					    opt.crop_size, opt.batch_size, opt.upsampling_filter)
+					    opt.crop_size, opt.batch_size)
 		  image_loader.save_png(alpha_cache_file, alpha)
 	       end
 	    end

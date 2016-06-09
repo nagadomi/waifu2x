@@ -19,7 +19,7 @@ function pairwise_transform.scale(src, scale, size, offset, n, options)
       local small = iproc.scale_with_gamma22(y, y:size(3) * down_scale,
 					     y:size(2) * down_scale, downsampling_filter, blur)
       if options.x_upsampling then
-	 x = iproc.scale(small, y:size(3), y:size(2), options.upsampling_filter)
+	 x = iproc.scale(small, y:size(3), y:size(2), "Box")
       else
 	 x = small
       end
@@ -27,7 +27,7 @@ function pairwise_transform.scale(src, scale, size, offset, n, options)
       local small = iproc.scale(y, y:size(3) * down_scale,
 				  y:size(2) * down_scale, downsampling_filter, blur)
       if options.x_upsampling then
-	 x = iproc.scale(small, y:size(3), y:size(2), options.upsampling_filter)
+	 x = iproc.scale(small, y:size(3), y:size(2), "Box")
       else
 	 x = small
       end

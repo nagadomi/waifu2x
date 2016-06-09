@@ -114,15 +114,14 @@ function reconstruct.image_y(model, x, offset, block_size, batch_size)
    
    return output
 end
-function reconstruct.scale_y(model, scale, x, offset, block_size, batch_size, upsampling_filter)
-   upsampling_filter = upsampling_filter or "Box"
+function reconstruct.scale_y(model, scale, x, offset, block_size, batch_size)
    block_size = block_size or 128
    local x_lanczos
    if reconstruct.has_resize(model) then
       x_lanczos = iproc.scale(x, x:size(3) * scale, x:size(2) * scale, "Lanczos")
    else
       x_lanczos = iproc.scale(x, x:size(3) * scale, x:size(2) * scale, "Lanczos")
-      x = iproc.scale(x, x:size(3) * scale, x:size(2) * scale, upsampling_filter)
+      x = iproc.scale(x, x:size(3) * scale, x:size(2) * scale, "Box")
    end
    local p = padding_params(x, model, block_size)
    if p.x_w * p.x_h > 2048*2048 then
@@ -162,11 +161,10 @@ function reconstruct.image_rgb(model, x, offset, block_size, batch_size)
 
    return output
 end
-function reconstruct.scale_rgb(model, scale, x, offset, block_size, batch_size, upsampling_filter)
-   upsampling_filter = upsampling_filter or "Box"
+function reconstruct.scale_rgb(model, scale, x, offset, block_size, batch_size)
    block_size = block_size or 128
    if not reconstruct.has_resize(model) then
-      x = iproc.scale(x, x:size(3) * scale, x:size(2) * scale, upsampling_filter)
+      x = iproc.scale(x, x:size(3) * scale, x:size(2) * scale, "Box")
    end
    local p = padding_params(x, model, block_size)
    x = iproc.padding(x, p.pad_w1, p.pad_w2, p.pad_h1, p.pad_h2)
@@ -206,7 +204,7 @@ function reconstruct.image(model, x, block_size)
    end
    return x
 end
-function reconstruct.scale(model, scale, x, block_size, upsampling_filter)
+function reconstruct.scale(model, scale, x, block_size)
    local i2rgb = false
    if x:size(1) == 1 then
       local new_x = torch.Tensor(3, x:size(2), x:size(3))
@@ -219,13 +217,11 @@ function reconstruct.scale(model, scale, x, block_size, upsampling_filter)
    if reconstruct.is_rgb(model) then
       x = reconstruct.scale_rgb(model, scale, x,
 				reconstruct.offset_size(model),
-				block_size,
-				upsampling_filter)
+				block_size)
    else
       x = reconstruct.scale_y(model, scale, x,
 			      reconstruct.offset_size(model),
-			      block_size,
-			      upsampling_filter)
+			      block_size)
    end
    if i2rgb then
       x = image.rgb2y(x)
@@ -305,15 +301,15 @@ function reconstruct.image_tta(model, n, x, block_size)
       return tta(reconstruct.image_y, n, model, x, block_size)
    end
 end
-function reconstruct.scale_tta(model, n, scale, x, block_size, upsampling_filter)
+function reconstruct.scale_tta(model, n, scale, x, block_size)
    if reconstruct.is_rgb(model) then
       local f = function (model, x, offset, block_size)
-	 return reconstruct.scale_rgb(model, scale, x, offset, block_size, upsampling_filter)
+	 return reconstruct.scale_rgb(model, scale, x, offset, block_size)
       end
       return tta(f, n, model, x, block_size)
    else
       local f = function (model, x, offset, block_size)
-	 return reconstruct.scale_y(model, scale, x, offset, block_size, upsampling_filter)
+	 return reconstruct.scale_y(model, scale, x, offset, block_size)
       end
       return tta(f, n, model, x, block_size)
    end

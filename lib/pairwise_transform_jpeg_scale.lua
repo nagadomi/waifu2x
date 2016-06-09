@@ -28,9 +28,9 @@ local function add_jpeg_noise(src, style, level, options)
       elseif level == 2 or level == 3 then
 	 -- level 2/3 adjusting by -nr_rate. for level3, -nr_rate=1
 	 local r = torch.uniform()
-	 if r > 0.6 then
+	 if r > 0.4 then
 	    return add_jpeg_noise_(src, {torch.random(27, 70)}, options)
-	 elseif r > 0.3 then
+	 elseif r > 0.1 then
 	    local quality1 = torch.random(37, 70)
 	    local quality2 = quality1 - torch.random(5, 10)
 	    return add_jpeg_noise_(src, {quality1, quality2}, options)
@@ -38,7 +38,6 @@ local function add_jpeg_noise(src, style, level, options)
 	    local quality1 = torch.random(52, 70)
 	    local quality2 = quality1 - torch.random(5, 15)
 	    local quality3 = quality1 - torch.random(15, 25)
-
 	    return add_jpeg_noise_(src, {quality1, quality2, quality3}, options)
 	 end
       else
@@ -68,7 +67,7 @@ function pairwise_transform.jpeg_scale(src, scale, style, noise_level, size, off
       local small = iproc.scale_with_gamma22(y, y:size(3) * down_scale,
 					     y:size(2) * down_scale, downsampling_filter, blur)
       if options.x_upsampling then
-	 x = iproc.scale(small, y:size(3), y:size(2), options.upsampling_filter)
+	 x = iproc.scale(small, y:size(3), y:size(2), "Box")
       else
 	 x = small
       end
@@ -76,7 +75,7 @@ function pairwise_transform.jpeg_scale(src, scale, style, noise_level, size, off
       local small = iproc.scale(y, y:size(3) * down_scale,
 				  y:size(2) * down_scale, downsampling_filter, blur)
       if options.x_upsampling then
-	 x = iproc.scale(small, y:size(3), y:size(2), options.upsampling_filter)
+	 x = iproc.scale(small, y:size(3), y:size(2), "Box")
       else
 	 x = small
       end

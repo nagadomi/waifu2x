@@ -15,9 +15,7 @@ local pairwise_transform = require 'pairwise_transform'
 local image_loader = require 'image_loader'
 
 local function save_test_scale(model, rgb, file)
-   local up = reconstruct.scale(model, settings.scale, rgb,
-				settings.scale * settings.crop_size,
-				settings.upsampling_filter)
+   local up = reconstruct.scale(model, settings.scale, rgb)
    image.save(file, up)
 end
 local function save_test_jpeg(model, rgb, file)
@@ -144,7 +142,6 @@ local function transformer(model, x, is_validation, n, offset)
    if settings.method == "scale" then
       local conf = tablex.update({
 	    downsampling_filters = settings.downsampling_filters,
-	    upsampling_filter = settings.upsampling_filter,
 	    random_half_rate = settings.random_half_rate,
 	    random_color_noise_rate = random_color_noise_rate,
 	    random_overlay_rate = random_overlay_rate,
@@ -181,7 +178,6 @@ local function transformer(model, x, is_validation, n, offset)
    elseif settings.method == "noise_scale" then
       local conf = tablex.update({
 	    downsampling_filters = settings.downsampling_filters,
-	    upsampling_filter = settings.upsampling_filter,
 	    random_half_rate = settings.random_half_rate,
 	    random_color_noise_rate = random_color_noise_rate,
 	    random_overlay_rate = random_overlay_rate,
