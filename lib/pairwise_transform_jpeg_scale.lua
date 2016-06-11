@@ -92,32 +92,40 @@ function pairwise_transform.jpeg_scale(src, scale, style, noise_level, size, off
    local xs = {}
    local ns = {}
    local ys = {}
+   local x_noise = add_jpeg_noise(x, style, noise_level, options)
    local lowreses = {}
    for j = 1, 2 do
       -- TTA
       local xi, yi, ri
       if j == 1 then
 	 xi = x
+	 ni = x_noise
 	 yi = y
 	 ri = lowres_y
       else
 	 xi = x:transpose(2, 3):contiguous()
+	 ni = x_noise:transpose(2, 3):contiguous()
 	 yi = y:transpose(2, 3):contiguous()
 	 ri = lowres_y:transpose(2, 3):contiguous()
       end
       local xv = image.vflip(xi)
+      local nv = image.vflip(ni)
       local yv = image.vflip(yi)
       local rv = image.vflip(ri)
       table.insert(xs, xi)
+      table.insert(ns, ni)
       table.insert(ys, yi)
       table.insert(lowreses, ri)
       table.insert(xs, xv)
+      table.insert(ns, nv)
       table.insert(ys, yv)
       table.insert(lowreses, rv)
       table.insert(xs, image.hflip(xi))
+      table.insert(ns, image.hflip(ni))
       table.insert(ys, image.hflip(yi))
       table.insert(lowreses, image.hflip(ri))
       table.insert(xs, image.hflip(xv))
+      table.insert(ns, image.hflip(nv))
       table.insert(ys, image.hflip(yv))
       table.insert(lowreses, image.hflip(rv))
    end
@@ -126,9 +134,6 @@ function pairwise_transform.jpeg_scale(src, scale, style, noise_level, size, off
       local xc, yc
       if torch.uniform() < options.nr_rate then
 	 -- scale + noise reduction
-	 if not ns[t] then
-	    ns[t] = add_jpeg_noise(xs[t], style, noise_level, options)
-	 end
 	 xc, yc = pairwise_utils.active_cropping(ns[t], ys[t], lowreses[t],
 						 size,
 						 scale_inner,
