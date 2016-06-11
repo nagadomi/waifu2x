@@ -9,8 +9,8 @@ local function reconstruct_nn(model, x, inner_scale, offset, block_size, batch_s
    end
    local ch = x:size(1)
    local new_x = torch.Tensor(x:size(1), x:size(2) * inner_scale, x:size(3) * inner_scale):zero()
-   local input_block_size = block_size / inner_scale
-   local output_block_size = block_size
+   local input_block_size = block_size
+   local output_block_size = block_size * inner_scale
    local output_size = output_block_size - offset * 2
    local output_size_in_input = input_block_size - math.ceil(offset / inner_scale) * 2
    local input_indexes = {}
@@ -81,7 +81,7 @@ local function padding_params(x, model, block_size)
    p.x_h = x:size(2)
    p.inner_scale = reconstruct.inner_scale(model)
    local input_offset = math.ceil(offset / p.inner_scale)
-   local input_block_size = block_size / p.inner_scale
+   local input_block_size = block_size
    local process_size = input_block_size - input_offset * 2
    local h_blocks = math.floor(p.x_h / process_size) +
       ((p.x_h % process_size == 0 and 0) or 1)
