@@ -38,6 +38,7 @@ cmd:option("-tta", 0, 'use tta')
 cmd:option("-tta_level", 8, 'tta level')
 cmd:option("-crop_size", 128, 'patch size per process')
 cmd:option("-batch_size", 1, 'batch_size')
+cmd:option("-force_cudnn", 0, 'use cuDNN backend')
 
 local function to_bool(settings, name)
    if settings[name] == 1 then
@@ -50,8 +51,9 @@ local opt = cmd:parse(arg)
 torch.setdefaulttensortype('torch.FloatTensor')
 if cudnn then
    cudnn.fastest = true
-   cudnn.benchmark = false
+   cudnn.benchmark = true
 end
+to_bool(opt, "force_cudnn")
 to_bool(opt, "save_all")
 to_bool(opt, "tta")
 if opt.save_all then
@@ -341,17 +343,14 @@ local function load_data(test_dir)
    end
    return test_x
 end
-function load_model(filename)
-   return torch.load(filename, "ascii")
-end
-function load_noise_scale_model(model_dir, noise_level)
+function load_noise_scale_model(model_dir, noise_level, force_cudnn)
    local f = path.join(model_dir, string.format("noise%d_scale2.0x_model.t7", opt.noise_level))
-   local s1, noise_scale = pcall(load_model, f)
+   local s1, noise_scale = pcall(w2nn.load_model, f, force_cudnn)
    local model = {}
    if not s1 then
       f = path.join(model_dir, string.format("noise%d_model.t7", opt.noise_level))
       local noise
-      s1, noise = pcall(load_model, f)
+      s1, noise = pcall(w2nn.load_model, f, force_cudnn)
       if not s1 then
 	 model.noise_model = nil
 	 print(model_dir .. "'s noise model is not found. benchmark will use only scale model.")
@@ -360,7 +359,7 @@ function load_noise_scale_model(model_dir, noise_level)
       end
       f = path.join(model_dir, "scale2.0x_model.t7")
       local scale
-      s1, scale = pcall(load_model, f)
+      s1, scale = pcall(w2nn.load_model, f, force_cudnn)
       if not s1 then
 	 return nil
       end
@@ -377,8 +376,8 @@ end
 if opt.method == "scale" then
    local f1 = path.join(opt.model1_dir, "scale2.0x_model.t7")
    local f2 = path.join(opt.model2_dir, "scale2.0x_model.t7")
-   local s1, model1 = pcall(load_model, f1)
-   local s2, model2 = pcall(load_model, f2)
+   local s1, model1 = pcall(w2nn.load_model, f1, opt.force_cudnn)
+   local s2, model2 = pcall(w2nn.load_model, f2, opt.force_cudnn)
    if not s1 then
       error("Load error: " .. f1)
    end
@@ -390,8 +389,8 @@ if opt.method == "scale" then
 elseif opt.method == "noise" then
    local f1 = path.join(opt.model1_dir, string.format("noise%d_model.t7", opt.noise_level))
    local f2 = path.join(opt.model2_dir, string.format("noise%d_model.t7", opt.noise_level))
-   local s1, model1 = pcall(load_model, f1)
-   local s2, model2 = pcall(load_model, f2)
+   local s1, model1 = pcall(w2nn.load_model, f1, opt.force_cudnn)
+   local s2, model2 = pcall(w2nn.load_model, f2, opt.force_cudnn)
    if not s1 then
       error("Load error: " .. f1)
    end
@@ -402,9 +401,9 @@ elseif opt.method == "noise" then
    benchmark(opt, test_x, transform_jpeg, model1, model2)
 elseif opt.method == "noise_scale" then
    local model2 = nil
-   local model1 = load_noise_scale_model(opt.model1_dir, opt.noise_level)
+   local model1 = load_noise_scale_model(opt.model1_dir, opt.noise_level, opt.force_cudnn)
    if opt.model2_dir:len() > 0 then
-      model2 = load_noise_scale_model(opt.model2_dir, opt.noise_level)
+      model2 = load_noise_scale_model(opt.model2_dir, opt.noise_level, opt.force_cudnn)
    end
    local test_x = load_data(opt.dir)
    benchmark(opt, test_x, transform_scale_jpeg, model1, model2)
