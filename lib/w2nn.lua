@@ -16,6 +16,15 @@ else
    pcall(load_cunn)
    pcall(load_cudnn)
    w2nn = {}
+
+   function w2nn.load_model(model_path, force_cudnn)
+      local model = torch.load(model_path, "ascii")
+      if force_cudnn then
+	 model = cudnn.convert(model, cudnn)
+      end
+      model:cuda():evaluate()
+      return model
+   end
    require 'LeakyReLU'
    require 'LeakyReLU_deprecated'
    require 'DepthExpand2x'

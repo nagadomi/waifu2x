@@ -59,7 +59,7 @@ local function convert_image(opt)
    opt.o = format_output(opt, opt.i)
    if opt.m == "noise" then
       local model_path = path.join(opt.model_dir, ("noise%d_model.t7"):format(opt.noise_level))
-      local model = torch.load(model_path, "ascii")
+      local model = w2nn.load_model(model_path, opt.force_cudnn)
       if not model then
 	 error("Load Error: " .. model_path)
       end
@@ -69,7 +69,7 @@ local function convert_image(opt)
       print(opt.o .. ": " .. (sys.clock() - t) .. " sec")
    elseif opt.m == "scale" then
       local model_path = path.join(opt.model_dir, ("scale%.1fx_model.t7"):format(opt.scale))
-      local model = torch.load(model_path, "ascii")
+      local model = w2nn.load_model(model_path, opt.force_cudnn)
       if not model then
 	 error("Load Error: " .. model_path)
       end
@@ -82,8 +82,8 @@ local function convert_image(opt)
       local model_path = path.join(opt.model_dir, ("noise%d_scale%.1fx_model.t7"):format(opt.noise_level, opt.scale))
       if path.exists(model_path) then
 	 local scale_model_path = path.join(opt.model_dir, ("scale%.1fx_model.t7"):format(opt.scale))
-	 local t, scale_model = pcall(torch.load, scale_model_path, "ascii")
-	 local model = torch.load(model_path, "ascii")
+	 local t, scale_model = pcall(load_model, scale_model_path, opt.force_cudnn)
+	 local model = w2nn.load_model(model_path, opt.force_cudnn)
 	 if not t then
 	    scale_model = model
 	 end
@@ -94,9 +94,9 @@ local function convert_image(opt)
 	 print(opt.o .. ": " .. (sys.clock() - t) .. " sec")
       else
 	 local noise_model_path = path.join(opt.model_dir, ("noise%d_model.t7"):format(opt.noise_level))
-	 local noise_model = torch.load(noise_model_path, "ascii")
+	 local noise_model = w2nn.load_model(noise_model_path, opt.force_cudnn)
 	 local scale_model_path = path.join(opt.model_dir, ("scale%.1fx_model.t7"):format(opt.scale))
-	 local scale_model = torch.load(scale_model_path, "ascii")
+	 local scale_model = w2nn.load_model(scale_model_path, opt.force_cudnn)
 	 local t = sys.clock()
 	 x = alpha_util.make_border(x, alpha, reconstruct.offset_size(scale_model))
 	 x = image_f(noise_model, x, opt.crop_size, opt.batch_size)
@@ -129,24 +129,24 @@ local function convert_frames(opt)
    end
    if opt.m == "scale" then
       model_path = path.join(opt.model_dir, ("scale%.1fx_model.t7"):format(opt.scale))
-      scale_model = torch.load(model_path, "ascii")
+      scale_model = w2nn.load_model(model_path, opt.force_cudnn)
    elseif opt.m == "noise" then
       model_path = path.join(opt.model_dir, string.format("noise%d_model.t7", opt.noise_level))
-      noise_model[opt.noise_level] = torch.load(model_path, "ascii")
+      noise_model[opt.noise_level] = w2nn.load_model(model_path, opt.force_cudnn)
    elseif opt.m == "noise_scale" then
       local model_path = path.join(opt.model_dir, ("noise%d_scale%.1fx_model.t7"):format(opt.noise_level, opt.scale))
       if path.exists(model_path) then
-	 noise_scale_model[opt.noise_level] = torch.load(model_path, "ascii")
+	 noise_scale_model[opt.noise_level] = w2nn.load_model(model_path, opt.force_cudnn)
 	 model_path = path.join(opt.model_dir, ("scale%.1fx_model.t7"):format(opt.scale))
-	 t, scale_model = pcall(torch.load, model_path, "ascii")
+	 t, scale_model = pcall(load_model, model_path, opt.force_cudnn)
 	 if not t then
 	    scale_model = noise_scale_model[opt.noise_level]
 	 end
       else
 	 model_path = path.join(opt.model_dir, ("scale%.1fx_model.t7"):format(opt.scale))
-	 scale_model = torch.load(model_path, "ascii")
+	 scale_model = w2nn.load_model(model_path, opt.force_cudnn)
 	 model_path = path.join(opt.model_dir, string.format("noise%d_model.t7", opt.noise_level))
-	 noise_model[opt.noise_level] = torch.load(model_path, "ascii")
+	 noise_model[opt.noise_level] = w2nn.load_model(model_path, opt.force_cudnn)
       end
    end
    local fp = io.open(opt.l)
@@ -214,16 +214,25 @@ local function waifu2x()
    cmd:option("-thread", -1, "number of CPU threads")
    cmd:option("-tta", 0, '8x slower and slightly high quality (0|1)')
    cmd:option("-tta_level", 8, 'TTA level (2|4|8)')
-   
+   cmd:option("-force_cudnn", 0, 'use cuDNN backend (0|1)')
+
    local opt = cmd:parse(arg)
    if opt.thread > 0 then
       torch.setnumthreads(opt.thread)
    end
    if cudnn then
       cudnn.fastest = true
-      cudnn.benchmark = false
+      if opt.l:len() > 0 then
+	 cudnn.benchmark = true -- find fastest algo
+      else
+	 cudnn.benchmark = false
+      end
    end
-   
+   if opt.force_cudnn == 1 then
+      opt.force_cudnn = true
+   else
+      opt.force_cudnn = false
+   end
    if string.len(opt.l) == 0 then
       convert_image(opt)
    else
