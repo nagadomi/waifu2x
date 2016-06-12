@@ -269,7 +269,10 @@ local augmented_patterns = {
    }
 }
 local function get_augmented_patterns(n)
-   if n == 2 then
+   if n == 1 then
+      -- no tta
+      return {augmented_patterns[1]}
+   elseif n == 2 then
       return {augmented_patterns[1], augmented_patterns[5]}
    elseif n == 4 then
       return {augmented_patterns[1], augmented_patterns[5],
