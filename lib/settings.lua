@@ -46,7 +46,7 @@ cmd:option("-validation_rate", 0.05, 'validation-set rate (number_of_training_im
 cmd:option("-validation_crops", 160, 'number of cropping region per image in validation')
 cmd:option("-active_cropping_rate", 0.5, 'active cropping rate')
 cmd:option("-active_cropping_tries", 10, 'active cropping tries')
-cmd:option("-nr_rate", 0.75, 'trade-off between reducing noise and erasing details (0.0-1.0)')
+cmd:option("-nr_rate", 0.65, 'trade-off between reducing noise and erasing details (0.0-1.0)')
 cmd:option("-save_history", 0, 'save all model (0|1)')
 cmd:option("-plot", 0, 'plot loss chart(0|1)')
 cmd:option("-downsampling_filters", "Box,Lanczos,Sinc", '(comma separated)downsampling filters for 2x scale training. (Point,Box,Triangle,Hermite,Hanning,Hamming,Blackman,Gaussian,Quadratic,Cubic,Catrom,Mitchell,Lanczos,Bessel,Sinc)')
