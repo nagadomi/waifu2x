@@ -11,7 +11,7 @@ layer {
   bottom: "input"
   top: "conv1"
   convolution_param {
-    num_output: 32
+    num_output: 16
     kernel_size: 3
     stride: 1
     weight_filler {
@@ -83,7 +83,7 @@ layer {
   bottom: "conv3"
   top: "conv4"
   convolution_param {
-    num_output: 64
+    num_output: 128
     kernel_size: 3
     stride: 1
     weight_filler {
@@ -131,7 +131,7 @@ layer {
   bottom: "conv5"
   top: "conv6"
   convolution_param {
-    num_output: 128
+    num_output: 256
     kernel_size: 3
     stride: 1
     weight_filler {
@@ -158,7 +158,7 @@ layer {
     num_output: 3
     kernel_size: 4
     stride: 2
-    pad: 1
+    pad: 3
     weight_filler {
       type: "gaussian"
       std: 0.01
