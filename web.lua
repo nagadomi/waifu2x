@@ -43,14 +43,16 @@ end
 opt.force_cudnn = opt.force_cudnn == 1
 local ART_MODEL_DIR = path.join(ROOT, "models", "upconv_7", "art")
 local PHOTO_MODEL_DIR = path.join(ROOT, "models", "photo")
-local art_scale2_model = w2nn.load_model(path.join(ART_MODEL_DIR, "scale2.0x_model.t7"), opt.force_cudnn)
-local art_noise1_model = w2nn.load_model(path.join(ART_MODEL_DIR, "noise1_model.t7"), opt.force_cudnn)
-local art_noise2_model = w2nn.load_model(path.join(ART_MODEL_DIR, "noise2_model.t7"), opt.force_cudnn)
-local art_noise3_model = w2nn.load_model(path.join(ART_MODEL_DIR, "noise3_model.t7"), opt.force_cudnn)
-local photo_scale2_model = w2nn.load_model(path.join(PHOTO_MODEL_DIR, "scale2.0x_model.t7"), opt.force_cudnn)
-local photo_noise1_model = w2nn.load_model(path.join(PHOTO_MODEL_DIR, "noise1_model.t7"), opt.force_cudnn)
-local photo_noise2_model = w2nn.load_model(path.join(PHOTO_MODEL_DIR, "noise2_model.t7"), opt.force_cudnn)
-local photo_noise3_model = w2nn.load_model(path.join(PHOTO_MODEL_DIR, "noise3_model.t7"), opt.force_cudnn)
+local art_model = {}
+art_model.scale = w2nn.load_model(path.join(ART_MODEL_DIR, "scale2.0x_model.t7"), opt.force_cudnn)
+art_model.noise1_scale = w2nn.load_model(path.join(ART_MODEL_DIR, "noise1_scale2.0x_model.t7"), opt.force_cudnn)
+art_model.noise2_scale = w2nn.load_model(path.join(ART_MODEL_DIR, "noise2_scale2.0x_model.t7"), opt.force_cudnn)
+art_model.noise3_scale = w2nn.load_model(path.join(ART_MODEL_DIR, "noise3_scale2.0x_model.t7"), opt.force_cudnn)
+art_model.noise1 = w2nn.load_model(path.join(ART_MODEL_DIR, "noise1_model.t7"), opt.force_cudnn)
+art_model.noise2 = w2nn.load_model(path.join(ART_MODEL_DIR, "noise2_model.t7"), opt.force_cudnn)
+art_model.noise3 = w2nn.load_model(path.join(ART_MODEL_DIR, "noise3_model.t7"), opt.force_cudnn)
+local photo_model = art_model -- TODO
+
 collectgarbage()
 local CLEANUP_MODEL = false -- if you are using the low memory GPU, you could use this flag.
 local CACHE_DIR = path.join(ROOT, "cache")
@@ -63,7 +65,6 @@ local CURL_OPTIONS = {
    max_redirects = 2
 }
 local CURL_MAX_SIZE = 3 * 1024 * 1024
-local TTA_SUPPORT = true
 
 local function valid_size(x, scale, tta_level)
    if scale == 0 then
@@ -170,67 +171,42 @@ local function convert(x, meta, options)
       meta.alpha = alpha
       return x, meta
    else
+      local model = nil
       if options.style == "art" then
-	 if options.border then
-	    x = alpha_util.make_border(x, alpha_orig, reconstruct.offset_size(art_scale2_model))
-	 end
-	 if options.method == "scale" then
-	    x = reconstruct.scale_tta(art_scale2_model, options.tta_level, 2.0, x,
-				      opt.crop_size, opt.batch_size)
-	    if alpha then
-	       if not (alpha:size(2) == x:size(2) and alpha:size(3) == x:size(3)) then
-		  alpha = reconstruct.scale(art_scale2_model, 2.0, alpha,
-					    opt.crop_size, opt.batch_size)
-		  image_loader.save_png(alpha_cache_file, alpha)
-	       end
+	 model = art_model
+      elseif options.style == "photo" then
+	 model = photo_model
+      end
+      if options.border then
+	 x = alpha_util.make_border(x, alpha_orig, reconstruct.offset_size(model.scale))
+      end
+      if (options.method == "scale" or
+	     options.method == "noise1_scale" or
+	     options.method == "noise2_scale" or
+	     options.method == "noise3_scale")
+      then
+	 x = reconstruct.scale_tta(model[options.method], options.tta_level, 2.0, x,
+				   opt.crop_size, opt.batch_size)
+	 if alpha then
+	    if not (alpha:size(2) == x:size(2) and alpha:size(3) == x:size(3)) then
+	       alpha = reconstruct.scale(model.scale, 2.0, alpha,
+					 opt.crop_size, opt.batch_size)
+	       image_loader.save_png(alpha_cache_file, alpha)
+	       cleanup_model(model.scale)
 	    end
-	    cleanup_model(art_scale2_model)
-	 elseif options.method == "noise1" then
-	    x = reconstruct.image_tta(art_noise1_model, options.tta_level,
-				      x, opt.crop_size, opt.batch_size)
-	    cleanup_model(art_noise1_model)
-	 elseif options.method == "noise2" then
-	    x = reconstruct.image_tta(art_noise2_model, options.tta_level,
-				      x, opt.crop_size, opt.batch_size)
-	    cleanup_model(art_noise2_model)
-	 elseif options.method == "noise3" then
-	    x = reconstruct.image_tta(art_noise3_model, options.tta_level,
-				      x, opt.crop_size, opt.batch_size)
-	    cleanup_model(art_noise3_model)
 	 end
-      else -- photo
-	 if options.border then
-	    x = alpha_util.make_border(x, alpha, reconstruct.offset_size(photo_scale2_model))
-	 end
-	 if options.method == "scale" then
-	    x = reconstruct.scale_tta(photo_scale2_model, options.tta_level, 2.0, x,
-				  opt.crop_size, opt.batch_size)
-	    if alpha then
-	       if not (alpha:size(2) == x:size(2) and alpha:size(3) == x:size(3)) then
-		  alpha = reconstruct.scale(photo_scale2_model, 2.0, alpha,
-					    opt.crop_size, opt.batch_size)
-		  image_loader.save_png(alpha_cache_file, alpha)
-	       end
-	    end
-	    cleanup_model(photo_scale2_model)
-	 elseif options.method == "noise1" then
-	    x = reconstruct.image_tta(photo_noise1_model, options.tta_level,
-				      x, opt.crop_size, opt.batch_size)
-	    cleanup_model(photo_noise1_model)
-	 elseif options.method == "noise2" then
-	    x = reconstruct.image_tta(photo_noise2_model, options.tta_level,
-				      x, opt.crop_size, opt.batch_size)
-	    cleanup_model(photo_noise2_model)
-	 elseif options.method == "noise3" then
-	    x = reconstruct.image_tta(photo_noise3_model, options.tta_level,
-				      x, opt.crop_size, opt.batch_size)
-	    cleanup_model(photo_noise3_model)
-	 end
+	 cleanup_model(model[options.method])
+      elseif (options.method == "noise1" or
+		 options.method == "noise2" or
+		 options.method == "noise3")
+      then
+	 x = reconstruct.image_tta(model[options.method], options.tta_level,
+				   x, opt.crop_size, opt.batch_size)
+	 cleanup_model(model[options.method])
       end
       image_loader.save_png(cache_file, x)
       meta = tablex.copy(meta)
       meta.alpha = alpha
-
       return x, meta
    end
 end
@@ -264,15 +240,11 @@ function APIHandler:post()
    local style = self:get_argument("style", "art")
    local download = (self:get_argument("download", "")):len()
 
-   if not TTA_SUPPORT then
-      tta_level = 1 -- disable TTA mode
-   else
-      if tta_level == 0 then
-	 tta_level = auto_tta_level(x, scale)
-      end
-      if not (tta_level == 0 or tta_level == 1 or tta_level == 2 or tta_level == 4 or tta_level == 8) then
-	 tta_level = 1
-      end
+   if tta_level == 0 then
+      tta_level = auto_tta_level(x, scale)
+   end
+   if not (tta_level == 0 or tta_level == 1 or tta_level == 2 or tta_level == 4 or tta_level == 8) then
+      tta_level = 1
    end
    if style ~= "art" then
       style = "photo" -- style must be art or photo
@@ -286,40 +258,37 @@ function APIHandler:post()
 	 if scale ~= 0 and meta.alpha then
 	    border = true
 	 end
-	 if noise == 1 then
-	    prefix = style .. "_noise1_tta_" .. tta_level .. "_"
-	    x = convert(x, meta, {method = "noise1", style = style, tta_level = tta_level,
-				  prefix = prefix .. hash,
-				  alpha_prefix = alpha_prefix, border = border})
-	    border = false
-	 elseif noise == 2 then
-	    prefix = style .. "_noise2_tta_" .. tta_level .. "_"
-	    x = convert(x, meta, {method = "noise2", style = style, tta_level = tta_level,
-				  prefix = prefix .. hash, 
-				  alpha_prefix = alpha_prefix, border = border})
-	    border = false
-	 elseif noise == 3 then
-	    prefix = style .. "_noise3_tta_" .. tta_level .. "_"
-	    x = convert(x, meta, {method = "noise3", style = style, tta_level = tta_level,
-				  prefix = prefix .. hash, 
-				  alpha_prefix = alpha_prefix, border = border})
-	    border = false
-	 end
-	 if scale == 1 or scale == 2 then
-	    if noise == 1 then
-	       prefix = style .. "_noise1_scale_tta_"  .. tta_level .. "_"
-	    elseif noise == 2 then
-	       prefix = style .. "_noise2_scale_tta_"  .. tta_level .. "_"
-	    elseif noise == 3 then
-	       prefix = style .. "_noise3_scale_tta_" .. tta_level .. "_"
-	    else
-	       prefix = style .. "_scale_tta_"  .. tta_level .. "_"
-	    end
-	    x, meta = convert(x, meta, {method = "scale", style = style, tta_level = tta_level,
-					prefix = prefix .. hash, alpha_prefix = alpha_prefix, border = border})
+	 if (scale == 1 or scale == 2) and (noise == 0) then
+	    prefix = style .. "_scale_tta_"  .. tta_level .. "_"
+	    x, meta = convert(x, meta, {method = "scale",
+					style = style,
+					tta_level = tta_level,
+					prefix = prefix .. hash,
+					alpha_prefix = alpha_prefix,
+					border = border})
 	    if scale == 1 then
 	       x = iproc.scale(x, x:size(3) * (1.6 / 2.0), x:size(2) * (1.6 / 2.0), "Sinc")
 	    end
+	 elseif (scale == 1 or scale == 2) and (noise == 1 or noise == 2 or noise == 3) then
+	    prefix = style .. string.format("_noise%d_scale_tta_", noise)  .. tta_level .. "_"
+	    x, meta = convert(x, meta, {method = string.format("noise%d_scale", noise),
+					style = style,
+					tta_level = tta_level,
+					prefix = prefix .. hash,
+					alpha_prefix = alpha_prefix,
+					border = border})
+	    if scale == 1 then
+	       x = iproc.scale(x, x:size(3) * (1.6 / 2.0), x:size(2) * (1.6 / 2.0), "Sinc")
+	    end
+	 elseif (noise == 1 or noise == 2 or noise == 3) then
+	    prefix = style .. string.format("_noise%d_tta_", noise) .. tta_level .. "_"
+	    x = convert(x, meta, {method = string.format("noise%d", noise), 
+				  style = style, 
+				  tta_level = tta_level,
+				  prefix = prefix .. hash,
+				  alpha_prefix = alpha_prefix,
+				  border = border})
+	    border = false
 	 end
       end
       local name = nil

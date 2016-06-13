@@ -1,5 +1,8 @@
 $(function (){
-    var expires = 365;
+    var g_expires = 365;
+    var g_max_noise_image = 2560 * 2560;
+    var g_max_scale_image = 1280 * 1280;
+
     function clear_file() {
 	var new_file = $("#file").clone();
 	new_file.change(clear_url);
@@ -15,17 +18,48 @@ $(function (){
 	} else {
 	    $(".main-title").html("w<s>/a/</s>ifu2x");
 	}
-	$.cookie("style", checked.val(), {expires: expires});
+	$.cookie("style", checked.val(), {expires: g_expires});
+    }
+    function on_click_tta_rule(e) {
+	e.preventDefault();
+	e.stopPropagation();
+	$(".tta_rule_text").toggle();
+    }
+    function on_change_tta_level(e) {
+	var checked = $("input[name=tta_level]:checked");
+	$.cookie("tta_level", checked.val(), {expires: g_expires});
+	var level = checked.val();
+	if (level == 0) {
+	    level = 1;
+	}
+	var max_noise_w = Math.floor(Math.pow(g_max_noise_image / level, 0.5));
+	var max_scale_w = Math.floor(Math.pow(g_max_scale_image / level, 0.5));
+	var limit_text = $(".file_limits").text();
+	var hits = 0;
+	limit_text = limit_text.replace(/\d+x\d+/g, function() {
+	    hits += 1;
+	    if (hits == 1) {
+		return "" + max_noise_w + "x" + max_noise_w;
+	    } else {
+		return "" + max_scale_w + "x" + max_scale_w;
+	    }
+	});
+	$(".file_limits").text(limit_text);
+	if (level == 1) {
+	    $(".file_limits").css("color", "");
+	} else {
+	    $(".file_limits").css("color", "blue");
+	}
     }
     function on_change_noise_level(e)
     {
 	var checked = $("input[name=noise]:checked");
-	$.cookie("noise", checked.val(), {expires: expires});
+	$.cookie("noise", checked.val(), {expires: g_expires});
     }
     function on_change_scale_factor(e)
     {
 	var checked = $("input[name=scale]:checked");
-	$.cookie("scale", checked.val(), {expires: expires});
+	$.cookie("scale", checked.val(), {expires: g_expires});
     }
     function restore_from_cookie()
     {
@@ -37,6 +71,9 @@ $(function (){
 	}
 	if ($.cookie("scale")) {
 	    $("input[name=scale]").filter("[value=" + $.cookie("scale") + "]").prop("checked", true)
+	}
+	if ($.cookie("tta_level")) {
+	    $("input[name=tta_level]").filter("[value=" + $.cookie("tta_level") + "]").prop("checked", true)
 	}
     }
     function uuid() 
@@ -85,10 +122,13 @@ $(function (){
     $("input[name=style]").change(on_change_style);
     $("input[name=noise]").change(on_change_noise_level);
     $("input[name=scale]").change(on_change_scale_factor);
+    $("input[name=tta_level]").change(on_change_tta_level);
     $("input[name=download]").click(download_with_xhr);
+    $("a.tta_rule").click(on_click_tta_rule);
 
     restore_from_cookie();
     on_change_style();
     on_change_scale_factor();
     on_change_noise_level();
+    on_change_tta_level();
 })
