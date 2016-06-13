@@ -63,16 +63,39 @@ local CURL_OPTIONS = {
    max_redirects = 2
 }
 local CURL_MAX_SIZE = 3 * 1024 * 1024
-local TTA_SUPPORT = false
+local TTA_SUPPORT = true
 
-local function valid_size(x, scale)
+local function valid_size(x, scale, tta_level)
    if scale == 0 then
-      return x:size(2) * x:size(3) <= MAX_NOISE_IMAGE
+      local limit = math.pow(math.floor(math.pow(MAX_NOISE_IMAGE / tta_level, 0.5)), 2)
+      return x:size(2) * x:size(3) <= limit
    else
-      return x:size(2) * x:size(3) <= MAX_SCALE_IMAGE
+      local limit = math.pow(math.floor(math.pow(MAX_SCALE_IMAGE / tta_level, 0.5)), 2)
+      return x:size(2) * x:size(3) <= limit
    end
 end
-
+local function auto_tta_level(x, scale)
+   local limit2, limit4, limit8
+   if scale == 0 then
+      limit2 = math.pow(math.floor(math.pow(MAX_NOISE_IMAGE / 2, 0.5)), 2)
+      limit4 = math.pow(math.floor(math.pow(MAX_NOISE_IMAGE / 4, 0.5)), 2)
+      limit8 = math.pow(math.floor(math.pow(MAX_NOISE_IMAGE / 8, 0.5)), 2)
+   else
+      limit2 = math.pow(math.floor(math.pow(MAX_SCALE_IMAGE / 2, 0.5)), 2)
+      limit4 = math.pow(math.floor(math.pow(MAX_SCALE_IMAGE / 4, 0.5)), 2)
+      limit8 = math.pow(math.floor(math.pow(MAX_SCALE_IMAGE / 8, 0.5)), 2)
+   end
+   local px = x:size(2) * x:size(3)
+   if px <= limit8 then
+      return 8
+   elseif px <= limit4 then
+      return 4
+   elseif px <= limit2 then
+      return 2
+   else
+      return 1
+   end
+end
 local function cache_url(url)
    local hash = md5.sumhexa(url)
    local cache_file = path.join(CACHE_DIR, "url_" .. hash)
@@ -237,22 +260,24 @@ function APIHandler:post()
    local x, meta, filename = get_image(self)
    local scale = tonumber(self:get_argument("scale", "0"))
    local noise = tonumber(self:get_argument("noise", "0"))
-   local tta_level = tonumber(self:get_argument("noise", "1"))
+   local tta_level = tonumber(self:get_argument("tta_level", "1"))
    local style = self:get_argument("style", "art")
    local download = (self:get_argument("download", "")):len()
 
    if not TTA_SUPPORT then
       tta_level = 1 -- disable TTA mode
    else
-      if not (tta_level == 1 or tta_level == 2 or tta_level == 4 or tta_level == 8) then
+      if tta_level == 0 then
+	 tta_level = auto_tta_level(x, scale)
+      end
+      if not (tta_level == 0 or tta_level == 1 or tta_level == 2 or tta_level == 4 or tta_level == 8) then
 	 tta_level = 1
       end
    end
-
    if style ~= "art" then
       style = "photo" -- style must be art or photo
    end
-   if x and valid_size(x, scale) then
+   if x and valid_size(x, scale, tta_level) then
       local prefix = nil
       if (noise ~= 0 or scale ~= 0) then
 	 local hash = md5.sumhexa(meta.blob)

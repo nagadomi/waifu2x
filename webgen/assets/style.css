@@ -196,3 +196,7 @@ label {
 .address {
     text-align: center;
 }
+.tta_rule_text td {
+    padding: 4px;
+    border: 1px solid #ccc;
+}

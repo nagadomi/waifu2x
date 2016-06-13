@@ -18,6 +18,9 @@ nr_highest: 最高
 nr_hint: "ノイズ除去は細部が消えることがあります。JPEGノイズがある場合に使用します。"
 upscaling: 拡大
 up_none: なし
+tta: TTA
+tta_hint: "TTAは安定した品質を作ります。ただし画像サイズに制限があります。"
+tta_rule: "ルール"
 button_convert: 実行
 button_download: 実行結果を保存
 hints:

@@ -18,6 +18,10 @@ nr_highest: Highest
 nr_hint: "You need use noise reduction if image actually has noise or it may cause opposite effect."
 upscaling: Upscaling
 up_none: None
+tta: TTA
+tta_best_effort: "n-pass auto"
+tta_rule: "Show the rule of `n-pass auto`."
+tta_hint: "TTA makes stable quality but it limits the source image size."
 button_convert: Convert
 button_download: Download
 hints:
