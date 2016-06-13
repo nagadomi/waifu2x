@@ -26,9 +26,6 @@ else
       return model
    end
    require 'LeakyReLU'
-   require 'LeakyReLU_deprecated'
-   require 'DepthExpand2x'
-   require 'PSNRCriterion'
    require 'ClippedWeightedHuberCriterion'
    require 'ClippedMSECriterion'
    return w2nn
