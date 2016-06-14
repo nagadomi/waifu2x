@@ -78,7 +78,7 @@ sudo apt-get install cuda
 
 ```
 sudo apt-get install libsnappy-dev
-sudo apt-get install libgraphicsmagick-dev
+sudo apt-get install libgraphicsmagick1-dev
 ```
 
 #### Install Torch7
