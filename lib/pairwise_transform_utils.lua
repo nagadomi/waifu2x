@@ -77,15 +77,16 @@ function pairwise_transform_utils.active_cropping(x, y, lowres_y, size, scale, p
    else
       local best_se = 0.0
       local best_xi, best_yi
-      local m = torch.FloatTensor(y:size(1), size, size)
+      local m = torch.LongTensor(y:size(1), size, size)
+      local targets = {}
       for i = 1, tries do
 	 local xi = torch.random(1, x:size(3) - (size + 1)) * scale
 	 local yi = torch.random(1, x:size(2) - (size + 1)) * scale
-	 local xc = iproc.crop(y, xi, yi, xi + size, yi + size)
-	 local lc = iproc.crop(lowres_y, xi, yi, xi + size, yi + size)
-	 local xcf = iproc.byte2float(xc)
-	 local lcf = iproc.byte2float(lc)
-	 local se = m:copy(xcf):add(-1.0, lcf):pow(2):sum()
+	 local xc = iproc.crop_nocopy(y, xi, yi, xi + size, yi + size)
+	 local lc = iproc.crop_nocopy(lowres_y, xi, yi, xi + size, yi + size)
+	 m:copy(xc:long()):csub(lc:long())
+	 m:cmul(m)
+	 local se = m:sum()
 	 if se >= best_se then
 	    best_xi = xi
 	    best_yi = yi
