@@ -66,7 +66,9 @@ local function convert_image(opt)
       local t = sys.clock()
       new_x = image_f(model, x, opt.crop_size, opt.batch_size)
       new_x = alpha_util.composite(new_x, alpha)
-      print(opt.o .. ": " .. (sys.clock() - t) .. " sec")
+      if not opt.q then
+	 print(opt.o .. ": " .. (sys.clock() - t) .. " sec")
+      end
    elseif opt.m == "scale" then
       local model_path = path.join(opt.model_dir, ("scale%.1fx_model.t7"):format(opt.scale))
       local model = w2nn.load_model(model_path, opt.force_cudnn)
@@ -77,7 +79,9 @@ local function convert_image(opt)
       x = alpha_util.make_border(x, alpha, reconstruct.offset_size(model))
       new_x = scale_f(model, opt.scale, x, opt.crop_size, opt.batch_size, opt.batch_size)
       new_x = alpha_util.composite(new_x, alpha, model)
-      print(opt.o .. ": " .. (sys.clock() - t) .. " sec")
+      if not opt.q then
+	 print(opt.o .. ": " .. (sys.clock() - t) .. " sec")
+      end
    elseif opt.m == "noise_scale" then
       local model_path = path.join(opt.model_dir, ("noise%d_scale%.1fx_model.t7"):format(opt.noise_level, opt.scale))
       if path.exists(model_path) then
@@ -91,7 +95,9 @@ local function convert_image(opt)
 	 x = alpha_util.make_border(x, alpha, reconstruct.offset_size(scale_model))
 	 new_x = scale_f(model, opt.scale, x, opt.crop_size, opt.batch_size)
 	 new_x = alpha_util.composite(new_x, alpha, scale_model)
-	 print(opt.o .. ": " .. (sys.clock() - t) .. " sec")
+	 if not opt.q then
+	    print(opt.o .. ": " .. (sys.clock() - t) .. " sec")
+	 end
       else
 	 local noise_model_path = path.join(opt.model_dir, ("noise%d_model.t7"):format(opt.noise_level))
 	 local noise_model = w2nn.load_model(noise_model_path, opt.force_cudnn)
@@ -102,7 +108,9 @@ local function convert_image(opt)
 	 x = image_f(noise_model, x, opt.crop_size, opt.batch_size)
 	 new_x = scale_f(scale_model, opt.scale, x, opt.crop_size, opt.batch_size)
 	 new_x = alpha_util.composite(new_x, alpha, scale_model)
-	 print(opt.o .. ": " .. (sys.clock() - t) .. " sec")
+	 if not opt.q then
+	    print(opt.o .. ": " .. (sys.clock() - t) .. " sec")
+	 end
       end
    else
       error("undefined method:" .. opt.method)
@@ -186,12 +194,16 @@ local function convert_frames(opt)
 	 end
 	 image_loader.save_png(output, new_x, 
 			       tablex.update({depth = opt.depth, inplace = true}, meta))
-	 xlua.progress(i, #lines)
+	 if not opt.q then
+	    xlua.progress(i, #lines)
+	 end
 	 if i % 10 == 0 then
 	    collectgarbage()
 	 end
       else
-	 xlua.progress(i, #lines)
+	 if not opt.q then
+	    xlua.progress(i, #lines)
+	 end
       end
    end
 end
@@ -207,16 +219,21 @@ local function waifu2x()
    cmd:option("-depth", 8, 'bit-depth of the output image (8|16)')
    cmd:option("-model_dir", "./models/upconv_7/art", 'path to model directory')
    cmd:option("-m", "noise_scale", 'method (noise|scale|noise_scale)')
+   cmd:option("-method", "", 'same as -m')
    cmd:option("-noise_level", 1, '(1|2|3)')
    cmd:option("-crop_size", 128, 'patch size per process')
    cmd:option("-batch_size", 1, 'batch_size')
    cmd:option("-resume", 0, "skip existing files (0|1)")
    cmd:option("-thread", -1, "number of CPU threads")
-   cmd:option("-tta", 0, '8x slower and slightly high quality (0|1)')
-   cmd:option("-tta_level", 8, 'TTA level (2|4|8)')
+   cmd:option("-tta", 0, 'use TTA mode. It is slow but slightly high quality (0|1)')
+   cmd:option("-tta_level", 8, 'TTA level (2|4|8). A higher value makes better quality output but slow')
    cmd:option("-force_cudnn", 0, 'use cuDNN backend (0|1)')
+   cmd:option("-q", 0, 'quiet (0|1)')
 
    local opt = cmd:parse(arg)
+   if opt.method:len() > 0 then
+      opt.m = opt.method
+   end
    if opt.thread > 0 then
       torch.setnumthreads(opt.thread)
    end
@@ -228,11 +245,9 @@ local function waifu2x()
 	 cudnn.benchmark = false
       end
    end
-   if opt.force_cudnn == 1 then
-      opt.force_cudnn = true
-   else
-      opt.force_cudnn = false
-   end
+   opt.force_cudnn = opt.force_cudnn == 1
+   opt.q = opt.q == 1
+
    if string.len(opt.l) == 0 then
       convert_image(opt)
    else
