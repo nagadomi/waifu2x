@@ -39,6 +39,7 @@ cmd:option("-tta_level", 8, 'tta level')
 cmd:option("-crop_size", 128, 'patch size per process')
 cmd:option("-batch_size", 1, 'batch_size')
 cmd:option("-force_cudnn", 0, 'use cuDNN backend')
+cmd:option("-yuv420", 0, 'use yuv420 jpeg')
 
 local function to_bool(settings, name)
    if settings[name] == 1 then
@@ -54,6 +55,7 @@ if cudnn then
    cudnn.benchmark = true
 end
 to_bool(opt, "force_cudnn")
+to_bool(opt, "yuv420")
 to_bool(opt, "save_all")
 to_bool(opt, "tta")
 if opt.save_all then
@@ -115,7 +117,11 @@ local function transform_jpeg(x, opt)
    for i = 1, opt.jpeg_times do
       jpeg = gm.Image(x, "RGB", "DHW")
       jpeg:format("jpeg")
-      jpeg:samplingFactors({1.0, 1.0, 1.0})
+      if opt.yuv420 then
+	 jpeg:samplingFactors({2.0, 1.0, 1.0})
+      else
+	 jpeg:samplingFactors({1.0, 1.0, 1.0})
+      end
       blob, len = jpeg:toBlob(opt.jpeg_quality - (i - 1) * opt.jpeg_quality_down)
       jpeg:fromBlob(blob, len)
       x = jpeg:toTensor("byte", "RGB", "DHW")
@@ -143,7 +149,11 @@ local function transform_scale_jpeg(x, opt)
    for i = 1, opt.jpeg_times do
       jpeg = gm.Image(x, "RGB", "DHW")
       jpeg:format("jpeg")
-      jpeg:samplingFactors({1.0, 1.0, 1.0})
+      if opt.yuv420 then
+	 jpeg:samplingFactors({2.0, 1.0, 1.0})
+      else
+	 jpeg:samplingFactors({1.0, 1.0, 1.0})
+      end
       blob, len = jpeg:toBlob(opt.jpeg_quality - (i - 1) * opt.jpeg_quality_down)
       jpeg:fromBlob(blob, len)
       x = jpeg:toTensor("byte", "RGB", "DHW")
