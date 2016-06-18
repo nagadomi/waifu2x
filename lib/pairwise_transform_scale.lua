@@ -41,41 +41,10 @@ function pairwise_transform.scale(src, scale, size, offset, n, options)
       size(y:size(3) * 0.5, y:size(2) * 0.5, "Box"):
       size(y:size(3), y:size(2), "Box"):
       toTensor(t, "RGB", "DHW")
-   local xs = {}
-   local ys = {}
-   local lowreses = {}
-
-   for j = 1, 2 do
-      -- TTA
-      local xi, yi, ri
-      if j == 1 then
-	 xi = x
-	 yi = y
-	 ri = lowres_y
-      else
-	 xi = x:transpose(2, 3):contiguous()
-	 yi = y:transpose(2, 3):contiguous()
-	 ri = lowres_y:transpose(2, 3):contiguous()
-      end
-      local xv = image.vflip(xi)
-      local yv = image.vflip(yi)
-      local rv = image.vflip(ri)
-      table.insert(xs, xi)
-      table.insert(ys, yi)
-      table.insert(lowreses, ri)
-      table.insert(xs, xv)
-      table.insert(ys, yv)
-      table.insert(lowreses, rv)
-      table.insert(xs, image.hflip(xi))
-      table.insert(ys, image.hflip(yi))
-      table.insert(lowreses, image.hflip(ri))
-      table.insert(xs, image.hflip(xv))
-      table.insert(ys, image.hflip(yv))
-      table.insert(lowreses, image.hflip(rv))
-   end
+   local xs, ys, ls, _ = pairwise_utils.flip_augmentation(x, y, lowres_y)
    for i = 1, n do
       local t = (i % #xs) + 1
-      local xc, yc = pairwise_utils.active_cropping(xs[t], ys[t], lowreses[t],
+      local xc, yc = pairwise_utils.active_cropping(xs[t], ys[t], ls[t],
 						    size,
 						    scale_inner,
 						    options.active_cropping_rate,

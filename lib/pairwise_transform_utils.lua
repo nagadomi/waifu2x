@@ -98,5 +98,64 @@ function pairwise_transform_utils.active_cropping(x, y, lowres_y, size, scale, p
       return xc, yc
    end
 end
+function pairwise_transform_utils.flip_augmentation(x, y, lowres_y, x_noise)
+   local xs = {}
+   local ns = {}
+   local ys = {}
+   local ls = {}
+
+   for j = 1, 2 do
+      -- TTA
+      local xi, yi, ri
+      if j == 1 then
+	 xi = x
+	 ni = x_noise
+	 yi = y
+	 ri = lowres_y
+      else
+	 xi = x:transpose(2, 3):contiguous()
+	 if x_noise then
+	    ni = x_noise:transpose(2, 3):contiguous()
+	 end
+	 yi = y:transpose(2, 3):contiguous()
+	 ri = lowres_y:transpose(2, 3):contiguous()
+      end
+      local xv = image.vflip(xi)
+      local nv
+      if x_noise then
+	 nv = image.vflip(ni)
+      end
+      local yv = image.vflip(yi)
+      local rv = image.vflip(ri)
+      table.insert(xs, xi)
+      if ni then
+	 table.insert(ns, ni)
+      end
+      table.insert(ys, yi)
+      table.insert(ls, ri)
+
+      table.insert(xs, xv)
+      if nv then
+	 table.insert(ns, nv)
+      end
+      table.insert(ys, yv)
+      table.insert(ls, rv)
+
+      table.insert(xs, image.hflip(xi))
+      if ni then
+	 table.insert(ns, image.hflip(ni))
+      end
+      table.insert(ys, image.hflip(yi))
+      table.insert(ls, image.hflip(ri))
+
+      table.insert(xs, image.hflip(xv))
+      if nv then
+	 table.insert(ns, image.hflip(nv))
+      end
+      table.insert(ys, image.hflip(yv))
+      table.insert(ls, image.hflip(rv))
+   end
+   return xs, ys, ls, ns
+end
 
 return pairwise_transform_utils

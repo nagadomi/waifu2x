@@ -7,18 +7,18 @@ function pairwise_transform.jpeg_(src, quality, size, offset, n, options)
    local unstable_region_offset = 8
    local y = pairwise_utils.preprocess(src, size, options)
    local x = y
+   local factors
 
+   if torch.uniform() < options.jpeg_chroma_subsampling_rate then
+      -- YUV 420
+      factors = {2.0, 1.0, 1.0}
+   else
+      -- YUV 444
+      factors = {1.0, 1.0, 1.0}
+   end
    for i = 1, #quality do
       x = gm.Image(x, "RGB", "DHW")
-      x:format("jpeg"):depth(8)
-      if torch.uniform() < options.jpeg_chroma_subsampling_rate then
-	 -- YUV 420
-	 x:samplingFactors({2.0, 1.0, 1.0})
-      else
-	 -- YUV 444
-	 x:samplingFactors({1.0, 1.0, 1.0})
-      end
-      local blob, len = x:toBlob(quality[i])
+      local blob, len = x:format("jpeg"):depth(8):samplingFactors(factors):toBlob(quality[i])
       x:fromBlob(blob, len)
       x = x:toTensor("byte", "RGB", "DHW")
    end
@@ -34,8 +34,11 @@ function pairwise_transform.jpeg_(src, quality, size, offset, n, options)
       size(y:size(3) * 0.5, y:size(2) * 0.5, "Box"):
       size(y:size(3), y:size(2), "Box"):
       toTensor(t, "RGB", "DHW")
+
+   local xs, ys, ls = pairwise_utils.flip_augmentation(x, y, lowres_y)
    for i = 1, n do
-      local xc, yc = pairwise_utils.active_cropping(x, y, lowres_y, size, 1,
+      local t = (i % #xs) + 1
+      local xc, yc = pairwise_utils.active_cropping(xs[t], ys[t], ls[t], size, 1,
 						    options.active_cropping_rate,
 						    options.active_cropping_tries)
       xc = iproc.byte2float(xc)
