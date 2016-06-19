@@ -110,7 +110,7 @@ local function PSNR(x1, x2, color)
    return 10 * math.log10((255.0 * 255.0) / mse)
 end
 local function MSE2PSNR(mse)
-   return 10 * math.log10((255.0 * 255.0) / mse)
+   return 10 * math.log10((255.0 * 255.0) / math.max(mse, 1))
 end
 
 local function transform_jpeg(x, opt)
