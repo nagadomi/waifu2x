@@ -66,10 +66,10 @@ function pairwise_transform.jpeg(src, style, level, size, offset, n, options)
       elseif level == 2 or level == 3 then
 	 -- level 2/3 adjusting by -nr_rate. for level3, -nr_rate=1
 	 local r = torch.uniform()
-	 if r > 0.6 then
+	 if r > 0.4 then
 	    return pairwise_transform.jpeg_(src, {torch.random(27, 70)},
 					    size, offset, n, options)
-	 elseif r > 0.3 then
+	 elseif r > 0.1 then
 	    local quality1 = torch.random(37, 70)
 	    local quality2 = quality1 - torch.random(5, 10)
 	    return pairwise_transform.jpeg_(src, {quality1, quality2},
