@@ -22,6 +22,13 @@ local function save_test_jpeg(model, rgb, file)
    local im, count = reconstruct.image(model, rgb)
    image.save(file, im)
 end
+local function save_test_user(model, rgb, file)
+   if settings.scale == 1 then
+      save_test_jpeg(model, rgb, file)
+   else
+      save_test_scale(model, rgb, file)
+   end
+end
 local function split_data(x, test_size)
    local index = torch.randperm(#x)
    local train_size = #x - test_size
@@ -117,9 +124,15 @@ local function create_criterion(model, loss)
 end
 local function transformer(model, x, is_validation, n, offset)
    local meta = {data = {}}
+   local y = nil
    if type(x) == "table" and type(x[2]) == "table" then
       meta = x[2]
-      x = compression.decompress(x[1])
+      if x[1].x and x[1].y then
+	 y = compression.decompress(x[1].y)
+	 x = compression.decompress(x[1].x)
+      else
+	 x = compression.decompress(x[1])
+      end
    else
       x = compression.decompress(x)
    end
@@ -197,6 +210,15 @@ local function transformer(model, x, is_validation, n, offset)
 					   settings.noise_level,
 					   settings.crop_size, offset,
 					   n, conf)
+   elseif settings.method == "user" then
+      local conf = tablex.update({
+	    max_size = settings.max_size,
+	    active_cropping_rate = active_cropping_rate,
+	    active_cropping_tries = active_cropping_tries,
+	    rgb = (settings.color == "rgb")}, meta)
+      return pairwise_transform.user(x, y,
+				     settings.crop_size, offset,
+				     n, conf)
    end
 end
 
@@ -248,8 +270,12 @@ local function remove_small_image(x)
    for i = 1, #x do
       local xe, meta, x_s
       xe = x[i]
-      if type(xe) == "table" and type(xe[2]) == "table" then
-	 x_s = compression.size(xe[1])
+      if type(x) == "table" and type(x[2]) == "table" then
+	 if xe[1].x and xe[1].y then
+	    x_s = compression.size(xe[1].y) -- y size
+	 else
+	    x_s = compression.size(xe[1])
+	 end
       else
 	 x_s = compression.size(xe)
       end
@@ -394,6 +420,11 @@ local function train()
 										    settings.scale,
 										    epoch, i))
 		  save_test_scale(model, test_image, log)
+	       elseif settings.method == "user" then
+		  local log = path.join(settings.model_dir,
+					("%s_best.%d-%d.png"):format(settings.name, 
+								     epoch, i))
+		  save_test_user(model, test_image, log)
 	       end
 	    else
 	       torch.save(settings.model_file, model:clearState(), "ascii")
@@ -410,6 +441,10 @@ local function train()
 					("noise%d_scale%.1f_best.png"):format(settings.noise_level, 
 									      settings.scale))
 		  save_test_scale(model, test_image, log)
+	       elseif settings.method == "user" then
+		  local log = path.join(settings.model_dir,
+					("%s_best.png"):format(settings.name))
+		  save_test_user(model, test_image, log)
 	       end
 	    end
 	 end

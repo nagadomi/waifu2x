@@ -91,6 +91,7 @@ luarocks install graphicsmagick # upgrade
 luarocks install lua-csnappy
 luarocks install md5
 luarocks install uuid
+luarocks install csvigo
 PREFIX=$HOME/torch/install luarocks install turbo # if you need to use web application
 ```
 
