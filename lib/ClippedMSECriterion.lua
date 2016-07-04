@@ -8,7 +8,7 @@ function ClippedMSECriterion:__init(min, max)
 end
 function ClippedMSECriterion:updateOutput(input, target)
    self.diff:resizeAs(input):copy(input)
-   self.diff[torch.lt(self.diff, self.min)]:clamp(self.min, self.max)
+   self.diff:clamp(self.min, self.max)
    self.diff:add(-1, target)
    self.output = self.diff:pow(2):sum() / input:nElement()
    return self.output

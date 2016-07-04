@@ -14,8 +14,7 @@ function ClippedWeightedHuberCriterion:__init(w, gamma, clip)
 end
 function ClippedWeightedHuberCriterion:updateOutput(input, target)
    self.diff:resizeAs(input):copy(input)
-   self.diff[torch.lt(self.diff, self.clip[1])] = self.clip[1]
-   self.diff[torch.gt(self.diff, self.clip[2])] = self.clip[2]
+   self.diff:clamp(self.clip[1], self.clip[2])
    for i = 1, input:size(1) do
       self.diff[i]:add(-1, target[i]):cmul(self.weight)
    end
