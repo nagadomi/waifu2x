@@ -100,8 +100,10 @@ function reconstruct.image_y(model, x, offset, block_size, batch_size)
    local p = padding_params(x, model, block_size)
    x = image.rgb2yuv(iproc.padding(x, p.pad_w1, p.pad_w2, p.pad_h1, p.pad_h2))
    local y = reconstruct_nn(model, x[1], p.inner_scale, offset, block_size, batch_size)
-   x = iproc.crop(x, p.pad_w1, p.pad_w2, p.pad_w1 + p.x_w, p.pad_w2 + p.x_h)
+
+   x = iproc.crop(x, p.pad_w1, p.pad_h1, p.pad_w1 + p.x_w, p.pad_h1 + p.x_h)
    y = iproc.crop(y, 0, 0, p.x_w, p.x_h)
+
    y[torch.lt(y, 0)] = 0
    y[torch.gt(y, 1)] = 1
    x[1]:copy(y)
