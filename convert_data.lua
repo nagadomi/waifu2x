@@ -75,7 +75,7 @@ local function load_images(list)
       if csv_meta and csv_meta:len() > 0 then
 	 csv_meta = cjson.decode(csv_meta)
       end
-      if csv_meta.filters then
+      if csv_meta and csv_meta.filters then
 	 filters = csv_meta.filters
       end
       local im, meta = image_loader.load_byte(filename)
@@ -95,7 +95,7 @@ local function load_images(list)
 	    skip_notice = true
 	 end
       else
-	 if csv_meta.x then
+	 if csv_meta and csv_meta.x then
 	    -- method == user
 	    local yy = im
 	    local xx, meta2 = image_loader.load_byte(csv_meta.x)
