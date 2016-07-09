@@ -7,19 +7,19 @@ type_url: URL hier eintragen
 choose_file: Oder wählen Sie eine Datei aus
 file_limits: "Beschränkungen: Größe: 5MB, Rauschunterdrückung: 3000x3000px, maximale Hochskalierung: 1500x1500px."
 style: Stil
-artwork: Kunst
+artwork: Illustration
 photo: Foto
 noise_reduction: Rauschunterdrückung
 expect_jpeg: verursacht möglicherweise JPEG Artifakte
 nr_none: Keine
 nr_medium: Mittel
 nr_high: Hoch
-nr_highest: Am Höchsten
+nr_highest: Höchste
 nr_hint: "Sie sollten Rauschunterdrückung nutzen, wenn das Bild an sich viel Bildrauschen aufweist. Ansonsten könnte es den entgegensetzten Effekt haben."
 upscaling: Hochskalierung
 up_none: Keine
 button_convert: Konvertieren
 button_download: Herunterladen
 hints:
-  - "Wenn Sie Firefox benutzen, benutzen Sie bitte SRTG+S um das Bild zu speichern. Herunterladen funktioniert bei Firefox leider nicht."
+  - "Wenn Sie Firefox benutzen, benutzen Sie bitte STRG+S um das Bild zu speichern. Herunterladen funktioniert bei Firefox leider nicht."
   

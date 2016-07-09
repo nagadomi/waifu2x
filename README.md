@@ -78,7 +78,7 @@ sudo apt-get install cuda
 
 ```
 sudo apt-get install libsnappy-dev
-sudo apt-get install libgraphicsmagick-dev
+sudo apt-get install libgraphicsmagick1-dev
 ```
 
 #### Install Torch7
@@ -182,7 +182,7 @@ th waifu2x.lua -m noise -noise_level 1 -resume 1 -l data/frame.txt -o new_frames
 
 Generating a video from waifu2xed images and audio.
 ```
-avconv -f image2 -r 24 -i new_frames/%d.png -i audio.mp3 -r 24 -vcodec libx264 -crf 16 video.mp4
+avconv -f image2 -framerate 24 -i new_frames/%d.png -i audio.mp3 -r 24 -vcodec libx264 -crf 16 video.mp4
 ```
 
 ## Train Your Own Model

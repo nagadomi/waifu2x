@@ -1,0 +1,24 @@
+---
+description: 컨볼루젼 신경망(CNN) 시스템을 통한 딥 러닝으로 2차원 이미지의 해상도를 개선합니다. 그림 뿐만 아니라 사진에도 대응합니다.
+show_demonstration: 실제 데모 보기
+go_to_github: GitHub에서 보기
+image_choosing: 이미지 선택
+type_url: URL 입력
+choose_file: 또는 파일 업로드
+file_limits: "제한: 크기: 5MB, 노이즈 감소: 3000x3000px, 업스케일링: 1500x1500px."
+style: 스타일
+artwork: 그림
+photo: 사진
+noise_reduction: 노이즈 감소
+expect_jpeg: JPEG 아티팩트 제외
+nr_none: 없음
+nr_medium: 중간
+nr_high: 높음
+nr_highest: 최상
+nr_hint: "실제로 노이즈가 있는 이미지에만 사용해야 하며, 그렇지 않을 경우 사진의 세세한 부분이 뭉개질 수 있습니다."
+upscaling: 업스케일링
+up_none: 없음
+button_convert: 변환
+button_download: 다운로드
+hints:
+  - "FireFox에서 이미지를 저장하려면 Ctrl+S를 누르세요. 오른쪽 클릭 > \"이미지 저장\"을 이용하면 정상적으로 동작하지 않습니다."
