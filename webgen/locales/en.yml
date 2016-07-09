@@ -12,6 +12,7 @@ photo: Photo
 noise_reduction: Noise Reduction
 expect_jpeg: expect JPEG artifact
 nr_none: None
+nr_low: Low
 nr_medium: Medium
 nr_high: High
 nr_highest: Highest

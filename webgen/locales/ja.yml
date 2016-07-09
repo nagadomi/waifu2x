@@ -12,6 +12,7 @@ photo: 写真
 noise_reduction: ノイズ除去
 expect_jpeg: JPEGノイズを想定
 nr_none: なし
+nr_low: 低
 nr_medium: 中
 nr_high: 高
 nr_highest: 最高

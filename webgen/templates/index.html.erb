@@ -102,9 +102,14 @@
 	    </div>
 	  </div>
 	  <div class="option-right">
-	    <label><input type="radio" name="noise" class="radio" value="0">
+	    <label><input type="radio" name="noise" class="radio" value="-1">
 	      <span class="r-text">
 		<%= t[:nr_none] %>
+	      </span>
+	    </label>
+	    <label><input type="radio" name="noise" class="radio" value="0" checked>
+	      <span class="r-text">
+		<%= t[:nr_low] %>
 	      </span>
 	    </label>
 	    <label><input type="radio" name="noise" class="radio" value="1" checked>
@@ -135,7 +140,7 @@
 	    <div class="option-left-small"></div>
 	  </div>
 	  <div class="option-right">
-	    <label><input type="radio" name="scale" class="radio" value="0" checked>
+	    <label><input type="radio" name="scale" class="radio" value="-1" checked>
 	      <span class="r-text">
 		<%= t[:up_none] %>
 	      </span>
