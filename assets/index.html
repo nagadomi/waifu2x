@@ -74,7 +74,7 @@
 	      <input type="file" id="file" name="file"></div>
 	  </div>
 	  <div class="option-hint file_limits">
-	    Limits: Size: 3MB, Noise Reduction: 2560x2560px, Upscaling: 1280x1280px.
+	    Limits: Size: 5MB, Noise Reduction: 3000x3000px, Upscaling: 1500x1500px.
 	  </div>
 	</div>
 	<div class="option-box">
@@ -140,7 +140,7 @@
 	    <div class="option-left-small"></div>
 	  </div>
 	  <div class="option-right">
-	    <label><input type="radio" name="scale" class="radio" value="0" checked>
+	    <label><input type="radio" name="scale" class="radio" value="-1" checked>
 	      <span class="r-text">
 		None
 	      </span>
@@ -157,83 +157,7 @@
 	    </label>
 	  </div>
 	</div>
-	<div class="option-box">
-	  <div class="option-left">
-	    TTA:
-	    <div class="option-left-small"></div>
-	  </div>
-	  <div class="option-right">
-	    <label><input type="radio" name="tta_level" class="radio" value="1" checked>
-	      <span class="r-text">
-		1 pass
-	      </span>
-	    </label>
-	    <!--
-	    <label><input type="radio" name="tta_level" class="radio" value="2" checked>
-	      <span class="r-text">
-		2 pass
-	      </span>
-	    </label>
-	    <label><input type="radio" name="tta_level" class="radio" value="4">
-	      <span class="r-text">
-		4 pass
-	      </span>
-	    </label>
-	    <label><input type="radio" name="tta_level" class="radio" value="8">
-	      <span class="r-text">
-		8 pass
-	      </span>
-	    </label>
-	    -->
-	    <label><input type="radio" name="tta_level" class="radio" value="0" checked>
-	      <span class="r-text">
-		n-pass auto
-	      </span>
-	    </label>
-	  </div>
-	  <div class="option-hint">
-	    TTA makes stable quality but it limits the source image size.
-	    <a href="#" class="tta_rule">
-	      Show the rule of `n-pass auto`.
-	    </a>
-	    <div style="display:none" class="tta_rule_text">
-	      <table>
-		<tr>
-		  <td>
-		    &lt;= 452x452
-		  </td>
-		  <td>
-		    8 pass
-		  </td>
-		</tr>
-		<tr>
-		  <td>
-		    &lt;= 640x640 
-		  </td>
-		  <td>
-		    4 pass
-		  </td>
-		</tr>
-		<tr>
-		  <td>
-		    &lt;= 905x905
-		  </td>
-		  <td>
-		    2 pass
-		  </td>
-		</tr>
-		<tr>
-		  <td>
-		    else
-		  </td>
-		  <td>
-		    1 pass
-		  </td>
-		</tr>
-	      </table>
-	    </div>
-	  </div>
-	</div>
+	
 	
 	  <input type="submit" class="button" value="Convert">
 	

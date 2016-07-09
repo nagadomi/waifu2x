@@ -5,7 +5,7 @@ go_to_github: Go to GitHub
 image_choosing: Image choosing
 type_url: Type URL
 choose_file: Or choose a file
-file_limits: "Limits: Size: 3MB, Noise Reduction: 2560x2560px, Upscaling: 1280x1280px."
+file_limits: "Limits: Size: 5MB, Noise Reduction: 3000x3000px, Upscaling: 1500x1500px."
 style: Style
 artwork: Artwork
 photo: Photo

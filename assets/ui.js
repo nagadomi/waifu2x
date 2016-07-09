@@ -130,5 +130,7 @@ $(function (){
     on_change_style();
     on_change_scale_factor();
     on_change_noise_level();
-    on_change_tta_level();
+    if ($("input[name=tta_level]").length > 0) {
+	on_change_tta_level();
+    }
 })

@@ -74,7 +74,7 @@
 	      <input type="file" id="file" name="file"></div>
 	  </div>
 	  <div class="option-hint file_limits">
-	    制限: サイズ: 3MB, ノイズ除去: 2560x2560px, 拡大(前): 1280x1280px.
+	    制限: サイズ: 5MB, ノイズ除去: 3000x3000px, 拡大(前): 1500x1500px.
 	  </div>
 	</div>
 	<div class="option-box">
@@ -140,7 +140,7 @@
 	    <div class="option-left-small"></div>
 	  </div>
 	  <div class="option-right">
-	    <label><input type="radio" name="scale" class="radio" value="0" checked>
+	    <label><input type="radio" name="scale" class="radio" value="-1" checked>
 	      <span class="r-text">
 		なし
 	      </span>
@@ -157,83 +157,7 @@
 	    </label>
 	  </div>
 	</div>
-	<div class="option-box">
-	  <div class="option-left">
-	    TTA:
-	    <div class="option-left-small"></div>
-	  </div>
-	  <div class="option-right">
-	    <label><input type="radio" name="tta_level" class="radio" value="1" checked>
-	      <span class="r-text">
-		1 pass
-	      </span>
-	    </label>
-	    <!--
-	    <label><input type="radio" name="tta_level" class="radio" value="2" checked>
-	      <span class="r-text">
-		2 pass
-	      </span>
-	    </label>
-	    <label><input type="radio" name="tta_level" class="radio" value="4">
-	      <span class="r-text">
-		4 pass
-	      </span>
-	    </label>
-	    <label><input type="radio" name="tta_level" class="radio" value="8">
-	      <span class="r-text">
-		8 pass
-	      </span>
-	    </label>
-	    -->
-	    <label><input type="radio" name="tta_level" class="radio" value="0" checked>
-	      <span class="r-text">
-		n-pass auto
-	      </span>
-	    </label>
-	  </div>
-	  <div class="option-hint">
-	    TTAは安定した品質を作ります。ただし画像サイズに制限があります。
-	    <a href="#" class="tta_rule">
-	      ルール
-	    </a>
-	    <div style="display:none" class="tta_rule_text">
-	      <table>
-		<tr>
-		  <td>
-		    &lt;= 452x452
-		  </td>
-		  <td>
-		    8 pass
-		  </td>
-		</tr>
-		<tr>
-		  <td>
-		    &lt;= 640x640 
-		  </td>
-		  <td>
-		    4 pass
-		  </td>
-		</tr>
-		<tr>
-		  <td>
-		    &lt;= 905x905
-		  </td>
-		  <td>
-		    2 pass
-		  </td>
-		</tr>
-		<tr>
-		  <td>
-		    else
-		  </td>
-		  <td>
-		    1 pass
-		  </td>
-		</tr>
-	      </table>
-	    </div>
-	  </div>
-	</div>
+	
 	
 	  <input type="submit" class="button" value="実行">
 	

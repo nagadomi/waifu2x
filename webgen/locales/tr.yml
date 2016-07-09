@@ -5,7 +5,7 @@ go_to_github: "Github'a Git"
 image_choosing: Resim seç
 type_url: Adres Girin
 choose_file: Veya bir dosya seçin
-file_limits: "Limitler: Boyut: 3MB, Gürültü Azaltma: 2560x2560px, Çözünürlük Yükseltme: 1280x1280px."
+file_limits: "Limitler: Boyut: 5MB, Gürültü Azaltma: 3000x3000px, Çözünürlük Yükseltme: 1500x1500px."
 style: Stil
 artwork: Dijital Çizim
 photo: Fotoğraf

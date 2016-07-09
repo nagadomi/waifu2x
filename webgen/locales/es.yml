@@ -5,7 +5,7 @@ go_to_github: Ir a GitHub
 image_choosing: Selección de imagen
 type_url: Escribe una URL
 choose_file: O selecciona un archivo
-file_limits: "Límites: Tamaño: 3 MB, Reducción de ruido: 2560x2560px, Aumento de resolución: 1280x1280px."
+file_limits: "Límites: Tamaño: 5 MB, Reducción de ruido: 3000x3000px, Aumento de resolución: 1500x1500px."
 style: Estilo
 artwork: Ilustración
 photo: Fotografía

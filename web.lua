@@ -68,15 +68,15 @@ local photo_model = {
 collectgarbage()
 local CLEANUP_MODEL = false -- if you are using the low memory GPU, you could use this flag.
 local CACHE_DIR = path.join(ROOT, "cache")
-local MAX_NOISE_IMAGE = 2560 * 2560
-local MAX_SCALE_IMAGE = 1280 * 1280
+local MAX_NOISE_IMAGE = 3000 * 3000
+local MAX_SCALE_IMAGE = 1500 * 1500
 local CURL_OPTIONS = {
    request_timeout = 60,
    connect_timeout = 60,
    allow_redirects = true,
    max_redirects = 2
 }
-local CURL_MAX_SIZE = 3 * 1024 * 1024
+local CURL_MAX_SIZE = 5 * 1024 * 1024
 
 local function valid_size(x, scale, tta_level)
    if scale == 0 then

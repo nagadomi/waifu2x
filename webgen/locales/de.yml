@@ -5,7 +5,7 @@ go_to_github: Gehe zu GitHub
 image_choosing: Bildauswahl
 type_url: URL hier eintragen
 choose_file: Oder wählen Sie eine Datei aus
-file_limits: "Beschränkungen: Größe: 3MB, Rauschunterdrückung: 2560x2560px, maximale Hochskalierung: 1280x1280px."
+file_limits: "Beschränkungen: Größe: 5MB, Rauschunterdrückung: 3000x3000px, maximale Hochskalierung: 1500x1500px."
 style: Stil
 artwork: Kunst
 photo: Foto

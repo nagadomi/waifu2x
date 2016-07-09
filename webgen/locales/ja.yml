@@ -5,7 +5,7 @@ go_to_github: プロジェクトページ(GitHub)
 image_choosing: 画像を選択
 type_url: URLを入力
 choose_file: ファイルを選択
-file_limits: "制限: サイズ: 3MB, ノイズ除去: 2560x2560px, 拡大(前): 1280x1280px."
+file_limits: "制限: サイズ: 5MB, ノイズ除去: 3000x3000px, 拡大(前): 1500x1500px."
 style: スタイル
 artwork: イラスト
 photo: 写真

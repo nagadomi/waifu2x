@@ -5,7 +5,7 @@ go_to_github: 转至GitHub
 image_choosing: 选择图像
 type_url: 输入图像链接
 choose_file: 或者从本地上传
-file_limits: "文件大小不得超过3MB；可降噪图像的最大尺寸：2560x2560px；可放大图像的最大尺寸：1280x1280px。"
+file_limits: "文件大小不得超过5MB；可降噪图像的最大尺寸：3000x3000px；可放大图像的最大尺寸：1500x1500px。"
 style: 风格
 artwork: 插图
 photo: 照片
