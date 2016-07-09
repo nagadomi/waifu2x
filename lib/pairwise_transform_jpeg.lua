@@ -60,7 +60,10 @@ function pairwise_transform.jpeg_(src, quality, size, offset, n, options)
 end
 function pairwise_transform.jpeg(src, style, level, size, offset, n, options)
    if style == "art" then
-      if level == 1 then
+      if level == 0 then
+	 return pairwise_transform.jpeg_(src, {torch.random(85, 95)},
+					 size, offset, n, options)
+      elseif level == 1 then
 	 return pairwise_transform.jpeg_(src, {torch.random(65, 85)},
 					 size, offset, n, options)
       elseif level == 2 or level == 3 then
@@ -87,10 +90,15 @@ function pairwise_transform.jpeg(src, style, level, size, offset, n, options)
 	 error("unknown noise level: " .. level)
       end
    elseif style == "photo" then
-      -- level adjusting by -nr_rate
-      return pairwise_transform.jpeg_(src, {torch.random(30, 70)},
-				      size, offset, n,
-				      options)
+      if level == 0 then
+	 return pairwise_transform.jpeg_(src, {torch.random(85, 95)},
+					 size, offset, n,
+					 options)
+      else
+	 return pairwise_transform.jpeg_(src, {torch.random(37, 70)},
+					 size, offset, n,
+					 options)
+      end
    else
       error("unknown style: " .. style)
    end

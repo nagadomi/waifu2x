@@ -23,7 +23,9 @@ end
 
 local function add_jpeg_noise(src, style, level, options)
    if style == "art" then
-      if level == 1 then
+      if level == 0 then
+	 return add_jpeg_noise_(src, {torch.random(85, 95)}, options)
+      elseif level == 1 then
 	 return add_jpeg_noise_(src, {torch.random(65, 85)}, options)
       elseif level == 2 or level == 3 then
 	 -- level 2/3 adjusting by -nr_rate. for level3, -nr_rate=1
@@ -44,8 +46,12 @@ local function add_jpeg_noise(src, style, level, options)
 	 error("unknown noise level: " .. level)
       end
    elseif style == "photo" then
-      -- level adjusting by -nr_rate
-      return add_jpeg_noise_(src, {torch.random(30, 70)}, options)
+      if level == 0 then
+	 return add_jpeg_noise_(src, {torch.random(85, 95)}, options)
+      else
+	 -- level adjusting by -nr_rate
+	 return add_jpeg_noise_(src, {torch.random(37, 70)}, options)
+      end
    else
       error("unknown style: " .. style)
    end
