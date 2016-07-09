@@ -3,7 +3,7 @@
 Image Super-Resolution for Anime-style art using Deep Convolutional Neural Networks.
 And it supports photo.
 
-Demo-Application can be found at http://waifu2x.udp.jp/ .
+The demo application can be found at http://waifu2x.udp.jp/ .
 
 ## Summary
 
@@ -55,6 +55,7 @@ If you are a windows user, I recommend you to use [waifu2x-caffe](https://github
 - lua-csnappy
 - md5
 - uuid
+- csvigo
 - [turbo](https://github.com/kernelsauce/turbo)
 
 ## Installation
@@ -116,12 +117,14 @@ th web.lua
 View at: http://localhost:8812/
 
 ## Command line tools
+Notes: If you have cuDNN library, than you can use cuDNN with `-force_cudnn 1` option. cuDNN is too much faster than default kernel.
 
 ### Noise Reduction
 ```
 th waifu2x.lua -m noise -noise_level 1 -i input_image.png -o output_image.png
 ```
 ```
+th waifu2x.lua -m noise -noise_level 0 -i input_image.png -o output_image.png
 th waifu2x.lua -m noise -noise_level 2 -i input_image.png -o output_image.png
 th waifu2x.lua -m noise -noise_level 3 -i input_image.png -o output_image.png
 ```
@@ -136,6 +139,7 @@ th waifu2x.lua -m scale -i input_image.png -o output_image.png
 th waifu2x.lua -m noise_scale -noise_level 1 -i input_image.png -o output_image.png
 ```
 ```
+th waifu2x.lua -m noise_scale -noise_level 0 -i input_image.png -o output_image.png
 th waifu2x.lua -m noise_scale -noise_level 2 -i input_image.png -o output_image.png
 th waifu2x.lua -m noise_scale -noise_level 3 -i input_image.png -o output_image.png
 ```
@@ -186,7 +190,7 @@ avconv -f image2 -framerate 24 -i new_frames/%d.png -i audio.mp3 -r 24 -vcodec l
 ```
 
 ## Train Your Own Model
-Notes: If you have cuDNN library, you can use cudnn kernel with `-backend cudnn` option. And you can convert trained cudnn model to cunn model with `tools/cudnn2cunn.lua`.
+Notes: If you have cuDNN library, you can use cudnn kernel with `-backend cudnn` option. And you can convert trained cudnn model to cunn model with `tools/rebuild.lua`.
 
 ### Data Preparation
 
@@ -206,7 +210,6 @@ th convert_data.lua
 ```
 mkdir models/my_model
 th train.lua -model_dir models/my_model -method noise -noise_level 1 -test images/miku_noisy.png
-th cleanup_model.lua -model models/my_model/noise1_model.t7 -oformat ascii
 # usage
 th waifu2x.lua -model_dir models/my_model -m noise -noise_level 1 -i images/miku_noisy.png -o output.png
 ```
@@ -216,7 +219,6 @@ You can check the performance of model with `models/my_model/noise1_best.png`.
 
 ```
 th train.lua -model_dir models/my_model -method noise -noise_level 2 -test images/miku_noisy.png
-th cleanup_model.lua -model models/my_model/noise2_model.t7 -oformat ascii
 # usage
 th waifu2x.lua -model_dir models/my_model -m noise -noise_level 2 -i images/miku_noisy.png -o output.png
 ```
@@ -225,9 +227,17 @@ You can check the performance of model with `models/my_model/noise2_best.png`.
 ### Train a 2x UpScaling model
 
 ```
-th train.lua -model_dir models/my_model -method scale -scale 2 -test images/miku_small.png
-th cleanup_model.lua -model models/my_model/scale2.0x_model.t7 -oformat ascii
+th train.lua -model upconv_7 -model_dir models/my_model -method scale -scale 2 -test images/miku_small.png
 # usage
 th waifu2x.lua -model_dir models/my_model -m scale -scale 2 -i images/miku_small.png -o output.png
 ```
 You can check the performance of model with `models/my_model/scale2.0x_best.png`.
+
+### Train a 2x and noise reduction fusion model
+
+```
+th train.lua -model upconv_7 -model_dir models/my_model -method noise_scale -scale 2 -noise_level 1 -test images/miku_small.png
+# usage
+th waifu2x.lua -model_dir models/my_model -m noise_scale -scale 2 -noise_level 1 -i images/miku_small.png -o output.png
+```
+You can check the performance of model with `models/my_model/noise1_scale2.0x_best.png`.
