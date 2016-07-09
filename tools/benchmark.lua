@@ -371,6 +371,7 @@ function load_noise_scale_model(model_dir, noise_level, force_cudnn)
       local scale
       s1, scale = pcall(w2nn.load_model, f, force_cudnn)
       if not s1 then
+	 error(model_dir .. ": load error")
 	 return nil
       end
       model.scale_model = scale
