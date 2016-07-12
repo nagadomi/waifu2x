@@ -248,7 +248,7 @@ function srcnn.upconv_7(backend, ch)
    model:add(nn.LeakyReLU(0.1, true))
    model:add(SpatialConvolution(backend, 128, 256, 3, 3, 1, 1, 0, 0))
    model:add(nn.LeakyReLU(0.1, true))
-   model:add(SpatialFullConvolution(backend, 256, ch, 4, 4, 2, 2, 3, 3))
+   model:add(SpatialFullConvolution(backend, 256, ch, 4, 4, 2, 2, 3, 3):noBias())
    model:add(nn.View(-1):setNumInputDims(3))
 
    model.w2nn_arch_name = "upconv_7"

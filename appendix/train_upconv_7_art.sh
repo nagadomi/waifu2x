@@ -4,7 +4,7 @@
 th convert_data.lua -max_training_image_size 1600
 
 # scale
-th train.lua -save_history 1 -inner_epoch 1 -epoch 100 -scale 2 -model upconv_7 -method scale -model_dir models/test/upconv_7_rev3 -downsampling_filters "Box,Sinc" -test query/scale_test.png -backend cudnn -thread 4 
+th train.lua -save_history 1 -scale 2 -model upconv_7 -method scale -model_dir models/test/upconv_7_rev5 -downsampling_filters "Box,Sinc" -test query/pixel-art-small.png -backend cudnn -thread 4 -oracle_rate 0.05
 
 # noise_scale
 th train.lua -save_history 1 -model upconv_7 -method noise_scale -noise_level 0 -model_dir models/test/yuv420_rev2 -downsampling_filters "Box,Sinc" -test query/noise_test.jpg -backend cudnn -thread 4  -resume models/test/upconv_7_rev3/scale2.0x_model.t7 -style art 
