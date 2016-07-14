@@ -79,7 +79,7 @@ local CURL_OPTIONS = {
 local CURL_MAX_SIZE = 5 * 1024 * 1024
 
 local function valid_size(x, scale, tta_level)
-   if scale == 0 then
+   if scale <= 0 then
       local limit = math.pow(math.floor(math.pow(MAX_NOISE_IMAGE / tta_level, 0.5)), 2)
       return x:size(2) * x:size(3) <= limit
    else
@@ -89,7 +89,7 @@ local function valid_size(x, scale, tta_level)
 end
 local function auto_tta_level(x, scale)
    local limit2, limit4, limit8
-   if scale == 0 then
+   if scale <= 0 then
       limit2 = math.pow(math.floor(math.pow(MAX_NOISE_IMAGE / 2, 0.5)), 2)
       limit4 = math.pow(math.floor(math.pow(MAX_NOISE_IMAGE / 4, 0.5)), 2)
       limit8 = math.pow(math.floor(math.pow(MAX_NOISE_IMAGE / 8, 0.5)), 2)
