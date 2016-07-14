@@ -86,7 +86,7 @@ local function convert_image(opt)
       local model_path = path.join(opt.model_dir, ("noise%d_scale%.1fx_model.t7"):format(opt.noise_level, opt.scale))
       if path.exists(model_path) then
 	 local scale_model_path = path.join(opt.model_dir, ("scale%.1fx_model.t7"):format(opt.scale))
-	 local t, scale_model = pcall(load_model, scale_model_path, opt.force_cudnn)
+	 local t, scale_model = pcall(w2nn.load_model, scale_model_path, opt.force_cudnn)
 	 local model = w2nn.load_model(model_path, opt.force_cudnn)
 	 if not t then
 	    scale_model = model
@@ -165,7 +165,7 @@ local function convert_frames(opt)
       if path.exists(model_path) then
 	 noise_scale_model[opt.noise_level] = w2nn.load_model(model_path, opt.force_cudnn)
 	 model_path = path.join(opt.model_dir, ("scale%.1fx_model.t7"):format(opt.scale))
-	 t, scale_model = pcall(load_model, model_path, opt.force_cudnn)
+	 t, scale_model = pcall(w2nn.load_model, model_path, opt.force_cudnn)
 	 if not t then
 	    scale_model = noise_scale_model[opt.noise_level]
 	 end
