@@ -33,7 +33,7 @@ function pairwise_transform.user(x, y, size, offset, n, options)
    local scale_y = y:size(2) / x:size(2)
    assert(x:size(3) == y:size(3) / scale_y)
 
-   x, y = crop_if_large(x, y, scale_y, options.max_size, options.scale, 2)
+   x, y = crop_if_large(x, y, scale_y, options.max_size, scale_y)
    assert(x:size(3) == y:size(3) / scale_y and x:size(2) == y:size(2) / scale_y)
    local batch = {}
    local lowres_y = gm.Image(y, "RGB", "DHW"):
