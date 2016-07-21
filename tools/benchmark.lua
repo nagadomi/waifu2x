@@ -183,7 +183,7 @@ local function benchmark(opt, x, input_func, model1, model2)
 				      x, block_size, batch_size)
       end
    end
-   
+
    for i = 1, #x do
       local ground_truth = x[i].image
       local basename = x[i].basename
@@ -191,6 +191,12 @@ local function benchmark(opt, x, input_func, model1, model2)
 
       input = input_func(ground_truth, opt)
       if opt.method == "scale" then
+	 if opt.force_cudnn and i == 1 then -- run cuDNN benchmark first
+	    model1_output = scale_f(model1, 2.0, input, opt.crop_size, opt.batch_size)
+	    if model2 then
+	       model2_output = scale_f(model2, 2.0, input, opt.crop_size, opt.batch_size)
+	    end
+	 end
 	 t = sys.clock()
 	 model1_output = scale_f(model1, 2.0, input, opt.crop_size, opt.batch_size)
 	 model1_time = model1_time + (sys.clock() - t)
@@ -201,6 +207,12 @@ local function benchmark(opt, x, input_func, model1, model2)
 	 end
 	 baseline_output = baseline_scale(input, opt.baseline_filter)
       elseif opt.method == "noise" then
+	 if opt.force_cudnn and i == 1 then -- run cuDNN benchmark first
+	    model1_output = image_f(model1, input, opt.crop_size, opt.batch_size)
+	    if model2 then
+	       model2_output = image_f(model2, input, opt.crop_size, opt.batch_size)
+	    end
+	 end
 	 t = sys.clock()
 	 model1_output = image_f(model1, input, opt.crop_size, opt.batch_size)
 	 model1_time = model1_time + (sys.clock() - t)
@@ -211,6 +223,35 @@ local function benchmark(opt, x, input_func, model1, model2)
 	 end
 	 baseline_output = input
       elseif opt.method == "noise_scale" then
+	 if opt.force_cudnn and i == 1 then -- run cuDNN benchmark first
+	    if model1.noise_scale_model then
+	       model1_output = scale_f(model1.noise_scale_model, 2.0,
+				       input, opt.crop_size, opt.batch_size)
+	    else
+	       if model1.noise_model then
+	       model1_output = image_f(model1.noise_model, input, opt.crop_size, opt.batch_size)
+	       else
+		  model1_output = input
+	       end
+	       model1_output = scale_f(model1.scale_model, 2.0, model1_output,
+				       opt.crop_size, opt.batch_size)
+	    end
+	    if model2 then
+	       if model2.noise_scale_model then
+		  model2_output = scale_f(model2.noise_scale_model, 2.0,
+					  input, opt.crop_size, opt.batch_size)
+	       else
+		  if model2.noise_model then
+		     model2_output = image_f(model2.noise_model, input,
+					     opt.crop_size, opt.batch_size)
+		  else
+		     model2_output = input
+		  end
+		  model2_output = scale_f(model2.scale_model, 2.0, model2_output,
+				       opt.crop_size, opt.batch_size)
+	       end
+	    end
+	 end
 	 t = sys.clock()
 	 if model1.noise_scale_model then
 	    model1_output = scale_f(model1.noise_scale_model, 2.0,
