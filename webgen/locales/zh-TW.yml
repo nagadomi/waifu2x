@@ -1,0 +1,28 @@
+---
+description: 使用深度卷積神經網路的二次元圖片超解析系統。同時支援照片處理。
+show_demonstration: 顯示執行結果範例
+go_to_github: 專案網頁 (GitHub)
+image_choosing: 選擇圖片
+type_url: 輸入圖片網址
+choose_file: 選擇檔案
+file_limits: "限制：檔案大小：5MB，去除雜點：3000x3000px，放大（前）：1500x1500px。"
+style: 樣式
+artwork: 插畫
+photo: 照片
+noise_reduction: 去除雜點
+expect_jpeg: 預期產生 JPEG 雜點時
+nr_none: 無
+nr_low: 低
+nr_medium: 中
+nr_high: 高
+nr_highest: 最高
+nr_hint: "去除雜點時可能會犧牲圖片細節。請在確定有 JPEG 雜點時再使用。"
+upscaling: 放大
+up_none: 無
+tta: TTA
+tta_hint: "TTA 能產生穩定的品質。但圖片大小有限制。"
+tta_rule: "規則"
+button_convert: 執行
+button_download: 儲存執行結果
+hints:
+  - "使用 Firefox 時無法透過右鍵選單儲存圖片，請改用 CTRL+S、或是按 ALT 鍵後點選檔案 - 另存新檔來儲存圖片。"
