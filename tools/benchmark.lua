@@ -320,9 +320,13 @@ local function benchmark(opt, x, model1, model2)
 		  model2_output = image_f(model2, input, opt.crop_size, opt.batch_size)
 	       end
 	    end
+	    t = sys.clock()
 	    model1_output = image_f(model1, input, opt.crop_size, opt.batch_size)
+	    model1_time = model1_time + (sys.clock() - t)
 	    if model2 then
+	       t = sys.clock()
 	       model2_output = image_f(model2, input, opt.crop_size, opt.batch_size)
+	       model2_time = model2_time + (sys.clock() - t)
 	    end
 	 end
       end
