@@ -1,5 +1,7 @@
 # models/vgg_7/art vs models/upconv_7/art
 
+Warning: This benchmark results is outdated. I will update soon.
+
 ## dataset
 
 noise free 84 anime style arts. PNG format only.
