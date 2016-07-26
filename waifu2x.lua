@@ -39,6 +39,9 @@ end
 
 local function convert_image(opt)
    local x, meta = image_loader.load_float(opt.i)
+   if not x then
+      error(string.format("failed to load image: %s", opt.i))
+   end
    local alpha = meta.alpha
    local new_x = nil
    local scale_f, image_f
@@ -188,41 +191,46 @@ local function convert_frames(opt)
       table.insert(lines, line)
    end
    fp:close()
+   
    for i = 1, #lines do
       local output = format_output(opt, lines[i], i)
       if opt.resume == 0 or path.exists(output) == false then
 	 local x, meta = image_loader.load_float(lines[i])
-	 local alpha = meta.alpha
-	 local new_x = nil
-	 if opt.m == "noise" then
-	    new_x = image_f(noise_model[opt.noise_level], x, opt.crop_size, opt.batch_size)
-	    new_x = alpha_util.composite(new_x, alpha)
-	 elseif opt.m == "scale" then
-	    x = alpha_util.make_border(x, alpha, reconstruct.offset_size(scale_model))
-	    new_x = scale_f(scale_model, opt.scale, x, opt.crop_size, opt.batch_size)
-	    new_x = alpha_util.composite(new_x, alpha, scale_model)
-	 elseif opt.m == "noise_scale" then
-	    x = alpha_util.make_border(x, alpha, reconstruct.offset_size(scale_model))
-	    if noise_scale_model[opt.noise_level] then
-	       new_x = scale_f(noise_scale_model[opt.noise_level], opt.scale, x, opt.crop_size, opt.batch_size)
-	    else
-	       x = image_f(noise_model[opt.noise_level], x, opt.crop_size, opt.batch_size)
-	       new_x = scale_f(scale_model, opt.scale, x, opt.crop_size, opt.batch_size)
-	    end
-	    new_x = alpha_util.composite(new_x, alpha, scale_model)
-	 elseif opt.m == "user" then
-	    x = alpha_util.make_border(x, alpha, reconstruct.offset_size(user_model))
-	    if opt.scale == 1 then
-	       new_x = image_f(user_model, x, opt.crop_size, opt.batch_size)
-	    else
-	       new_x = scale_f(user_model, opt.scale, x, opt.crop_size, opt.batch_size)
-	    end
-	    new_x = alpha_util.composite(new_x, alpha)
+	 if not x then
+	    io.stderr:write(string.format("failed to load image: %s\n", lines[i]))
 	 else
-	    error("undefined method:" .. opt.method)
+	    local alpha = meta.alpha
+	    local new_x = nil
+	    if opt.m == "noise" then
+	       new_x = image_f(noise_model[opt.noise_level], x, opt.crop_size, opt.batch_size)
+	       new_x = alpha_util.composite(new_x, alpha)
+	    elseif opt.m == "scale" then
+	       x = alpha_util.make_border(x, alpha, reconstruct.offset_size(scale_model))
+	       new_x = scale_f(scale_model, opt.scale, x, opt.crop_size, opt.batch_size)
+	       new_x = alpha_util.composite(new_x, alpha, scale_model)
+	    elseif opt.m == "noise_scale" then
+	       x = alpha_util.make_border(x, alpha, reconstruct.offset_size(scale_model))
+	       if noise_scale_model[opt.noise_level] then
+		  new_x = scale_f(noise_scale_model[opt.noise_level], opt.scale, x, opt.crop_size, opt.batch_size)
+	       else
+		  x = image_f(noise_model[opt.noise_level], x, opt.crop_size, opt.batch_size)
+		  new_x = scale_f(scale_model, opt.scale, x, opt.crop_size, opt.batch_size)
+	       end
+	       new_x = alpha_util.composite(new_x, alpha, scale_model)
+	    elseif opt.m == "user" then
+	       x = alpha_util.make_border(x, alpha, reconstruct.offset_size(user_model))
+	       if opt.scale == 1 then
+		  new_x = image_f(user_model, x, opt.crop_size, opt.batch_size)
+	       else
+		  new_x = scale_f(user_model, opt.scale, x, opt.crop_size, opt.batch_size)
+	       end
+	       new_x = alpha_util.composite(new_x, alpha)
+	    else
+	       error("undefined method:" .. opt.method)
+	    end
+	    image_loader.save_png(output, new_x, 
+				  tablex.update({depth = opt.depth, inplace = true}, meta))
 	 end
-	 image_loader.save_png(output, new_x, 
-			       tablex.update({depth = opt.depth, inplace = true}, meta))
 	 if not opt.q then
 	    xlua.progress(i, #lines)
 	 end
