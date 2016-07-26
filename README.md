@@ -156,7 +156,7 @@ find /path/to/imagedir -name "*.png" -o -name "*.jpg" > image_list.txt
 th waifu2x.lua -m scale -l ./image_list.txt -o /path/to/outputdir/prefix_%d.png
 ```
 
-The output format supports `%s` and `%d`(e.g. %06d). `%s` will be replaced a basename of source filename. `%d` will be replaced a sequence number.
+The output format supports `%s` and `%d`(e.g. %06d). `%s` will be replaced the basename of the source filename. `%d` will be replaced a sequence number.
 For example, when input filename is `piyo.png`, `%s_%03d.png` will be replaced `piyo_001.png`.
 
 See also `th waifu2x.lua -h`.
