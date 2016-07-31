@@ -20,7 +20,7 @@ cmd:option("-model2_dir", "", 'model2 directory (optional)')
 cmd:option("-method", "scale", '(scale|noise|noise_scale|user)')
 cmd:option("-filter", "Catrom", "downscaling filter (Box|Lanczos|Catrom(Bicubic))")
 cmd:option("-resize_blur", 1.0, 'blur parameter for resize')
-cmd:option("-color", "y", '(rgb|y)')
+cmd:option("-color", "y", '(rgb|y|r|g|b)')
 cmd:option("-noise_level", 1, 'model noise level')
 cmd:option("-jpeg_quality", 75, 'jpeg quality')
 cmd:option("-jpeg_times", 1, 'jpeg compression times')
@@ -90,6 +90,11 @@ local function RGBMSE(x1, x2)
    x2 = iproc.float2byte(x2):float()
    return (x1 - x2):pow(2):mean()
 end
+local function CHMSE(x1, x2, ch)
+   x1 = iproc.float2byte(x1):float()
+   x2 = iproc.float2byte(x2):float()
+   return (x1[ch] - x2[ch]):pow(2):mean()
+end
 local function YMSE(x1, x2)
    if opt.range_bug == 1 then
       local x1_2 = rgb2y_matlab(x1)
@@ -104,6 +109,12 @@ end
 local function MSE(x1, x2, color)
    if color == "y" then
       return YMSE(x1, x2)
+   elseif color == "r" then
+      return CHMSE(x1, x2, 1)
+   elseif color == "g" then
+      return CHMSE(x1, x2, 2)
+   elseif color == "b" then
+      return CHMSE(x1, x2, 3)
    else
       return RGBMSE(x1, x2)
    end
