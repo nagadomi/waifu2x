@@ -21,7 +21,7 @@ rebuild() {
     fi
 
     if [ -f models/${1}/noise0_scale2.0x_model.t7 ] && [ ! -h models/${1}/noise0_scale2.0x_model.t7 ]; then
-	th tools/rebuild_model.lua -i models/${1}/noise1_scale2.0x_model.t7 -o models/${1}/noise1_scale2.0x_model.t7  -backend cunn -model $2
+	th tools/rebuild_model.lua -i models/${1}/noise0_scale2.0x_model.t7 -o models/${1}/noise0_scale2.0x_model.t7  -backend cunn -model $2
     fi
     if [ -f models/${1}/noise1_scale2.0x_model.t7 ] && [ ! -h models/${1}/noise1_scale2.0x_model.t7 ]; then
 	th tools/rebuild_model.lua -i models/${1}/noise1_scale2.0x_model.t7 -o models/${1}/noise1_scale2.0x_model.t7  -backend cunn -model $2
