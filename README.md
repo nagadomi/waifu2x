@@ -21,12 +21,12 @@ waifu2x is inspired by SRCNN [1]. 2D character picture (HatsuneMiku) is licensed
 ## Public AMI
 ```
 Region: us-east-1 (N.Virginia)
-AMI ID: ami-568f823c
-AMI NAME: waifu2x-server
+AMI ID: ami-b9be23ae
+AMI NAME: waifu2x-server 20160807
 Instance Type: g2.2xlarge
 OS: Ubuntu 14.04
 User: ubuntu
-Created at: 2016-03-22
+Created at: 2016-08-07
 ```
 See ~/README.md
 
