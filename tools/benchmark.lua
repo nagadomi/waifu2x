@@ -482,8 +482,6 @@ local function load_user_data(y_dir, y_file, x_dir, x_file)
    local x_files
 
    if y_file:len() > 0 then
-      print(y_file)
-
       y_files = utils.split(file.read(y_file), "\n")
    else
       y_files = dir.getfiles(y_dir, "*.*")
