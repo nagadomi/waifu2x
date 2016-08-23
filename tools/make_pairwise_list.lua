@@ -87,7 +87,6 @@ cmd:option("-x_dir6", "", 'x for random choice')
 cmd:option("-x_dir7", "", 'x for random choice')
 cmd:option("-x_dir8", "", 'x for random choice')
 cmd:option("-x_dir9", "", 'x for random choice')
-cmd:option("-x_dir9", "", 'x for random choice')
 
 torch.manualSeed(71)
 
