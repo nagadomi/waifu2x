@@ -18,7 +18,7 @@ cmd:option("-dir", "./data/test", 'test image directory')
 cmd:option("-file", "", 'test image file list')
 cmd:option("-model1_dir", "./models/anime_style_art_rgb", 'model1 directory')
 cmd:option("-model2_dir", "", 'model2 directory (optional)')
-cmd:option("-method", "scale", '(scale|noise|noise_scale|user)')
+cmd:option("-method", "scale", '(scale|noise|noise_scale|user|diff)')
 cmd:option("-filter", "Catrom", "downscaling filter (Box|Lanczos|Catrom(Bicubic))")
 cmd:option("-resize_blur", 1.0, 'blur parameter for resize')
 cmd:option("-color", "y", '(rgb|y|r|g|b)')
@@ -343,6 +343,10 @@ local function benchmark(opt, x, model1, model2)
 	       model2_time = model2_time + (sys.clock() - t)
 	    end
 	 end
+      elseif opt.method == "diff" then
+	 input = x[i].x
+	 ground_truth = x[i].y
+	 model1_output = input
       end
       mse = MSE(ground_truth, model1_output, opt.color)
       model1_mse = model1_mse + mse
@@ -618,4 +622,7 @@ elseif opt.method == "user" then
    end
    local test = load_user_data(opt.y_dir, opt.y_file, opt.x_dir, opt.x_file)
    benchmark(opt, test, model1, model2)
+elseif opt.method == "diff" then
+   local test = load_user_data(opt.y_dir, opt.y_file, opt.x_dir, opt.x_file)
+   benchmark(opt, test, nil, nil)
 end
