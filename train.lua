@@ -398,7 +398,7 @@ local function train()
 	 if score.MSE < best_score then
 	    local test_image = image_loader.load_float(settings.test) -- reload
 	    best_score = score.MSE
-	    print("* Best model is updated")
+	    print("* model has updated")
 	    if settings.save_history then
 	       torch.save(settings.model_file_best, model:clearState(), "ascii")
 	       torch.save(string.format(settings.model_file, epoch, i), model:clearState(), "ascii")
