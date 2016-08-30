@@ -77,6 +77,9 @@ to_bool(opt, "show_progress")
 if opt.thread > 0 then
    torch.setnumthreads(tonumber(opt.thread))
 end
+if opt.output_dir:len() > 0 then
+   dir.makepath(opt.output_dir)
+end
 
 local function rgb2y_matlab(x)
    local y = torch.Tensor(1, x:size(2), x:size(3)):zero()

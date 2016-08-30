@@ -301,6 +301,8 @@ local function train()
    else
       model = srcnn.create(settings.model, settings.backend, settings.color)
    end
+   dir.makepath(settings.model_dir)
+
    local offset = reconstruct.offset_size(model)
    local pairwise_func = function(x, is_validation, n)
       return transformer(model, x, is_validation, n, offset)
