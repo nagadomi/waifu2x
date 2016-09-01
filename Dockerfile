@@ -19,6 +19,9 @@ RUN \
   PREFIX=$HOME/torch/install luarocks install turbo && \
   luarocks install cudnn
 
+# suppress message `tput: No value for $TERM and no -T specified`
+ENV TERM xterm
+
 COPY . /root/waifu2x
 
 WORKDIR /root/waifu2x
