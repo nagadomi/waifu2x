@@ -9,7 +9,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends --force-yes \
   git && \
   rm -rf /var/lib/apt/lists/*
 
-# https://github.com/nagadomi/waifu2x
 RUN \
   luarocks install graphicsmagick && \
   luarocks install lua-csnappy && \
