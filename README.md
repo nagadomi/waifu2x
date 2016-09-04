@@ -251,3 +251,20 @@ th train.lua -model upconv_7 -model_dir models/my_model -method noise_scale -sca
 th waifu2x.lua -model_dir models/my_model -m noise_scale -scale 2 -noise_level 1 -i images/miku_small.png -o output.png
 ```
 You can check the performance of model with `models/my_model/noise1_scale2.0x_best.png`.
+
+## Docker
+
+Requires `nvidia-docker`.
+
+```
+docker build -t waifu2x .
+nvidia-docker run -p 8812:8812 waifu2x th web.lua
+nvidia-docker run -v `pwd`/images:/images waifu2x th waifu2x.lua -force_cudnn 1 -m scale -scale 2 -i /images/miku_small.png -o /images/output.png
+```
+
+Note that running waifu2x in without [JIT caching](https://devblogs.nvidia.com/parallelforall/cuda-pro-tip-understand-fat-binaries-jit-caching/) is very slow, which is what would happen if you use docker.
+For a workaround, you can mount a host volume to the `CUDA_CACHE_PATH`, for instance,
+
+```
+nvidia-docker run -v $PWD/ComputeCache:/root/.nv/ComputeCache waifu2x th waifu2x.lua --help
+```
