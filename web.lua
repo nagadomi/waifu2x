@@ -29,6 +29,11 @@ cmd:option("-crop_size", 128, 'patch size per process')
 cmd:option("-batch_size", 1, 'batch size')
 cmd:option("-thread", -1, 'number of CPU threads')
 cmd:option("-force_cudnn", 0, 'use cuDNN backend (0|1)')
+cmd:option("-max_pixels", 3000 * 3000, 'maximum number of output image pixels (e.g. 3000x3000=9000000)')
+cmd:option("-curl_request_timeout", 60, "request_timeout for curl")
+cmd:option("-curl_connect_timeout", 60, "connect_timeout for curl")
+cmd:option("-curl_max_redirects", 2, "max_redirects for curl")
+cmd:option("-max_body_size", 5 * 1024 * 1024, "maximum allowed size for uploaded files")
 
 local opt = cmd:parse(arg)
 cutorch.setDevice(opt.gpu)
@@ -68,15 +73,15 @@ local photo_model = {
 collectgarbage()
 local CLEANUP_MODEL = false -- if you are using the low memory GPU, you could use this flag.
 local CACHE_DIR = path.join(ROOT, "cache")
-local MAX_NOISE_IMAGE = 3000 * 3000
-local MAX_SCALE_IMAGE = 1500 * 1500
+local MAX_NOISE_IMAGE = opt.max_pixels
+local MAX_SCALE_IMAGE = (math.sqrt(opt.max_pixels) / 2)^2
 local CURL_OPTIONS = {
-   request_timeout = 60,
-   connect_timeout = 60,
+   request_timeout = opt.curl_request_timeout,
+   connect_timeout = opt.curl_connect_timeout,
    allow_redirects = true,
-   max_redirects = 2
+   max_redirects = opt.curl_max_redirects
 }
-local CURL_MAX_SIZE = 5 * 1024 * 1024
+local CURL_MAX_SIZE = opt.max_body_size
 
 local function valid_size(x, scale, tta_level)
    if scale <= 0 then
