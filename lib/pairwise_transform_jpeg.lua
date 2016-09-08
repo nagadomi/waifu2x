@@ -30,10 +30,7 @@ function pairwise_transform.jpeg_(src, quality, size, offset, n, options)
    assert(x:size(1) == y:size(1) and x:size(2) == y:size(2) and x:size(3) == y:size(3))
    
    local batch = {}
-   local lowres_y = gm.Image(y, "RGB", "DHW"):
-      size(y:size(3) * 0.5, y:size(2) * 0.5, "Box"):
-      size(y:size(3), y:size(2), "Box"):
-      toTensor(t, "RGB", "DHW")
+   local lowres_y = pairwise_utils.low_resolution(y)
 
    local xs, ys, ls = pairwise_utils.flip_augmentation(x, y, lowres_y)
    for i = 1, n do

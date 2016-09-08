@@ -36,10 +36,7 @@ function pairwise_transform.user(x, y, size, offset, n, options)
    x, y = crop_if_large(x, y, scale_y, options.max_size, scale_y)
    assert(x:size(3) == y:size(3) / scale_y and x:size(2) == y:size(2) / scale_y)
    local batch = {}
-   local lowres_y = gm.Image(y, "RGB", "DHW"):
-      size(y:size(3) * 0.5, y:size(2) * 0.5, "Box"):
-      size(y:size(3), y:size(2), "Box"):
-      toTensor(t, "RGB", "DHW")
+   local lowres_y = pairwise_utils.low_resolution(y)
    local xs, ys, ls = pairwise_utils.flip_augmentation(x, y, lowres_y)
    for i = 1, n do
       local t = (i % #xs) + 1
@@ -55,6 +52,7 @@ function pairwise_transform.user(x, y, size, offset, n, options)
       end
       table.insert(batch, {xc, iproc.crop(yc, offset, offset, size - offset, size - offset)})
    end
+
    return batch
 end
 return pairwise_transform
