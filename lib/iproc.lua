@@ -1,5 +1,6 @@
-local gm = require 'graphicsmagick'
-local image = require 'image'
+local gm = {}
+gm.Image = require 'graphicsmagick.Image'
+local image = nil
 
 local iproc = {}
 local clip_eps8 = (1.0 / 255.0) * 0.5 - (1.0e-7 * (1.0 / 255.0) * 0.5)
@@ -80,6 +81,7 @@ function iproc.scale_with_gamma22(src, width, height, filter, blur)
    return dest
 end
 function iproc.padding(img, w1, w2, h1, h2)
+   image = image or require 'image'
    local dst_height = img:size(2) + h1 + h2
    local dst_width = img:size(3) + w1 + w2
    local flow = torch.Tensor(2, dst_height, dst_width)
@@ -90,6 +92,7 @@ function iproc.padding(img, w1, w2, h1, h2)
    return image.warp(img, flow, "simple", false, "clamp")
 end
 function iproc.zero_padding(img, w1, w2, h1, h2)
+   image = image or require 'image'
    local dst_height = img:size(2) + h1 + h2
    local dst_width = img:size(3) + w1 + w2
    local flow = torch.Tensor(2, dst_height, dst_width)
@@ -126,6 +129,131 @@ function iproc.white_noise(src, std, rgb_weights, gamma)
    end
    return dest
 end
+function iproc.hflip(src)
+   local t
+   if src:type() == "torch.ByteTensor" then
+      t = "byte"
+   else
+      t = "float"
+   end
+   if src:size(1) == 3 then
+      color = "RGB"
+   else
+      color = "I"
+   end
+   local im = gm.Image(src, color, "DHW")
+   return im:flop():toTensor(t, color, "DHW")
+end
+function iproc.vflip(src)
+   local t
+   if src:type() == "torch.ByteTensor" then
+      t = "byte"
+   else
+      t = "float"
+   end
+   if src:size(1) == 3 then
+      color = "RGB"
+   else
+      color = "I"
+   end
+   local im = gm.Image(src, color, "DHW")
+   return im:flip():toTensor(t, color, "DHW")
+end
+
+-- from torch/image
+----------------------------------------------------------------------
+-- image.rgb2yuv(image)
+-- converts a RGB image to YUV
+--
+function iproc.rgb2yuv(...)
+   -- arg check
+   local output,input
+   local args = {...}
+   if select('#',...) == 2 then
+      output = args[1]
+      input = args[2]
+   elseif select('#',...) == 1 then
+      input = args[1]
+   else
+      print(dok.usage('image.rgb2yuv',
+                      'transforms an image from RGB to YUV', nil,
+                      {type='torch.Tensor', help='input image', req=true},
+                      '',
+                      {type='torch.Tensor', help='output image', req=true},
+                      {type='torch.Tensor', help='input image', req=true}
+                      ))
+      dok.error('missing input', 'image.rgb2yuv')
+   end
+
+   -- resize
+   output = output or input.new()
+   output:resizeAs(input)
+
+   -- input chanels
+   local inputRed = input[1]
+   local inputGreen = input[2]
+   local inputBlue = input[3]
+
+   -- output chanels
+   local outputY = output[1]
+   local outputU = output[2]
+   local outputV = output[3]
+
+   -- convert
+   outputY:zero():add(0.299, inputRed):add(0.587, inputGreen):add(0.114, inputBlue)
+   outputU:zero():add(-0.14713, inputRed):add(-0.28886, inputGreen):add(0.436, inputBlue)
+   outputV:zero():add(0.615, inputRed):add(-0.51499, inputGreen):add(-0.10001, inputBlue)
+
+   -- return YUV image
+   return output
+end
+
+----------------------------------------------------------------------
+-- image.yuv2rgb(image)
+-- converts a YUV image to RGB
+--
+function iproc.yuv2rgb(...)
+   -- arg check
+   local output,input
+   local args = {...}
+   if select('#',...) == 2 then
+      output = args[1]
+      input = args[2]
+   elseif select('#',...) == 1 then
+      input = args[1]
+   else
+      print(dok.usage('image.yuv2rgb',
+                      'transforms an image from YUV to RGB', nil,
+                      {type='torch.Tensor', help='input image', req=true},
+                      '',
+                      {type='torch.Tensor', help='output image', req=true},
+                      {type='torch.Tensor', help='input image', req=true}
+                      ))
+      dok.error('missing input', 'image.yuv2rgb')
+   end
+
+   -- resize
+   output = output or input.new()
+   output:resizeAs(input)
+
+   -- input chanels
+   local inputY = input[1]
+   local inputU = input[2]
+   local inputV = input[3]
+
+   -- output chanels
+   local outputRed = output[1]
+   local outputGreen = output[2]
+   local outputBlue = output[3]
+
+   -- convert
+   outputRed:copy(inputY):add(1.13983, inputV)
+   outputGreen:copy(inputY):add(-0.39465, inputU):add(-0.58060, inputV)
+   outputBlue:copy(inputY):add(2.03211, inputU)
+
+   -- return RGB image
+   return output
+end
 
 local function test_conversion()
    local a = torch.linspace(0, 255, 256):float():div(255.0)
@@ -144,6 +272,24 @@ local function test_conversion()
    print(b)
    assert(b:float():sum() == 254.0 * 3)
 end
+local function test_flip()
+   require 'sys'
+   require 'torch'
+   torch.setdefaulttensortype("torch.FloatTensor")
+   image = require 'image'
+   local src = image.lena()
+   local src_byte = src:clone():mul(255):byte()
+
+   print(src:size())
+   print((image.hflip(src) - iproc.hflip(src)):sum())
+   print((image.hflip(src_byte) - iproc.hflip(src_byte)):sum())
+   print((image.vflip(src) - iproc.vflip(src)):sum())
+   print((image.vflip(src_byte) - iproc.vflip(src_byte)):sum())
+end
+
 --test_conversion()
+--test_flip()
 
 return iproc
+
+

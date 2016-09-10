@@ -1,7 +1,7 @@
-require 'image'
 require 'cunn'
 local iproc = require 'iproc'
-local gm = require 'graphicsmagick'
+local gm = {}
+gm.Image = require 'graphicsmagick.Image'
 local data_augmentation = require 'data_augmentation'
 local pairwise_transform_utils = {}
 
@@ -125,13 +125,13 @@ function pairwise_transform_utils.flip_augmentation(x, y, lowres_y, x_noise)
 	 yi = y:transpose(2, 3):contiguous()
 	 ri = lowres_y:transpose(2, 3):contiguous()
       end
-      local xv = image.vflip(xi)
+      local xv = iproc.vflip(xi)
       local nv
       if x_noise then
-	 nv = image.vflip(ni)
+	 nv = iproc.vflip(ni)
       end
-      local yv = image.vflip(yi)
-      local rv = image.vflip(ri)
+      local yv = iproc.vflip(yi)
+      local rv = iproc.vflip(ri)
       table.insert(xs, xi)
       if ni then
 	 table.insert(ns, ni)
@@ -146,19 +146,19 @@ function pairwise_transform_utils.flip_augmentation(x, y, lowres_y, x_noise)
       table.insert(ys, yv)
       table.insert(ls, rv)
 
-      table.insert(xs, image.hflip(xi))
+      table.insert(xs, iproc.hflip(xi))
       if ni then
-	 table.insert(ns, image.hflip(ni))
+	 table.insert(ns, iproc.hflip(ni))
       end
-      table.insert(ys, image.hflip(yi))
-      table.insert(ls, image.hflip(ri))
+      table.insert(ys, iproc.hflip(yi))
+      table.insert(ls, iproc.hflip(ri))
 
-      table.insert(xs, image.hflip(xv))
+      table.insert(xs, iproc.hflip(xv))
       if nv then
-	 table.insert(ns, image.hflip(nv))
+	 table.insert(ns, iproc.hflip(nv))
       end
-      table.insert(ys, image.hflip(yv))
-      table.insert(ls, image.hflip(rv))
+      table.insert(ys, iproc.hflip(yv))
+      table.insert(ls, iproc.hflip(rv))
    end
    return xs, ys, ls, ns
 end
@@ -171,6 +171,9 @@ end
 local g_lowres_model = nil
 local g_lowres_gpu = nil
 function pairwise_transform_utils.low_resolution(src)
+--[[
+   -- I am not sure that the following process is thraed-safe
+
    g_lowres_model = g_lowres_model or lowres_model()
    if g_lowres_gpu == nil then
       --benchmark
@@ -203,6 +206,11 @@ function pairwise_transform_utils.low_resolution(src)
 	 size(src:size(3), src:size(2), "Box"):
 	    toTensor("byte", "RGB", "DHW")
    end
+--]]
+   return gm.Image(src, "RGB", "DHW"):
+      size(src:size(3) * 0.5, src:size(2) * 0.5, "Box"):
+      size(src:size(3), src:size(2), "Box"):
+      toTensor("byte", "RGB", "DHW")
 end
 
 return pairwise_transform_utils

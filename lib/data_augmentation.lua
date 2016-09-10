@@ -1,7 +1,6 @@
-require 'image'
 local iproc = require 'iproc'
-local gm = require 'graphicsmagick'
-
+local gm = {}
+gm.Image = require 'graphicsmagick.Image'
 local data_augmentation = {}
 
 local function pcacov(x)
@@ -107,11 +106,11 @@ function data_augmentation.flip(src)
       src = src:transpose(2, 3):contiguous()
    end
    if flip == 1 then
-      dest = image.hflip(src)
+      dest = iproc.hflip(src)
    elseif flip == 2 then
-      dest = image.vflip(src)
+      dest = iproc.vflip(src)
    elseif flip == 3 then
-      dest = image.hflip(image.vflip(src))
+      dest = iproc.hflip(iproc.vflip(src))
    elseif flip == 4 then
       dest = src
    end
