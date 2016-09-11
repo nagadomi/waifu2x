@@ -374,7 +374,8 @@ local function train()
    local adam_config = {
       xLearningRate = settings.learning_rate,
       xBatchSize = settings.batch_size,
-      xLearningRateDecay = settings.learning_rate_decay
+      xLearningRateDecay = settings.learning_rate_decay,
+      xInstanceLoss = (settings.oracle_rate > 0)
    }
    local ch = nil
    if settings.color == "y" then
