@@ -30,5 +30,6 @@ else
    require 'LeakyReLU'
    require 'ClippedWeightedHuberCriterion'
    require 'ClippedMSECriterion'
+   require 'InplaceClip01'
    return w2nn
 end

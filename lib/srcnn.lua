@@ -153,6 +153,7 @@ function srcnn.vgg_7(backend, ch)
    model:add(SpatialConvolution(backend, 128, 128, 3, 3, 1, 1, 0, 0))
    model:add(nn.LeakyReLU(0.1, true))
    model:add(SpatialConvolution(backend, 128, ch, 3, 3, 1, 1, 0, 0))
+   model:add(w2nn.InplaceClip01())
    model:add(nn.View(-1):setNumInputDims(3))
 
    model.w2nn_arch_name = "vgg_7"
@@ -190,6 +191,7 @@ function srcnn.vgg_12(backend, ch)
    model:add(SpatialConvolution(backend, 128, 128, 3, 3, 1, 1, 0, 0))
    model:add(nn.LeakyReLU(0.1, true))
    model:add(SpatialConvolution(backend, 128, ch, 3, 3, 1, 1, 0, 0))
+   model:add(w2nn.InplaceClip01())
    model:add(nn.View(-1):setNumInputDims(3))
 
    model.w2nn_arch_name = "vgg_12"
@@ -219,6 +221,7 @@ function srcnn.dilated_7(backend, ch)
    model:add(SpatialConvolution(backend, 128, 128, 3, 3, 1, 1, 0, 0))
    model:add(nn.LeakyReLU(0.1, true))
    model:add(SpatialConvolution(backend, 128, ch, 3, 3, 1, 1, 0, 0))
+   model:add(w2nn.InplaceClip01())
    model:add(nn.View(-1):setNumInputDims(3))
 
    model.w2nn_arch_name = "dilated_7"
@@ -249,6 +252,7 @@ function srcnn.upconv_7(backend, ch)
    model:add(SpatialConvolution(backend, 128, 256, 3, 3, 1, 1, 0, 0))
    model:add(nn.LeakyReLU(0.1, true))
    model:add(SpatialFullConvolution(backend, 256, ch, 4, 4, 2, 2, 3, 3):noBias())
+   model:add(w2nn.InplaceClip01())
    model:add(nn.View(-1):setNumInputDims(3))
 
    model.w2nn_arch_name = "upconv_7"
