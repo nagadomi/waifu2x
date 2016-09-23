@@ -1,3 +1,5 @@
+require 'pl'
+require 'cunn'
 local iproc = require 'iproc'
 local gm = {}
 gm.Image = require 'graphicsmagick.Image'
@@ -69,6 +71,41 @@ function data_augmentation.unsharp_mask(src, p)
       return src
    end
 end
+data_augmentation.blur_conv = {}
+function data_augmentation.blur(src, p, size, sigma_min, sigma_max)
+   size = size or "3"
+   filters = utils.split(size, ",")
+   for i = 1, #filters do
+      local s = tonumber(filters[i])
+      filters[i] = s
+      if not data_augmentation.blur_conv[s] then
+	 data_augmentation.blur_conv[s] = nn.SpatialConvolutionMM(1, 1, s, s, 1, 1, (s - 1) / 2, (s - 1) / 2):noBias():cuda()
+      end
+   end
+   if torch.uniform() < p then
+      local src, conversion = iproc.byte2float(src)
+      local kernel_size = filters[torch.random(1, #filters)]
+      local sigma
+      if sigma_min == sigma_max then
+	 sigma = sigma_min
+      else
+	 sigma = torch.uniform(sigma_min, sigma_max)
+      end
+      local kernel = iproc.gaussian2d(kernel_size, sigma)
+      data_augmentation.blur_conv[kernel_size].weight:copy(kernel)
+      local dest = torch.Tensor(3, src:size(2), src:size(3))
+      dest[1]:copy(data_augmentation.blur_conv[kernel_size]:forward(src[1]:reshape(1, src:size(2), src:size(3)):cuda()))
+      dest[2]:copy(data_augmentation.blur_conv[kernel_size]:forward(src[2]:reshape(1, src:size(2), src:size(3)):cuda()))
+      dest[3]:copy(data_augmentation.blur_conv[kernel_size]:forward(src[3]:reshape(1, src:size(2), src:size(3)):cuda()))
+
+      if conversion then
+	 dest = iproc.float2byte(dest)
+      end
+      return dest
+   else
+      return src
+   end
+end
 function data_augmentation.shift_1px(src)
    -- reducing the even/odd issue in nearest neighbor scaler.
    local direction = torch.random(1, 4)
@@ -119,4 +156,20 @@ function data_augmentation.flip(src)
    end
    return dest
 end
+
+local function test_blur()
+   torch.setdefaulttensortype("torch.FloatTensor")
+   local image =require 'image'
+   local src = image.lena()
+
+   image.display({image = src, min=0, max=1})
+   local dest = data_augmentation.blur(src, 1.0, "3,5", 0.5, 0.6)
+   image.display({image = dest, min=0, max=1})
+   dest = data_augmentation.blur(src, 1.0, "3", 1.0, 1.0)
+   image.display({image = dest, min=0, max=1})
+   dest = data_augmentation.blur(src, 1.0, "5", 0.75, 0.75)
+   image.display({image = dest, min=0, max=1})
+end
+--test_blur()
+
 return data_augmentation

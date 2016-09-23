@@ -254,7 +254,19 @@ function iproc.yuv2rgb(...)
    -- return RGB image
    return output
 end
-
+function iproc.gaussian2d(kernel_size, sigma)
+   sigma = sigma or 1
+   local kernel = torch.Tensor(kernel_size, kernel_size)
+   local u = math.floor(kernel_size / 2) + 1
+   local amp = (1 / math.sqrt(2 * math.pi * sigma^2))
+   for x = 1, kernel_size do
+      for y = 1, kernel_size do
+	 kernel[x][y] = amp * math.exp(-((x - u)^2 + (y - u)^2) / (2 * sigma^2))
+      end
+   end
+   kernel:div(kernel:sum())
+   return kernel
+end
 local function test_conversion()
    local a = torch.linspace(0, 255, 256):float():div(255.0)
    local b = iproc.float2byte(a)
@@ -286,9 +298,17 @@ local function test_flip()
    print((image.vflip(src) - iproc.vflip(src)):sum())
    print((image.vflip(src_byte) - iproc.vflip(src_byte)):sum())
 end
+local function test_gaussian2d()
+   local t = {3, 5, 7}
+   for i = 1, #t do
+      local kp = iproc.gaussian2d(t[i], 0.5)
+      print(kp)
+   end
+end
 
 --test_conversion()
 --test_flip()
+--test_gaussian2d()
 
 return iproc
 
