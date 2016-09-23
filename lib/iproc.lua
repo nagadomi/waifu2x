@@ -44,8 +44,7 @@ function iproc.float2byte(src)
    if src:type() == "torch.FloatTensor" then
       conversion = true
       dest = (src + clip_eps8):mul(255.0)
-      dest[torch.lt(dest, 0.0)] = 0
-      dest[torch.gt(dest, 255.0)] = 255.0
+      dest:clamp(0, 255.0)
       dest = dest:byte()
    end
    return dest, conversion
@@ -119,8 +118,7 @@ function iproc.white_noise(src, std, rgb_weights, gamma)
    local dest
    if gamma ~= 0 then
       dest = src:clone():pow(gamma):add(noise)
-      dest[torch.lt(dest, 0.0)] = 0.0
-      dest[torch.gt(dest, 1.0)] = 1.0
+      dest:clamp(0.0, 1.0)
       dest:pow(1.0 / gamma)
    else
       dest = src + noise

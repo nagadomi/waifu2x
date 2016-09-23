@@ -26,8 +26,7 @@ function data_augmentation.color_noise(src, p, factor)
 	 pca_space[i]:mul(color_scale[i])
       end
       local dest = torch.mm(pca_space:t(), cv:t()):t():contiguous():resizeAs(src)
-      dest[torch.lt(dest, 0.0)] = 0.0
-      dest[torch.gt(dest, 1.0)] = 1.0
+      dest:clamp(0.0, 1.0)
 
       if conversion then
 	 dest = iproc.float2byte(dest)
