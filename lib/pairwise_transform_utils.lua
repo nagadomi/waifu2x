@@ -47,7 +47,6 @@ function pairwise_transform_utils.preprocess(src, crop_size, options)
    if box_only then
       local mod = 2 -- assert pos % 2 == 0
       dest = pairwise_transform_utils.crop_if_large(dest, math.max(crop_size * 2, options.max_size), mod)
-      dest = data_augmentation.flip(dest)
       dest = data_augmentation.color_noise(dest, options.random_color_noise_rate)
       dest = data_augmentation.overlay(dest, options.random_overlay_rate)
       dest = data_augmentation.unsharp_mask(dest, options.random_unsharp_mask_rate)
@@ -55,7 +54,6 @@ function pairwise_transform_utils.preprocess(src, crop_size, options)
    else
       dest = pairwise_transform_utils.random_half(dest, options.random_half_rate, options.downsampling_filters)
       dest = pairwise_transform_utils.crop_if_large(dest, math.max(crop_size * 2, options.max_size))
-      dest = data_augmentation.flip(dest)
       dest = data_augmentation.blur(dest, options.random_blur_rate,
 				    options.random_blur_size, 
 				    options.random_blur_min,
