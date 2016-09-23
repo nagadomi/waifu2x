@@ -1,6 +1,7 @@
 local gm = {}
 gm.Image = require 'graphicsmagick.Image'
 local image = nil
+require 'dok'
 
 local iproc = {}
 local clip_eps8 = (1.0 / 255.0) * 0.5 - (1.0e-7 * (1.0 / 255.0) * 0.5)
@@ -266,6 +267,67 @@ function iproc.gaussian2d(kernel_size, sigma)
    end
    kernel:div(kernel:sum())
    return kernel
+end
+
+-- from image.convolve
+function iproc.convolve(...)
+   local dst,src,kernel,mode
+   local args = {...}
+   if select('#',...) == 4 then
+      dst = args[1]
+      src = args[2]
+      kernel = args[3]
+      mode = args[4]
+   elseif select('#',...) == 3 then
+      if type(args[3]) == 'string' then
+         src = args[1]
+         kernel = args[2]
+         mode = args[3]
+      else
+         dst = args[1]
+         src = args[2]
+         kernel = args[3]
+      end
+   elseif select('#',...) == 2 then
+      src = args[1]
+      kernel = args[2]
+   else
+      print(dok.usage('iproc.convolve',
+                       'convolves an input image with a kernel, returns the result', nil,
+                       {type='torch.Tensor', help='input image', req=true},
+                       {type='torch.Tensor', help='kernel', req=true},
+                       {type='string', help='type: full | valid | same', default='valid'},
+                       '',
+                       {type='torch.Tensor', help='destination', req=true},
+                       {type='torch.Tensor', help='input image', req=true},
+                       {type='torch.Tensor', help='kernel', req=true},
+                       {type='string', help='type: full | valid | same', default='valid'}))
+      dok.error('incorrect arguments', 'image.convolve')
+   end
+   if mode and mode ~= 'valid' and mode ~= 'full' and mode ~= 'same' then
+      dok.error('mode has to be one of: full | valid | same', 'image.convolve')
+   end
+   local md = (((mode == 'full') or (mode == 'same')) and 'F') or 'V'
+   if kernel:nDimension() == 2 and src:nDimension() == 3 then
+      local k3d = src.new(src:size(1), kernel:size(1), kernel:size(2))
+      for i = 1,src:size(1) do
+         k3d[i]:copy(kernel)
+      end
+      kernel = k3d
+   end
+   if dst then
+      torch.conv2(dst,src,kernel,md)
+   else
+      dst = torch.conv2(src,kernel,md)
+   end
+   if mode == 'same' then
+      local cx = dst:dim()
+      local cy = cx-1
+      local ofy = math.ceil(kernel:size(cy)/2)
+      local ofx = math.ceil(kernel:size(cx)/2)
+      dst = dst:narrow(cy, ofy, src:size(cy)):narrow(cx, ofx, src:size(cx))
+   end
+   return dst
 end
 local function test_conversion()
    local a = torch.linspace(0, 255, 256):float():div(255.0)
