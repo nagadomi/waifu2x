@@ -367,10 +367,24 @@ local function test_gaussian2d()
       print(kp)
    end
 end
+local function test_conv()
+   local image = require 'image'
+   local src = image.lena()
+   local kernel = torch.Tensor(3, 3):fill(1)
+   kernel:div(kernel:sum())
+   --local blur = iproc.convolve(iproc.padding(src, 1, 1, 1, 1), kernel, 'valid')
+   local blur = iproc.convolve(src, kernel, 'same')
+   print(src:size(), blur:size())
+   local diff = (blur - src):abs()
+   image.save("diff.png", diff)
+   image.display({image = blur, min=0, max=1})
+   image.display({image = diff, min=0, max=1})
+end
 
 --test_conversion()
 --test_flip()
 --test_gaussian2d()
+--test_conv()
 
 return iproc
 
