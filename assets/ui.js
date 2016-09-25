@@ -64,16 +64,16 @@ $(function (){
     function restore_from_cookie()
     {
 	if ($.cookie("style")) {
-	    $("input[name=style]").filter("[value=" + $.cookie("style") + "]").prop("checked", true)
+	    $("input[name=style]").filter("[value=" + $.cookie("style") + "]").prop("checked", true);
 	}
 	if ($.cookie("noise")) {
-	    $("input[name=noise]").filter("[value=" + $.cookie("noise") + "]").prop("checked", true)
+	    $("input[name=noise]").filter("[value=" + $.cookie("noise") + "]").prop("checked", true);
 	}
 	if ($.cookie("scale")) {
-	    $("input[name=scale]").filter("[value=" + $.cookie("scale") + "]").prop("checked", true)
+	    $("input[name=scale]").filter("[value=" + $.cookie("scale") + "]").prop("checked", true);
 	}
 	if ($.cookie("tta_level")) {
-	    $("input[name=tta_level]").filter("[value=" + $.cookie("tta_level") + "]").prop("checked", true)
+	    $("input[name=tta_level]").filter("[value=" + $.cookie("tta_level") + "]").prop("checked", true);
 	}
     }
     function uuid() 
@@ -117,6 +117,27 @@ $(function (){
 	};
 	xhr.send(new FormData($("form").get(0)));
     }
+    function set_param()
+    {
+	var uri = URI(window.location.href);
+	var url = uri.query(true)["url"];
+	var style = uri.query(true)["style"];
+	var noise = uri.query(true)["noise"];
+	var scale = uri.query(true)["scale"];
+	if (url) {
+	    $("input[name=url]").val(url);
+	}
+	if (style) {
+	    $("input[name=style]").filter("[value=" + style + "]").prop("checked", true);
+	}
+	if (noise) {
+	    $("input[name=noise]").filter("[value=" + noise + "]").prop("checked", true);
+	}
+	if (scale) {
+	    $("input[name=scale]").filter("[value=" + scale + "]").prop("checked", true);
+	}
+    }
+
     $("#url").change(clear_file);
     $("#file").change(clear_url);
     $("input[name=style]").change(on_change_style);
@@ -133,4 +154,5 @@ $(function (){
     if ($("input[name=tta_level]").length > 0) {
 	on_change_tta_level();
     }
+    set_param();
 })

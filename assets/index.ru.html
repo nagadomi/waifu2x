@@ -11,6 +11,7 @@
     <link href="mobile.css" rel="stylesheet" type="text/css" media="screen and (max-width: 768px) and (min-width: 0px)">
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/URI.js/1.18.1/URI.min.js"></script>
     <script type="text/javascript" src="ui.js"></script>
     <title>waifu2x</title>
   </head>
@@ -62,7 +63,7 @@
 	  한국어
 	</a>
       </div>
-      <p>Waifu2x позволяет увеличивать в 4 раза рисованные изображения, например аниме или арт, а также устранять шум на изображении (преимущественно артефакты сжатия JPEG). Теперь также поддерживаются фотографии.</p>
+      <p>Waifu2x позволяет увеличивать в 2 раза рисованные изображения, например аниме или арт, а также устранять шум на изображении (преимущественно артефакты сжатия JPEG). Теперь также поддерживаются фотографии.</p>
       <p class="margin1 link-box">
 	<a href="https://raw.githubusercontent.com/nagadomi/waifu2x/master/images/slide.png" class="blue-link" target="_blank">
 	  Посмотреть полную демонстрацию
@@ -82,7 +83,7 @@
 	      <input type="file" id="file" name="file"></div>
 	  </div>
 	  <div class="option-hint file_limits">
-	    Макс. размер файла — 5MB, устранение шума — макс. 3000x3000px, апскейл — 1500x1500px.
+	    Макс. размер файла — 5MB, устранение шума — макс. 3000x3000px, увеличение — 1500x1500px.
 	  </div>
 	</div>
 	<div class="option-box">
@@ -144,7 +145,7 @@
 	</div>
 	<div class="option-box">
 	  <div class="option-left">
-	    Апскейл:
+	    Увеличение:
 	    <div class="option-left-small"></div>
 	  </div>
 	  <div class="option-right">
