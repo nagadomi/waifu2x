@@ -551,7 +551,7 @@ local function load_user_data(y_dir, y_file, x_dir, x_file)
       if x and y then
 	 table.insert(test, {y = y,
 			     x = x,
-			     basename = base})
+			     basename = key})
       end
       if opt.show_progress then
 	 xlua.progress(i, #y_files)
