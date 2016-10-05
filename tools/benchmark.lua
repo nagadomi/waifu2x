@@ -46,6 +46,7 @@ cmd:option("-x_dir", "", 'input image for user method')
 cmd:option("-y_dir", "", 'groundtruth image for user method. filename must be the same as x_dir')
 cmd:option("-x_file", "", 'input image for user method')
 cmd:option("-y_file", "", 'groundtruth image for user method. filename must be the same as x_file')
+cmd:option("-border", 0, 'border px that will removed')
 
 local function to_bool(settings, name)
    if settings[name] == 1 then
@@ -179,7 +180,12 @@ local function transform_scale_jpeg(x, opt)
    end
    return iproc.byte2float(x)
 end
-
+local function remove_border(x, border)
+   return iproc.crop(x,
+		     border, border,
+		     x:size(3) - border,
+		     x:size(2) - border)
+end
 local function benchmark(opt, x, model1, model2)
    local mse1, mse2
    local won = {0, 0}
@@ -356,12 +362,19 @@ local function benchmark(opt, x, model1, model2)
 	 ground_truth = x[i].y
 	 model1_output = input
       end
+      if opt.border > 0 then
+	 ground_truth = remove_border(ground_truth, opt.border)
+	 model1_output = remove_border(model1_output, opt.border)
+      end
       mse1 = MSE(ground_truth, model1_output, opt.color)
       model1_mse = model1_mse + mse1
       model1_psnr = model1_psnr + MSE2PSNR(mse1)
 
       local won_model = 1
       if model2 then
+	 if opt.border > 0 then
+	    model2_output = remove_border(model2_output, opt.border)
+	 end
 	 mse2 = MSE(ground_truth, model2_output, opt.color)
 	 model2_mse = model2_mse + mse2
 	 model2_psnr = model2_psnr + MSE2PSNR(mse2)
@@ -382,6 +395,7 @@ local function benchmark(opt, x, model1, model2)
 	 end
       end
       if baseline_output then
+	 baseline_output = remove_border(baseline_output, opt.border)
 	 mse = MSE(ground_truth, baseline_output, opt.color)
 	 baseline_mse = baseline_mse + mse
 	 baseline_psnr = baseline_psnr + MSE2PSNR(mse)
@@ -404,7 +418,7 @@ local function benchmark(opt, x, model1, model2)
 	 if model2 then
 	    if baseline_output then
 	       io.stdout:write(
-		  string.format("%d/%d; model1_time=%.2f, model2_time=%.2f, baseline_rmse=%f, model1_rmse=%f, model2_rmse=%f, baseline_psnr=%f, model1_psnr=%f, model2_psnr=%f, model1_won=%d, model2_won=%d \r",
+		  string.format("%d/%d; model1_time=%.2f, model2_time=%.2f, baseline_rmse=%.3f, model1_rmse=%.3f, model2_rmse=%.3f, baseline_psnr=%.3f, model1_psnr=%.3f, model2_psnr=%.3f, model1_won=%d, model2_won=%d \r",
 				i, #x,
 				model1_time,
 				model2_time,
@@ -416,7 +430,7 @@ local function benchmark(opt, x, model1, model2)
 		  ))
 	    else
 	       io.stdout:write(
-		  string.format("%d/%d; model1_time=%.2f, model2_time=%.2f, model1_rmse=%f, model2_rmse=%f, model1_psnr=%f, model2_psnr=%f, model1_own=%d, model2_won=%d \r",
+		  string.format("%d/%d; model1_time=%.2f, model2_time=%.2f, model1_rmse=%.3f, model2_rmse=%.3f, model1_psnr=%.3f, model2_psnr=%.3f, model1_own=%d, model2_won=%d \r",
 				i, #x,
 				model1_time,
 				model2_time,
@@ -428,7 +442,7 @@ local function benchmark(opt, x, model1, model2)
 	 else
 	    if baseline_output then
 	       io.stdout:write(
-		  string.format("%d/%d; model1_time=%.2f, baseline_rmse=%f, model1_rmse=%f, baseline_psnr=%f, model1_psnr=%f \r",
+		  string.format("%d/%d; model1_time=%.2f, baseline_rmse=%.3f, model1_rmse=%.3f, baseline_psnr=%.3f, model1_psnr=%.3f \r",
 				i, #x,
 				model1_time,
 				math.sqrt(baseline_mse / i), math.sqrt(model1_mse / i),
@@ -436,7 +450,7 @@ local function benchmark(opt, x, model1, model2)
 		  ))
 	    else
 	       io.stdout:write(
-		  string.format("%d/%d; model1_time=%.2f, model1_rmse=%f, model1_psnr=%f \r",
+		  string.format("%d/%d; model1_time=%.2f, model1_rmse=%.3f, model1_psnr=%.3f \r",
 				i, #x,
 				model1_time,
 				math.sqrt(model1_mse / i), model1_psnr / i
