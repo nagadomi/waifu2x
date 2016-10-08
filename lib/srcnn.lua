@@ -266,6 +266,107 @@ function srcnn.upconv_7(backend, ch)
 
    return model
 end
+
+-- large version of upconv_7
+-- This model able to beat upconv_7 (PSNR: +0.3 ~ +0.8) but this model is 2x slower than upconv_7.
+function srcnn.upconv_7l(backend, ch)
+   local model = nn.Sequential()
+   model:add(SpatialConvolution(backend, ch, 32, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialConvolution(backend, 32, 64, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialConvolution(backend, 64, 128, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialConvolution(backend, 128, 192, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialConvolution(backend, 192, 256, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialConvolution(backend, 256, 512, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialFullConvolution(backend, 512, ch, 4, 4, 2, 2, 3, 3):noBias())
+   model:add(w2nn.InplaceClip01())
+   model:add(nn.View(-1):setNumInputDims(3))
+
+   model.w2nn_arch_name = "upconv_7l"
+   model.w2nn_offset = 14
+   model.w2nn_scale_factor = 2
+   model.w2nn_resize = true
+   model.w2nn_channels = ch
+
+   --model:cuda()
+   --print(model:forward(torch.Tensor(32, ch, 92, 92):uniform():cuda()):size())
+
+   return model
+end
+
+-- layerwise linear blending with skip connections
+-- Note: PSNR: upconv_7 < skiplb_7 < upconv_7l
+function srcnn.skiplb_7(backend, ch)
+   local function skip(backend, i, o)
+      local con = nn.Concat(2)
+      local conv = nn.Sequential()
+      conv:add(SpatialConvolution(backend, i, o, 3, 3, 1, 1, 1, 1))
+      conv:add(nn.LeakyReLU(0.1, true))
+
+      -- depth concat
+      con:add(conv)
+      con:add(nn.Identify()) -- skip
+      return con
+   end
+   local model = nn.Sequential()
+   model:add(skip(backend, ch, 16))
+   model:add(skip(backend, 16+ch, 32))
+   model:add(skip(backend, 32+16+ch, 64))
+   model:add(skip(backend, 64+32+16+ch, 128))
+   model:add(skip(backend, 128+64+32+16+ch, 128))
+   model:add(skip(backend, 128+128+64+32+16+ch, 256))
+   -- input of last layer = [all layerwise output(contains input layer)].flatten
+   model:add(SpatialFullConvolution(backend, 256+128+128+64+32+16+ch, ch, 4, 4, 2, 2, 3, 3):noBias()) -- linear blend
+   model:add(w2nn.InplaceClip01())
+   model:add(nn.View(-1):setNumInputDims(3))
+   model.w2nn_arch_name = "skiplb_7"
+   model.w2nn_offset = 14
+   model.w2nn_scale_factor = 2
+   model.w2nn_resize = true
+   model.w2nn_channels = ch
+
+   --model:cuda()
+   --print(model:forward(torch.Tensor(32, ch, 92, 92):uniform():cuda()):size())
+
+   return model
+end
+
+-- dilated convolution + deconvolution
+-- Note: This model is not better than upconv_7. Maybe becuase of under-fitting.
+function srcnn.dilated_upconv_7(backend, ch)
+   local model = nn.Sequential()
+   model:add(SpatialConvolution(backend, ch, 16, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialConvolution(backend, 16, 32, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(nn.SpatialDilatedConvolution(32, 64, 3, 3, 1, 1, 0, 0, 2, 2))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(nn.SpatialDilatedConvolution(64, 128, 3, 3, 1, 1, 0, 0, 2, 2))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(nn.SpatialDilatedConvolution(128, 128, 3, 3, 1, 1, 0, 0, 2, 2))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialConvolution(backend, 128, 256, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialFullConvolution(backend, 256, ch, 4, 4, 2, 2, 3, 3):noBias())
+   model:add(w2nn.InplaceClip01())
+   --model:add(nn.View(-1):setNumInputDims(3))
+
+   model.w2nn_arch_name = "dilated_upconv_7"
+   model.w2nn_offset = 20
+   model.w2nn_scale_factor = 2
+   model.w2nn_resize = true
+   model.w2nn_channels = ch
+
+   --model:cuda()
+   --print(model:forward(torch.Tensor(32, ch, 92, 92):uniform():cuda()):size())
+
+   return model
+end
 function srcnn.create(model_name, backend, color)
    model_name = model_name or "vgg_7"
    backend = backend or "cunn"
@@ -287,7 +388,10 @@ function srcnn.create(model_name, backend, color)
    end
 end
 
---local model = srcnn.upconv_6("cunn", 3):cuda()
---print(model:forward(torch.Tensor(1, 3, 64, 64):zero():cuda()):size())
+--[[
+local model = srcnn.upconv_7l("cunn", 3):cuda()
+print(model)
+print(model:forward(torch.Tensor(1, 3, 64, 64):zero():cuda()):size())
+--]]
 
 return srcnn
