@@ -267,6 +267,7 @@ local function waifu2x()
    cmd:option("-tta_level", 8, 'TTA level (2|4|8). A higher value makes better quality output but slow')
    cmd:option("-force_cudnn", 0, 'use cuDNN backend (0|1)')
    cmd:option("-q", 0, 'quiet (0|1)')
+   cmd:option("-gpu", 1, 'Device ID')
 
    local opt = cmd:parse(arg)
    if opt.method:len() > 0 then
@@ -292,5 +293,6 @@ local function waifu2x()
    else
       convert_frames(opt)
    end
+   cutorch.setDevice(opt.gpu)
 end
 waifu2x()
