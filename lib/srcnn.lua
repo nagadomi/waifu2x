@@ -136,6 +136,24 @@ local function SpatialFullConvolution(backend, nInputPlane, nOutputPlane, kW, kH
       error("unsupported backend:" .. backend)
    end
 end
+local function ReLU(backend)
+   if backend == "cunn" then
+      return nn.ReLU(true)
+   elseif backend == "cudnn" then
+      return cudnn.ReLU(true)
+   else
+      error("unsupported backend:" .. backend)
+   end
+end
+local function SpatialMaxPooling(backend, kW, kH, dW, dH, padW, padH)
+   if backend == "cunn" then
+      return nn.SpatialMaxPooling(kW, kH, dW, dH, padW, padH)
+   elseif backend == "cudnn" then
+      return cudnn.SpatialMaxPooling(kW, kH, dW, dH, padW, padH)
+   else
+      error("unsupported backend:" .. backend)
+   end
+end
 
 -- VGG style net(7 layers)
 function srcnn.vgg_7(backend, ch)
@@ -261,9 +279,6 @@ function srcnn.upconv_7(backend, ch)
    model.w2nn_resize = true
    model.w2nn_channels = ch
 
-   --model:cuda()
-   --print(model:forward(torch.Tensor(32, ch, 92, 92):uniform():cuda()):size())
-
    return model
 end
 
@@ -310,7 +325,7 @@ function srcnn.skiplb_7(backend, ch)
 
       -- depth concat
       con:add(conv)
-      con:add(nn.Identify()) -- skip
+      con:add(nn.Identity()) -- skip
       return con
    end
    local model = nn.Sequential()
@@ -354,7 +369,7 @@ function srcnn.dilated_upconv_7(backend, ch)
    model:add(nn.LeakyReLU(0.1, true))
    model:add(SpatialFullConvolution(backend, 256, ch, 4, 4, 2, 2, 3, 3):noBias())
    model:add(w2nn.InplaceClip01())
-   --model:add(nn.View(-1):setNumInputDims(3))
+   model:add(nn.View(-1):setNumInputDims(3))
 
    model.w2nn_arch_name = "dilated_upconv_7"
    model.w2nn_offset = 20
@@ -367,6 +382,103 @@ function srcnn.dilated_upconv_7(backend, ch)
 
    return model
 end
+
+-- ref: https://arxiv.org/abs/1609.04802
+-- note: no batch-norm, no zero-paading
+function srcnn.srresnet_2x(backend, ch)
+   local function skip(backend, i, o)
+      local con = nn.Concat(2)
+      local conv = nn.Sequential()
+      conv:add(SpatialConvolution(backend, i, o, 3, 3, 1, 1, 1, 1))
+      conv:add(ReLU(backend))
+      -- depth concat
+      con:add(conv)
+      con:add(nn.Identity()) -- skip
+      return con
+   end
+   local function resblock(backend)
+      local seq = nn.Sequential()
+      local con = nn.ConcatTable()
+      local conv = nn.Sequential()
+      conv:add(SpatialConvolution(backend, 64, 64, 3, 3, 1, 1, 0, 0))
+      conv:add(ReLU(backend))
+      conv:add(SpatialConvolution(backend, 64, 64, 3, 3, 1, 1, 0, 0))
+      con:add(conv)
+      con:add(nn.SpatialZeroPadding(-2, -2, -2, -2)) -- identity + de-padding
+      seq:add(con)
+      seq:add(nn.CAddTable())
+      return seq
+   end
+   local model = nn.Sequential()
+   --model:add(skip(backend, ch, 64 - ch))
+   model:add(SpatialConvolution(backend, ch, 64, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(resblock(backend))
+   model:add(resblock(backend))
+   model:add(resblock(backend))
+   model:add(resblock(backend))
+   model:add(resblock(backend))
+   model:add(resblock(backend))
+   model:add(SpatialFullConvolution(backend, 64, 64, 4, 4, 2, 2, 2, 2))
+   model:add(ReLU(backend))
+   model:add(SpatialConvolution(backend, 64, ch, 3, 3, 1, 1, 0, 0))
+
+   model:add(w2nn.InplaceClip01())
+   --model:add(nn.View(-1):setNumInputDims(3))
+   model.w2nn_arch_name = "srresnet_2x"
+   model.w2nn_offset = 28
+   model.w2nn_scale_factor = 2
+   model.w2nn_resize = true
+   model.w2nn_channels = ch
+
+   --model:cuda()
+   --print(model:forward(torch.Tensor(32, ch, 92, 92):uniform():cuda()):size())
+
+   return model
+end
+
+-- for segmentation
+function srcnn.fcn_v1(backend, ch)
+   -- input size = 128
+   local model = nn.Sequential()
+
+   model:add(SpatialConvolution(backend, ch, 32, 5, 5, 2, 2, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialConvolution(backend, 32, 64, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialMaxPooling(backend, 2, 2, 2, 2))
+
+   model:add(SpatialConvolution(backend, 64, 128, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialMaxPooling(backend, 2, 2, 2, 2))
+
+   model:add(SpatialConvolution(backend, 128, 256, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialConvolution(backend, 256, 256, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialMaxPooling(backend, 2, 2, 2, 2))
+
+   model:add(SpatialFullConvolution(backend, 256, 128, 4, 4, 2, 2, 2, 2))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialFullConvolution(backend, 128, 64, 4, 4, 2, 2, 2, 2))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialFullConvolution(backend, 64, 32, 4, 4, 2, 2, 2, 2))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialFullConvolution(backend, 32, ch, 4, 4, 2, 2, 2, 2))
+
+   model:add(w2nn.InplaceClip01())
+   model:add(nn.View(-1):setNumInputDims(3))
+
+   model.w2nn_arch_name = "fcn_v1"
+   model.w2nn_offset = 39
+   model.w2nn_scale_factor = 1
+   model.w2nn_channels = ch
+   --model:cuda()
+   --print(model:forward(torch.Tensor(32, ch, 128, 128):uniform():cuda()):size())
+   
+   return model
+end
+
 function srcnn.create(model_name, backend, color)
    model_name = model_name or "vgg_7"
    backend = backend or "cunn"
@@ -387,11 +499,10 @@ function srcnn.create(model_name, backend, color)
       error("unsupported model_name: " .. model_name)
    end
 end
-
 --[[
-local model = srcnn.upconv_7l("cunn", 3):cuda()
+local model = srcnn.srresnet_2x("cunn", 3):cuda()
 print(model)
-print(model:forward(torch.Tensor(1, 3, 64, 64):zero():cuda()):size())
+print(model:forward(torch.Tensor(1, 3, 128, 128):zero():cuda()):size())
 --]]
 
 return srcnn
