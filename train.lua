@@ -54,6 +54,7 @@ local function transform_pool_init(has_resize, offset)
    g_mutex_id = g_mutex:id()
    g_transform_pool = threads.Threads(
       nthread,
+      threads.safe(
       function(threadid)
 	 require 'pl'
 	 local __FILE__ = (function() return string.gsub(debug.getinfo(2, 'S').source, "^@", "") end)()
@@ -184,7 +185,7 @@ local function transform_pool_init(has_resize, offset)
 					      n, conf)
 	    end
 	 end
-      end
+      end)
    )
    g_transform_pool:synchronize()
 end
