@@ -43,8 +43,8 @@ function pairwise_transform.jpeg_(src, quality, size, offset, n, options)
       yc = iproc.byte2float(yc)
       if options.rgb then
       else
-	 yc = iproc.rgb2yuv(yc)[1]:reshape(1, yc:size(2), yc:size(3))
-	 xc = iproc.rgb2yuv(xc)[1]:reshape(1, xc:size(2), xc:size(3))
+	 yc = image.rgb2yuv(yc)[1]:reshape(1, yc:size(2), yc:size(3))
+	 xc = image.rgb2yuv(xc)[1]:reshape(1, xc:size(2), xc:size(3))
       end
       if torch.uniform() < options.nr_rate then
 	 -- reducing noise

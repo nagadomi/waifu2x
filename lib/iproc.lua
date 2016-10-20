@@ -2,7 +2,7 @@ local gm = {}
 gm.Image = require 'graphicsmagick.Image'
 local image = nil
 require 'dok'
-
+require 'image'
 local iproc = {}
 local clip_eps8 = (1.0 / 255.0) * 0.5 - (1.0e-7 * (1.0 / 255.0) * 0.5)
 
@@ -159,100 +159,6 @@ function iproc.vflip(src)
    return im:flip():toTensor(t, color, "DHW")
 end
 
--- from torch/image
-----------------------------------------------------------------------
--- image.rgb2yuv(image)
--- converts a RGB image to YUV
---
-function iproc.rgb2yuv(...)
-   -- arg check
-   local output,input
-   local args = {...}
-   if select('#',...) == 2 then
-      output = args[1]
-      input = args[2]
-   elseif select('#',...) == 1 then
-      input = args[1]
-   else
-      print(dok.usage('image.rgb2yuv',
-                      'transforms an image from RGB to YUV', nil,
-                      {type='torch.Tensor', help='input image', req=true},
-                      '',
-                      {type='torch.Tensor', help='output image', req=true},
-                      {type='torch.Tensor', help='input image', req=true}
-                      ))
-      dok.error('missing input', 'image.rgb2yuv')
-   end
-
-   -- resize
-   output = output or input.new()
-   output:resizeAs(input)
-
-   -- input chanels
-   local inputRed = input[1]
-   local inputGreen = input[2]
-   local inputBlue = input[3]
-
-   -- output chanels
-   local outputY = output[1]
-   local outputU = output[2]
-   local outputV = output[3]
-
-   -- convert
-   outputY:zero():add(0.299, inputRed):add(0.587, inputGreen):add(0.114, inputBlue)
-   outputU:zero():add(-0.14713, inputRed):add(-0.28886, inputGreen):add(0.436, inputBlue)
-   outputV:zero():add(0.615, inputRed):add(-0.51499, inputGreen):add(-0.10001, inputBlue)
-
-   -- return YUV image
-   return output
-end
-
-----------------------------------------------------------------------
--- image.yuv2rgb(image)
--- converts a YUV image to RGB
---
-function iproc.yuv2rgb(...)
-   -- arg check
-   local output,input
-   local args = {...}
-   if select('#',...) == 2 then
-      output = args[1]
-      input = args[2]
-   elseif select('#',...) == 1 then
-      input = args[1]
-   else
-      print(dok.usage('image.yuv2rgb',
-                      'transforms an image from YUV to RGB', nil,
-                      {type='torch.Tensor', help='input image', req=true},
-                      '',
-                      {type='torch.Tensor', help='output image', req=true},
-                      {type='torch.Tensor', help='input image', req=true}
-                      ))
-      dok.error('missing input', 'image.yuv2rgb')
-   end
-
-   -- resize
-   output = output or input.new()
-   output:resizeAs(input)
-
-   -- input chanels
-   local inputY = input[1]
-   local inputU = input[2]
-   local inputV = input[3]
-
-   -- output chanels
-   local outputRed = output[1]
-   local outputGreen = output[2]
-   local outputBlue = output[3]
-
-   -- convert
-   outputRed:copy(inputY):add(1.13983, inputV)
-   outputGreen:copy(inputY):add(-0.39465, inputU):add(-0.58060, inputV)
-   outputBlue:copy(inputY):add(2.03211, inputU)
-
-   -- return RGB image
-   return output
-end
 function iproc.gaussian2d(kernel_size, sigma)
    sigma = sigma or 1
    local kernel = torch.Tensor(kernel_size, kernel_size)
@@ -267,66 +173,6 @@ function iproc.gaussian2d(kernel_size, sigma)
    return kernel
 end
 
--- from image.convolve
-function iproc.convolve(...)
-   local dst,src,kernel,mode
-   local args = {...}
-   if select('#',...) == 4 then
-      dst = args[1]
-      src = args[2]
-      kernel = args[3]
-      mode = args[4]
-   elseif select('#',...) == 3 then
-      if type(args[3]) == 'string' then
-         src = args[1]
-         kernel = args[2]
-         mode = args[3]
-      else
-         dst = args[1]
-         src = args[2]
-         kernel = args[3]
-      end
-   elseif select('#',...) == 2 then
-      src = args[1]
-      kernel = args[2]
-   else
-      print(dok.usage('iproc.convolve',
-                       'convolves an input image with a kernel, returns the result', nil,
-                       {type='torch.Tensor', help='input image', req=true},
-                       {type='torch.Tensor', help='kernel', req=true},
-                       {type='string', help='type: full | valid | same', default='valid'},
-                       '',
-                       {type='torch.Tensor', help='destination', req=true},
-                       {type='torch.Tensor', help='input image', req=true},
-                       {type='torch.Tensor', help='kernel', req=true},
-                       {type='string', help='type: full | valid | same', default='valid'}))
-      dok.error('incorrect arguments', 'image.convolve')
-   end
-   if mode and mode ~= 'valid' and mode ~= 'full' and mode ~= 'same' then
-      dok.error('mode has to be one of: full | valid | same', 'image.convolve')
-   end
-   local md = (((mode == 'full') or (mode == 'same')) and 'F') or 'V'
-   if kernel:nDimension() == 2 and src:nDimension() == 3 then
-      local k3d = src.new(src:size(1), kernel:size(1), kernel:size(2))
-      for i = 1,src:size(1) do
-         k3d[i]:copy(kernel)
-      end
-      kernel = k3d
-   end
-   if dst then
-      torch.conv2(dst,src,kernel,md)
-   else
-      dst = torch.conv2(src,kernel,md)
-   end
-   if mode == 'same' then
-      local cx = dst:dim()
-      local cy = cx-1
-      local ofy = math.ceil(kernel:size(cy)/2)
-      local ofx = math.ceil(kernel:size(cx)/2)
-      dst = dst:narrow(cy, ofy, src:size(cy)):narrow(cx, ofx, src:size(cx))
-   end
-   return dst
-end
 local function test_conversion()
    local a = torch.linspace(0, 255, 256):float():div(255.0)
    local b = iproc.float2byte(a)
@@ -370,8 +216,8 @@ local function test_conv()
    local src = image.lena()
    local kernel = torch.Tensor(3, 3):fill(1)
    kernel:div(kernel:sum())
-   --local blur = iproc.convolve(iproc.padding(src, 1, 1, 1, 1), kernel, 'valid')
-   local blur = iproc.convolve(src, kernel, 'same')
+   --local blur = image.convolve(iproc.padding(src, 1, 1, 1, 1), kernel, 'valid')
+   local blur = image.convolve(src, kernel, 'same')
    print(src:size(), blur:size())
    local diff = (blur - src):abs()
    image.save("diff.png", diff)

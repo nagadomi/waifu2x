@@ -87,7 +87,7 @@ function data_augmentation.blur(src, p, size, sigma_min, sigma_max)
 	 sigma = torch.uniform(sigma_min, sigma_max)
       end
       local kernel = iproc.gaussian2d(kernel_size, sigma)
-      local dest = iproc.convolve(src, kernel, 'same')
+      local dest = image.convolve(src, kernel, 'same')
       if conversion then
 	 dest = iproc.float2byte(dest)
       end
