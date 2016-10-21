@@ -179,6 +179,15 @@ local function transform_pool_init(has_resize, offset)
 		     max_size = settings.max_size,
 		     active_cropping_rate = active_cropping_rate,
 		     active_cropping_tries = active_cropping_tries,
+		     random_pairwise_rotate_rate = settings.random_pairwise_rotate_rate,
+		     random_pairwise_rotate_min = settings.random_pairwise_rotate_min,
+		     random_pairwise_rotate_max = settings.random_pairwise_rotate_max,
+		     random_pairwise_scale_rate = settings.random_pairwise_scale_rate,
+		     random_pairwise_scale_min = settings.random_pairwise_scale_min,
+		     random_pairwise_scale_max = settings.random_pairwise_scale_max,
+		     random_pairwise_negate_rate = settings.random_pairwise_negate_rate,
+		     random_pairwise_negate_x_rate = settings.random_pairwise_negate_x_rate,
+		     pairwise_y_binary = settings.pairwise_y_binary,
 		     rgb = (settings.color == "rgb")}, meta)
 	       return pairwise_transform.user(x, y,
 					      settings.crop_size, offset,
@@ -392,6 +401,13 @@ local function train()
       model = torch.load(settings.resume, "ascii")
    else
       model = srcnn.create(settings.model, settings.backend, settings.color)
+   end
+   if model.w2nn_input_size then
+      if settings.crop_size ~= model.w2nn_input_size then
+	 io.stderr:write(string.format("warning: crop_size is replaced with %d\n",
+				       model.w2nn_input_size))
+	 settings.crop_size = model.w2nn_input_size
+      end
    end
    dir.makepath(settings.model_dir)
 

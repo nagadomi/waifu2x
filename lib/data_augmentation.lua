@@ -96,6 +96,49 @@ function data_augmentation.blur(src, p, size, sigma_min, sigma_max)
       return src
    end
 end
+function data_augmentation.pairwise_scale(x, y, p, scale_min, scale_max)
+   if torch.uniform() < p then
+      assert(x:size(2) == y:size(2) and x:size(3) == y:size(3))
+      local scale = torch.uniform(scale_min, scale_max)
+      local h = math.floor(x:size(2) * scale)
+      local w = math.floor(x:size(3) * scale)
+      x = iproc.scale(x, w, h, "Triangle")
+      y = iproc.scale(y, w, h, "Triangle")
+      return x, y
+   else
+      return x, y
+   end
+end
+function data_augmentation.pairwise_rotate(x, y, p, r_min, r_max)
+   if torch.uniform() < p then
+      assert(x:size(2) == y:size(2) and x:size(3) == y:size(3))
+      local r = torch.uniform(r_min, r_max) / 360.0 * math.pi
+      x = iproc.rotate(x, r)
+      y = iproc.rotate(y, r)
+      return x, y
+   else
+      return x, y
+   end
+end
+function data_augmentation.pairwise_negate(x, y, p)
+   if torch.uniform() < p then
+      assert(x:size(2) == y:size(2) and x:size(3) == y:size(3))
+      x = iproc.negate(x, r)
+      y = iproc.rotate(y, r)
+      return x, y
+   else
+      return x, y
+   end
+end
+function data_augmentation.pairwise_negate_x(x, y, p)
+   if torch.uniform() < p then
+      assert(x:size(2) == y:size(2) and x:size(3) == y:size(3))
+      x = iproc.negate(x, r)
+      return x, y
+   else
+      return x, y
+   end
+end
 function data_augmentation.shift_1px(src)
    -- reducing the even/odd issue in nearest neighbor scaler.
    local direction = torch.random(1, 4)

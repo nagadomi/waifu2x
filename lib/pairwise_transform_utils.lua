@@ -36,6 +36,30 @@ function pairwise_transform_utils.crop_if_large(src, max_size, mod)
       return src
    end
 end
+function pairwise_transform_utils.crop_if_large_pair(x, y, scale_y, max_size, mod)
+   local tries = 4
+   if y:size(2) > max_size and y:size(3) > max_size then
+      assert(max_size % 4 == 0)
+      local rect_x, rect_y
+      for i = 1, tries do
+	 local yi = torch.random(0, y:size(2) - max_size)
+	 local xi = torch.random(0, y:size(3) - max_size)
+	 if mod then
+	    yi = yi - (yi % mod)
+	    xi = xi - (xi % mod)
+	 end
+	 rect_y = iproc.crop(y, xi, yi, xi + max_size, yi + max_size)
+	 rect_x = iproc.crop(x, xi / scale_y, yi / scale_y, xi / scale_y + max_size / scale_y, yi / scale_y + max_size / scale_y)
+	 -- ignore simple background
+	 if rect_y:float():std() >= 0 then
+	    break
+	 end
+      end
+      return rect_x, rect_y
+   else
+      return x, y
+   end
+end
 function pairwise_transform_utils.preprocess(src, crop_size, options)
    local dest = src
    local box_only = false
@@ -64,6 +88,33 @@ function pairwise_transform_utils.preprocess(src, crop_size, options)
       dest = data_augmentation.shift_1px(dest)
    end
    return dest
+end
+function pairwise_transform_utils.preprocess_user(x, y, scale_y, size, options)
+
+   x, y = pairwise_transform_utils.crop_if_large_pair(x, y, scale_y, options.max_size, scale_y)
+   x, y = data_augmentation.pairwise_rotate(x, y,
+					    options.random_pairwise_rotate_rate,
+					    options.random_pairwise_rotate_min,
+					    options.random_pairwise_rotate_max)
+
+   local scale_min = math.max(options.random_pairwise_scale_min, size / (1 + math.min(x:size(2), x:size(3))))
+   local scale_max = math.max(scale_min, options.random_pairwise_scale_max)
+   x, y = data_augmentation.pairwise_scale(x, y,
+					   options.random_pairwise_scale_rate,
+					   scale_min,
+					   scale_max)
+   x, y = data_augmentation.pairwise_negate(x, y, options.random_pairwise_negate_rate)
+   x, y = data_augmentation.pairwise_negate_x(x, y, options.random_pairwise_negate_x_rate)
+
+   x = iproc.crop_mod4(x)
+   y = iproc.crop_mod4(y)
+
+   if options.pairwise_y_binary then
+      y[torch.lt(y, 128)] = 0
+      y[torch.gt(y, 0)] = 255
+   end
+
+   return x, y
 end
 function pairwise_transform_utils.active_cropping(x, y, lowres_y, size, scale, p, tries)
    assert("x:size == y:size", x:size(2) * scale == y:size(2) and x:size(3) * scale == y:size(3))

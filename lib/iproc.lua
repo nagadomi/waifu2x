@@ -1,8 +1,7 @@
 local gm = {}
 gm.Image = require 'graphicsmagick.Image'
-local image = nil
 require 'dok'
-require 'image'
+local image = require 'image'
 local iproc = {}
 local clip_eps8 = (1.0 / 255.0) * 0.5 - (1.0e-7 * (1.0 / 255.0) * 0.5)
 
@@ -157,6 +156,47 @@ function iproc.vflip(src)
    end
    local im = gm.Image(src, color, "DHW")
    return im:flip():toTensor(t, color, "DHW")
+end
+local function rotate_with_warp(src, dst, theta, mode)
+  local height
+  local width
+  if src:dim() == 2 then
+    height = src:size(1)
+    width = src:size(2)
+  elseif src:dim() == 3 then
+    height = src:size(2)
+    width = src:size(3)
+  else
+    dok.error('src image must be 2D or 3D', 'image.rotate')
+  end
+  local flow = torch.Tensor(2, height, width)
+  local kernel = torch.Tensor({{math.cos(-theta), -math.sin(-theta)},
+			       {math.sin(-theta), math.cos(-theta)}})
+  flow[1] = torch.ger(torch.linspace(0, 1, height), torch.ones(width))
+  flow[1]:mul(-(height -1)):add(math.floor(height / 2 + 0.5))
+  flow[2] = torch.ger(torch.ones(height), torch.linspace(0, 1, width))
+  flow[2]:mul(-(width -1)):add(math.floor(width / 2 + 0.5))
+  flow:add(-1, torch.mm(kernel, flow:view(2, height * width)))
+  dst:resizeAs(src)
+  return image.warp(dst, src, flow, mode, true, 'pad')
+end
+function iproc.rotate(src, theta)
+   local conversion
+   src, conversion = iproc.byte2float(src)
+   local dest = torch.Tensor():typeAs(src):resizeAs(src)
+   rotate_with_warp(src, dest, theta, 'bicubic')
+   dest:clamp(0, 1)
+   if conversion then
+      dest = iproc.float2byte(dest)
+   end
+   return dest
+end
+function iproc.negate(src)
+   if src:type() == "torch.ByteTensor" then
+      return -src + 255
+   else
+      return -src + 1
+   end
 end
 
 function iproc.gaussian2d(kernel_size, sigma)
