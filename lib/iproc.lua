@@ -184,7 +184,7 @@ function iproc.rotate(src, theta)
    local conversion
    src, conversion = iproc.byte2float(src)
    local dest = torch.Tensor():typeAs(src):resizeAs(src)
-   rotate_with_warp(src, dest, theta, 'bicubic')
+   rotate_with_warp(src, dest, theta, 'bilinear')
    dest:clamp(0, 1)
    if conversion then
       dest = iproc.float2byte(dest)
