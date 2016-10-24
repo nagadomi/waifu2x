@@ -439,46 +439,60 @@ end
 
 -- for segmentation
 function srcnn.fcn_v1(backend, ch)
-   -- input size = 128
+   -- input_size = 120
    local model = nn.Sequential()
+   --i = 120
+   --model:cuda()
+   --print(model:forward(torch.Tensor(32, ch, i, i):uniform():cuda()):size())
 
    model:add(SpatialConvolution(backend, ch, 32, 5, 5, 2, 2, 0, 0))
    model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialConvolution(backend, 32, 32, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialMaxPooling(backend, 2, 2, 2, 2))
+
    model:add(SpatialConvolution(backend, 32, 64, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialConvolution(backend, 64, 64, 3, 3, 1, 1, 0, 0))
    model:add(nn.LeakyReLU(0.1, true))
    model:add(SpatialMaxPooling(backend, 2, 2, 2, 2))
 
    model:add(SpatialConvolution(backend, 64, 128, 3, 3, 1, 1, 0, 0))
    model:add(nn.LeakyReLU(0.1, true))
-   model:add(SpatialMaxPooling(backend, 2, 2, 2, 2))
-
-   model:add(SpatialConvolution(backend, 128, 256, 3, 3, 1, 1, 0, 0))
-   model:add(nn.LeakyReLU(0.1, true))
-   model:add(SpatialConvolution(backend, 256, 256, 3, 3, 1, 1, 0, 0))
+   model:add(SpatialConvolution(backend, 128, 128, 3, 3, 1, 1, 0, 0))
    model:add(nn.LeakyReLU(0.1, true))
    model:add(SpatialMaxPooling(backend, 2, 2, 2, 2))
 
-   model:add(SpatialFullConvolution(backend, 256, 128, 4, 4, 2, 2, 2, 2))
+   model:add(SpatialConvolution(backend, 128, 256, 1, 1, 1, 1, 0, 0))
    model:add(nn.LeakyReLU(0.1, true))
-   model:add(SpatialFullConvolution(backend, 128, 64, 4, 4, 2, 2, 2, 2))
+   model:add(nn.Dropout(0.5, false, true))
+   model:add(SpatialConvolution(backend, 256, 256, 1, 1, 1, 1, 0, 0))
    model:add(nn.LeakyReLU(0.1, true))
-   model:add(SpatialFullConvolution(backend, 64, 32, 4, 4, 2, 2, 2, 2))
+   model:add(nn.Dropout(0.5, false, true))
+
+   model:add(SpatialFullConvolution(backend, 256, 128, 2, 2, 2, 2, 0, 0))
    model:add(nn.LeakyReLU(0.1, true))
-   model:add(SpatialFullConvolution(backend, 32, ch, 4, 4, 2, 2, 2, 2))
+   model:add(SpatialFullConvolution(backend, 128, 128, 2, 2, 2, 2, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialConvolution(backend, 128, 64, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialFullConvolution(backend, 64, 64, 2, 2, 2, 2, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialConvolution(backend, 64, 32, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialFullConvolution(backend, 32, ch, 4, 4, 2, 2, 3, 3))
 
    model:add(w2nn.InplaceClip01())
    model:add(nn.View(-1):setNumInputDims(3))
 
    model.w2nn_arch_name = "fcn_v1"
-   model.w2nn_offset = 39
+   model.w2nn_offset = 36
    model.w2nn_scale_factor = 1
    model.w2nn_channels = ch
-   --model:cuda()
-   --print(model:forward(torch.Tensor(32, ch, 128, 128):uniform():cuda()):size())
+   model.w2nn_input_size = 120
    
    return model
 end
-
 function srcnn.create(model_name, backend, color)
    model_name = model_name or "vgg_7"
    backend = backend or "cunn"
@@ -500,9 +514,8 @@ function srcnn.create(model_name, backend, color)
    end
 end
 --[[
-local model = srcnn.srresnet_2x("cunn", 3):cuda()
+local model = srcnn.fcn_v1("cunn", 3):cuda()
+print(model:forward(torch.Tensor(1, 3, 108, 108):zero():cuda()):size())
 print(model)
-print(model:forward(torch.Tensor(1, 3, 128, 128):zero():cuda()):size())
 --]]
-
 return srcnn
