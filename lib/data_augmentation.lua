@@ -123,8 +123,8 @@ end
 function data_augmentation.pairwise_negate(x, y, p)
    if torch.uniform() < p then
       assert(x:size(2) == y:size(2) and x:size(3) == y:size(3))
-      x = iproc.negate(x, r)
-      y = iproc.rotate(y, r)
+      x = iproc.negate(x)
+      y = iproc.negate(y)
       return x, y
    else
       return x, y
@@ -133,7 +133,7 @@ end
 function data_augmentation.pairwise_negate_x(x, y, p)
    if torch.uniform() < p then
       assert(x:size(2) == y:size(2) and x:size(3) == y:size(3))
-      x = iproc.negate(x, r)
+      x = iproc.negate(x)
       return x, y
    else
       return x, y
