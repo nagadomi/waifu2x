@@ -175,19 +175,36 @@ local function transform_pool_init(has_resize, offset)
 						    settings.crop_size, offset,
 						    n, conf)
 	    elseif settings.method == "user" then
+	       if is_validation == nil then is_validation = false end
+	       local rotate_rate = nil 
+	       local scale_rate = nil
+	       local negate_rate = nil
+	       local negate_x_rate = nil
+	       if is_validation then
+		  rotate_rate = 0
+		  scale_rate = 0
+		  negate_rate = 0
+		  negate_x_rate = 0
+	       else
+		  rotate_rate = settings.random_pairwise_rotate_rate
+		  scale_rate = settings.random_pairwise_scale_rate
+		  negate_rate = settings.random_pairwise_negate_rate
+		  negate_x_rate = settings.random_pairwise_negate_x_rate
+	       end
 	       local conf = tablex.update({
 		     max_size = settings.max_size,
 		     active_cropping_rate = active_cropping_rate,
 		     active_cropping_tries = active_cropping_tries,
-		     random_pairwise_rotate_rate = settings.random_pairwise_rotate_rate,
+		     random_pairwise_rotate_rate = rotate_rate,
 		     random_pairwise_rotate_min = settings.random_pairwise_rotate_min,
 		     random_pairwise_rotate_max = settings.random_pairwise_rotate_max,
-		     random_pairwise_scale_rate = settings.random_pairwise_scale_rate,
+		     random_pairwise_scale_rate = scale_rate,
 		     random_pairwise_scale_min = settings.random_pairwise_scale_min,
 		     random_pairwise_scale_max = settings.random_pairwise_scale_max,
-		     random_pairwise_negate_rate = settings.random_pairwise_negate_rate,
-		     random_pairwise_negate_x_rate = settings.random_pairwise_negate_x_rate,
+		     random_pairwise_negate_rate = negate_rate,
+		     random_pairwise_negate_x_rate = negate_x_rate,
 		     pairwise_y_binary = settings.pairwise_y_binary,
+		     pairwise_flip = settings.pairwise_flip,
 		     rgb = (settings.color == "rgb")}, meta)
 	       return pairwise_transform.user(x, y,
 					      settings.crop_size, offset,

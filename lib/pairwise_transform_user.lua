@@ -13,8 +13,18 @@ function pairwise_transform.user(x, y, size, offset, n, options)
    x, y = pairwise_utils.preprocess_user(x, y, scale_y, size, options)
    assert(x:size(3) == y:size(3) / scale_y and x:size(2) == y:size(2) / scale_y)
    local batch = {}
-   local lowres_y = pairwise_utils.low_resolution(y)
-   local xs, ys, ls = pairwise_utils.flip_augmentation(x, y, lowres_y)
+   local lowres_y = nil
+   local xs ={x}
+   local ys = {y}
+   local ls = {}
+
+   if options.active_cropping_rate > 0 then
+      lowres_y = pairwise_utils.low_resolution(y)
+   end
+   if options.pairwise_flip then
+      xs, ys, ls = pairwise_utils.flip_augmentation(x, y, lowres_y)
+   end
+   assert(#xs == #ys)
    for i = 1, n do
       local t = (i % #xs) + 1
       local xc, yc = pairwise_utils.active_cropping(xs[t], ys[t], ls[t], size, scale_y,
@@ -24,8 +34,8 @@ function pairwise_transform.user(x, y, size, offset, n, options)
       yc = iproc.byte2float(yc)
       if options.rgb then
       else
-	 yc = image.rgb2yuv(yc)[1]:reshape(1, yc:size(2), yc:size(3))
-	 xc = image.rgb2yuv(xc)[1]:reshape(1, xc:size(2), xc:size(3))
+	 yc = iproc.rgb2y(yc)
+	 xc = iproc.rgb2y(xc)
       end
       table.insert(batch, {xc, iproc.crop(yc, offset, offset, size - offset, size - offset)})
    end

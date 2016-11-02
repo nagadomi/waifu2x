@@ -178,7 +178,7 @@ local function rotate_with_warp(src, dst, theta, mode)
   flow[2]:mul(-(width -1)):add(math.floor(width / 2 + 0.5))
   flow:add(-1, torch.mm(kernel, flow:view(2, height * width)))
   dst:resizeAs(src)
-  return image.warp(dst, src, flow, mode, true, 'pad')
+  return image.warp(dst, src, flow, mode, true, 'clamp')
 end
 function iproc.rotate(src, theta)
    local conversion
@@ -211,6 +211,16 @@ function iproc.gaussian2d(kernel_size, sigma)
    end
    kernel:div(kernel:sum())
    return kernel
+end
+function iproc.rgb2y(src)
+   local conversion
+   src, conversion = iproc.byte2float(src)
+   local dest = torch.FloatTensor(1, src:size(2), src:size(3)):zero()
+   dest:add(0.299, src[1]):add(0.587, src[2]):add(0.114, src[3])
+   if conversion then
+      dest = iproc.float2byte(dest)
+   end
+   return dest
 end
 
 local function test_conversion()

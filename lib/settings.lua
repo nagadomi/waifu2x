@@ -46,6 +46,7 @@ cmd:option("-random_pairwise_rotate_max", 6, 'max rotate angle for random pairwi
 cmd:option("-random_pairwise_negate_rate", 0.0, 'data augmentation using nagate image for user method')
 cmd:option("-random_pairwise_negate_x_rate", 0.0, 'data augmentation using nagate image only x side for user method')
 cmd:option("-pairwise_y_binary", 0, 'binarize y after data augmentation(0|1)')
+cmd:option("-pairwise_flip", 1, 'use flip(0|1)')
 cmd:option("-scale", 2.0, 'scale factor (2)')
 cmd:option("-learning_rate", 0.00025, 'learning rate for adam')
 cmd:option("-crop_size", 48, 'crop size')
@@ -91,6 +92,7 @@ to_bool(settings, "plot")
 to_bool(settings, "save_history")
 to_bool(settings, "use_transparent_png")
 to_bool(settings, "pairwise_y_binary")
+to_bool(settings, "pairwise_flip")
 
 if settings.plot then
    require 'gnuplot'

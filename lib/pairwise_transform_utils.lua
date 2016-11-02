@@ -164,7 +164,7 @@ function pairwise_transform_utils.flip_augmentation(x, y, lowres_y, x_noise)
 
    for j = 1, 2 do
       -- TTA
-      local xi, yi, ri
+      local xi, yi, ri, ni
       if j == 1 then
 	 xi = x
 	 ni = x_noise
@@ -176,7 +176,9 @@ function pairwise_transform_utils.flip_augmentation(x, y, lowres_y, x_noise)
 	    ni = x_noise:transpose(2, 3):contiguous()
 	 end
 	 yi = y:transpose(2, 3):contiguous()
-	 ri = lowres_y:transpose(2, 3):contiguous()
+	 if lowres_y then
+	    ri = lowres_y:transpose(2, 3):contiguous()
+	 end
       end
       local xv = iproc.vflip(xi)
       local nv
@@ -184,34 +186,45 @@ function pairwise_transform_utils.flip_augmentation(x, y, lowres_y, x_noise)
 	 nv = iproc.vflip(ni)
       end
       local yv = iproc.vflip(yi)
-      local rv = iproc.vflip(ri)
+      local rv
+      if ri then
+	 rv = iproc.vflip(ri)
+      end
       table.insert(xs, xi)
       if ni then
 	 table.insert(ns, ni)
       end
       table.insert(ys, yi)
-      table.insert(ls, ri)
+      if ri then
+	 table.insert(ls, ri)
+      end
 
       table.insert(xs, xv)
       if nv then
 	 table.insert(ns, nv)
       end
       table.insert(ys, yv)
-      table.insert(ls, rv)
+      if rv then
+	 table.insert(ls, rv)
+      end
 
       table.insert(xs, iproc.hflip(xi))
       if ni then
 	 table.insert(ns, iproc.hflip(ni))
       end
       table.insert(ys, iproc.hflip(yi))
-      table.insert(ls, iproc.hflip(ri))
+      if ri then
+	 table.insert(ls, iproc.hflip(ri))
+      end
 
       table.insert(xs, iproc.hflip(xv))
       if nv then
 	 table.insert(ns, iproc.hflip(nv))
       end
       table.insert(ys, iproc.hflip(yv))
-      table.insert(ls, iproc.hflip(rv))
+      if rv then
+	 table.insert(ls, iproc.hflip(rv))
+      end
    end
    return xs, ys, ls, ns
 end
