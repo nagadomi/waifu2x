@@ -403,6 +403,7 @@ function srcnn.srresnet_2x(backend, ch)
       conv:add(SpatialConvolution(backend, 64, 64, 3, 3, 1, 1, 0, 0))
       conv:add(ReLU(backend))
       conv:add(SpatialConvolution(backend, 64, 64, 3, 3, 1, 1, 0, 0))
+      conv:add(ReLU(backend))
       con:add(conv)
       con:add(nn.SpatialZeroPadding(-2, -2, -2, -2)) -- identity + de-padding
       seq:add(con)
