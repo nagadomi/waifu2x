@@ -36,7 +36,7 @@ cmd:option("-random_unsharp_mask_rate", 0.0, 'data augmentation using unsharp ma
 cmd:option("-random_blur_rate", 0.0, 'data augmentation using gaussian blur (0.0-1.0)')
 cmd:option("-random_blur_size", "3,5", 'filter size for random gaussian blur (comma separated)')
 cmd:option("-random_blur_sigma_min", 0.5, 'min sigma for random gaussian blur')
-cmd:option("-random_blur_sigma_max", 0.75, 'max sigma for random gaussian blur')
+cmd:option("-random_blur_sigma_max", 1.0, 'max sigma for random gaussian blur')
 cmd:option("-random_pairwise_scale_rate", 0.0, 'data augmentation using pairwise resize for user method')
 cmd:option("-random_pairwise_scale_min", 0.85, 'min scale factor for random pairwise scale')
 cmd:option("-random_pairwise_scale_max", 1.176, 'max scale factor for random pairwise scale')
