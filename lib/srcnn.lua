@@ -438,6 +438,63 @@ function srcnn.srresnet_2x(backend, ch)
    return model
 end
 
+-- large version of srresnet_2x. current best model but slow.
+function srcnn.srresnet_12l(backend, ch)
+   local function skip(backend, i, o)
+      local con = nn.Concat(2)
+      local conv = nn.Sequential()
+      conv:add(SpatialConvolution(backend, i, o, 3, 3, 1, 1, 1, 1))
+      conv:add(ReLU(backend))
+      -- depth concat
+      con:add(conv)
+      con:add(nn.Identity()) -- skip
+      return con
+   end
+   local function resblock(backend, i, o)
+      local seq = nn.Sequential()
+      local con = nn.ConcatTable()
+      local conv = nn.Sequential()
+      conv:add(SpatialConvolution(backend, i, o, 3, 3, 1, 1, 0, 0))
+      conv:add(nn.LeakyReLU(0.1, true))
+      conv:add(SpatialConvolution(backend, o, o, 3, 3, 1, 1, 0, 0))
+      conv:add(nn.LeakyReLU(0.1, true))
+      con:add(conv)
+      if i == o then
+	 con:add(nn.SpatialZeroPadding(-2, -2, -2, -2)) -- identity + de-padding
+      else
+	 local seq = nn.Sequential()
+	 seq:add(SpatialConvolution(backend, i, o, 1, 1, 1, 1, 0, 0))
+	 seq:add(nn.SpatialZeroPadding(-2, -2, -2, -2))
+	 con:add(seq)
+      end
+      seq:add(con)
+      seq:add(nn.CAddTable())
+      return seq
+   end
+   local model = nn.Sequential()
+   model:add(SpatialConvolution(backend, ch, 32, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(resblock(backend, 32, 64))
+   model:add(resblock(backend, 64, 64))
+   model:add(resblock(backend, 64, 128))
+   model:add(resblock(backend, 128, 128))
+   model:add(resblock(backend, 128, 256))
+   model:add(resblock(backend, 256, 256))
+   model:add(SpatialFullConvolution(backend, 256, ch, 4, 4, 2, 2, 3, 3):noBias())
+   model:add(w2nn.InplaceClip01())
+   model:add(nn.View(-1):setNumInputDims(3))
+   model.w2nn_arch_name = "srresnet_12l"
+   model.w2nn_offset = 28
+   model.w2nn_scale_factor = 2
+   model.w2nn_resize = true
+   model.w2nn_channels = ch
+
+   --model:cuda()
+   --print(model:forward(torch.Tensor(32, ch, 92, 92):uniform():cuda()):size())
+
+   return model
+end
+
 -- for segmentation
 function srcnn.fcn_v1(backend, ch)
    -- input_size = 120
@@ -516,4 +573,5 @@ local model = srcnn.fcn_v1("cunn", 3):cuda()
 print(model:forward(torch.Tensor(1, 3, 108, 108):zero():cuda()):size())
 print(model)
 --]]
+
 return srcnn
