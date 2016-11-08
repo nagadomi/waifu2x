@@ -89,6 +89,7 @@ See: [Getting started with Torch](http://torch.ch/docs/getting-started.html)
 And install luarocks packages.
 ```
 luarocks install graphicsmagick # upgrade
+luarocks install threads # upgrade
 luarocks install lua-csnappy
 luarocks install md5
 luarocks install uuid
