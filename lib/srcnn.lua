@@ -438,7 +438,7 @@ function srcnn.srresnet_2x(backend, ch)
    return model
 end
 
--- large version of srresnet_2x. current best model but slow.
+-- large version of srresnet_2x. It's current best model but slow.
 function srcnn.srresnet_12l(backend, ch)
    local function skip(backend, i, o)
       local con = nn.Concat(2)
