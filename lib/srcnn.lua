@@ -386,16 +386,6 @@ end
 -- ref: https://arxiv.org/abs/1609.04802
 -- note: no batch-norm, no zero-paading
 function srcnn.srresnet_2x(backend, ch)
-   local function skip(backend, i, o)
-      local con = nn.Concat(2)
-      local conv = nn.Sequential()
-      conv:add(SpatialConvolution(backend, i, o, 3, 3, 1, 1, 1, 1))
-      conv:add(ReLU(backend))
-      -- depth concat
-      con:add(conv)
-      con:add(nn.Identity()) -- skip
-      return con
-   end
    local function resblock(backend)
       local seq = nn.Sequential()
       local con = nn.ConcatTable()
@@ -440,16 +430,6 @@ end
 
 -- large version of srresnet_2x. It's current best model but slow.
 function srcnn.srresnet_12l(backend, ch)
-   local function skip(backend, i, o)
-      local con = nn.Concat(2)
-      local conv = nn.Sequential()
-      conv:add(SpatialConvolution(backend, i, o, 3, 3, 1, 1, 1, 1))
-      conv:add(ReLU(backend))
-      -- depth concat
-      con:add(conv)
-      con:add(nn.Identity()) -- skip
-      return con
-   end
    local function resblock(backend, i, o)
       local seq = nn.Sequential()
       local con = nn.ConcatTable()
