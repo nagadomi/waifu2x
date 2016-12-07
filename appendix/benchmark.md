@@ -16,33 +16,33 @@ Urban100: https://github.com/jbhuang0604/SelfExSR
 
 ### 2x - PSNR 
 
-| Dataset/Model | Bicubic       | vgg\_7/photo  | upconv\_7/photo  | upconv\_7l/photo | 
-|---------------|---------------|---------------|------------------|------------------|
-| BSD100        | 29.558        | 31.427        | 31.640           | 31.749           |
-| Urban100      | 26.852        | 30.057        | 30.477           | 30.759           |
+| Dataset/Model | Bicubic       | vgg\_7/photo  | upconv\_7/photo  | upconv\_7l/photo | srresnet_12l/photo | 
+|---------------|---------------|---------------|------------------|------------------|--------------------|
+| BSD100        | 29.558        | 31.427        | 31.640           | 31.749           | 31.847             |
+| Urban100      | 26.852        | 30.057        | 30.477           | 30.759           | 31.016             |
 
 ### 2x with TTA - PSNR 
 
 Note: TTA is an ensemble technique that is supported by waifu2x. TTA method is 8x slower than non TTA method but it improves PSNR (~+0.1 on photo, ~+0.4 on art).
 
-| Dataset/Model | Bicubic       | vgg\_7/photo  | upconv\_7/photo  | upconv\_7l/photo | 
-|---------------|---------------|---------------|------------------|------------------|
-| BSD100        | 29.558        | 31.474        | 31.705           | 31.812           |
-| Urban100      | 26.852        | 30.140        | 30.599           | 30.868           |
+| Dataset/Model | Bicubic       | vgg\_7/photo  | upconv\_7/photo  | upconv\_7l/photo | srresnet_12l/photo | 
+|---------------|---------------|---------------|------------------|------------------|--------------------|
+| BSD100        | 29.558        | 31.474        | 31.705           | 31.812           | 31.915             |
+| Urban100      | 26.852        | 30.140        | 30.599           | 30.868           | 31.162             |
 
 ### 2x - benchmark elapsed time (sec)
 
-| Dataset/Model | vgg\_7/photo  | upconv\_7/photo  | upconv\_7l/photo | 
-|---------------|---------------|------------------|------------------|
-| BSD100        | 4.057         | 2.509            | 4.947            |
-| Urban100      | 16.349        | 7.083            | 14.178           |
+| Dataset/Model | vgg\_7/photo  | upconv\_7/photo  | upconv\_7l/photo | srresnet_12l/photo |
+|---------------|---------------|------------------|------------------|--------------------|
+| BSD100        | 4.057         | 2.509            | 4.947            | 6.86               |
+| Urban100      | 16.349        | 7.083            | 14.178           | 27.87              |
 
 ### 2x with TTA - benchmark elapsed time (sec)
 
-| Dataset/Model | vgg\_7/photo  | upconv\_7/photo  | upconv\_7l/photo | 
-|---------------|---------------|------------------|------------------|
-| BSD100        | 36.611        | 20.219           | 42.486           |
-| Urban100      | 132.416       | 65.125           | 129.916          |
+| Dataset/Model | vgg\_7/photo  | upconv\_7/photo  | upconv\_7l/photo | srresnet_12l/photo |
+|---------------|---------------|------------------|------------------|--------------------|
+| BSD100        | 36.611        | 20.219           | 42.486           | 60.38              |
+| Urban100      | 132.416       | 65.125           | 129.916          | 255.20             |
 
 ## Art
 
