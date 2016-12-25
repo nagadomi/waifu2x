@@ -37,6 +37,15 @@ function pairwise_transform.user(x, y, size, offset, n, options)
 	 yc = iproc.rgb2y(yc)
 	 xc = iproc.rgb2y(xc)
       end
+      if options.gcn then
+	 local mean = xc:mean()
+	 local stdv = xc:std()
+	 if stdv > 0 then
+	    xc:add(-mean):div(stdv)
+	 else
+	    xc:add(-mean)
+	 end
+      end
       table.insert(batch, {xc, iproc.crop(yc, offset, offset, size - offset, size - offset)})
    end
 

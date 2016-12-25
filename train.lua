@@ -192,6 +192,7 @@ local function transform_pool_init(has_resize, offset)
 		  negate_x_rate = settings.random_pairwise_negate_x_rate
 	       end
 	       local conf = tablex.update({
+		     gcn = settings.gcn,
 		     max_size = settings.max_size,
 		     active_cropping_rate = active_cropping_rate,
 		     active_cropping_tries = active_cropping_tries,
@@ -431,6 +432,11 @@ local function train()
 				       model.w2nn_input_size))
 	 settings.crop_size = model.w2nn_input_size
       end
+   end
+   if model.w2nn_gcn then
+      settings.gcn = true
+   else
+      settings.gcn = false
    end
    dir.makepath(settings.model_dir)
 

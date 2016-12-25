@@ -519,12 +519,12 @@ function srcnn.fcn_v1(backend, ch)
 
    model:add(w2nn.InplaceClip01())
    model:add(nn.View(-1):setNumInputDims(3))
-
    model.w2nn_arch_name = "fcn_v1"
    model.w2nn_offset = 36
    model.w2nn_scale_factor = 1
    model.w2nn_channels = ch
    model.w2nn_input_size = 120
+   model.w2nn_gcn = true
    
    return model
 end
