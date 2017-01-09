@@ -524,7 +524,7 @@ function srcnn.fcn_v1(backend, ch)
    model.w2nn_scale_factor = 1
    model.w2nn_channels = ch
    model.w2nn_input_size = 120
-   model.w2nn_gcn = true
+   --model.w2nn_gcn = true
    
    return model
 end
