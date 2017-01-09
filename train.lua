@@ -317,6 +317,8 @@ local function create_criterion(model)
       end
    elseif settings.loss == "l1" then
       return w2nn.L1Criterion():cuda()
+   elseif settings.loss == "mse" then
+      return w2nn.ClippedMSECriterion(0, 1.0):cuda()
    else
       error("unsupported loss .." .. settings.loss)
    end
