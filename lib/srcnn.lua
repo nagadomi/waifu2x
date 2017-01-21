@@ -429,7 +429,7 @@ function srcnn.srresnet_2x(backend, ch)
 end
 
 -- large version of srresnet_2x. It's current best model but slow.
-function srcnn.srresnet_12l(backend, ch)
+function srcnn.resnet_14l(backend, ch)
    local function resblock(backend, i, o)
       local seq = nn.Sequential()
       local con = nn.ConcatTable()
@@ -463,7 +463,7 @@ function srcnn.srresnet_12l(backend, ch)
    model:add(SpatialFullConvolution(backend, 256, ch, 4, 4, 2, 2, 3, 3):noBias())
    model:add(w2nn.InplaceClip01())
    model:add(nn.View(-1):setNumInputDims(3))
-   model.w2nn_arch_name = "srresnet_12l"
+   model.w2nn_arch_name = "resnet_14l"
    model.w2nn_offset = 28
    model.w2nn_scale_factor = 2
    model.w2nn_resize = true
