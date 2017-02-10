@@ -82,46 +82,50 @@ local function load_images(list)
       local skip = false
       local alpha_color = torch.random(0, 1)
 
-      if meta and meta.alpha then
-	 if settings.use_transparent_png then
-	    im = alpha_util.fill(im, meta.alpha, alpha_color)
-	 else
-	    skip = true
-	 end
-      end
-      if skip then
-	 if not skip_notice then
-	    io.stderr:write("skip transparent png (settings.use_transparent_png=0)\n")
-	    skip_notice = true
-	 end
-      else
-	 if csv_meta and csv_meta.x then
-	    -- method == user
-	    local yy = im
-	    local xx, meta2 = image_loader.load_byte(csv_meta.x)
-	    if meta2 and meta2.alpha then
-	       xx = alpha_util.fill(xx, meta2.alpha, alpha_color)
+      if im then
+	 if meta and meta.alpha then
+	    if settings.use_transparent_png then
+	       im = alpha_util.fill(im, meta.alpha, alpha_color)
+	    else
+	       skip = true
 	    end
-	    xx, yy = crop_if_large_pair(xx, yy, settings.max_training_image_size)
-	    table.insert(x, {{y = compression.compress(yy), x = compression.compress(xx)},
-			    {data = {filters = filters, has_x = true}}})
-	 else
-	    im = crop_if_large(im, settings.max_training_image_size)
-	    im = iproc.crop_mod4(im)
-	    local scale = 1.0
-	    if settings.random_half_rate > 0.0 then
-	       scale = 2.0
+	 end
+	 if skip then
+	    if not skip_notice then
+	       io.stderr:write("skip transparent png (settings.use_transparent_png=0)\n")
+	       skip_notice = true
 	    end
-	    if im then
+	 else
+	    if csv_meta and csv_meta.x then
+	       -- method == user
+	       local yy = im
+	       local xx, meta2 = image_loader.load_byte(csv_meta.x)
+	       if xx then
+		  if meta2 and meta2.alpha then
+		     xx = alpha_util.fill(xx, meta2.alpha, alpha_color)
+		  end
+		  xx, yy = crop_if_large_pair(xx, yy, settings.max_training_image_size)
+		  table.insert(x, {{y = compression.compress(yy), x = compression.compress(xx)},
+				  {data = {filters = filters, has_x = true}}})
+	       else
+		  io.stderr:write(string.format("\n%s: skip: load error.\n", csv_meta.x))
+	       end
+	    else
+	       im = crop_if_large(im, settings.max_training_image_size)
+	       im = iproc.crop_mod4(im)
+	       local scale = 1.0
+	       if settings.random_half_rate > 0.0 then
+		  scale = 2.0
+	       end
 	       if im:size(2) > (settings.crop_size * scale + MARGIN) and im:size(3) > (settings.crop_size * scale + MARGIN) then
 		  table.insert(x, {compression.compress(im), {data = {filters = filters}}})
 	       else
 		  io.stderr:write(string.format("\n%s: skip: image is too small (%d > size).\n", filename, settings.crop_size * scale + MARGIN))
 	       end
-	    else
-	       io.stderr:write(string.format("\n%s: skip: load error.\n", filename))
 	    end
 	 end
+      else
+	 io.stderr:write(string.format("\n%s: skip: load error.\n", filename))
       end
       xlua.progress(i, #csv)
       if i % 10 == 0 then

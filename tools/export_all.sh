@@ -33,5 +33,7 @@ export_model() {
 }
 export_model vgg_7/art
 export_model upconv_7/art
+export_model upconv_7l/art
 export_model vgg_7/photo
 export_model upconv_7/photo
+export_model upconv_7l/photo

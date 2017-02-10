@@ -1,6 +1,7 @@
 require 'xlua'
 require 'pl'
 require 'trepl'
+require 'cutorch'
 
 -- global settings
 
@@ -18,7 +19,7 @@ cmd:text()
 cmd:text("waifu2x-training")
 cmd:text("Options:")
 cmd:option("-gpu", -1, 'GPU Device ID')
-cmd:option("-seed", 11, 'RNG seed')
+cmd:option("-seed", 11, 'RNG seed (note: it only able to reproduce the training results with `-thread 1`)')
 cmd:option("-data_dir", "./data", 'path to data directory')
 cmd:option("-backend", "cunn", '(cunn|cudnn)')
 cmd:option("-test", "images/miku_small.png", 'path to test image')
@@ -32,6 +33,20 @@ cmd:option("-random_color_noise_rate", 0.0, 'data augmentation using color noise
 cmd:option("-random_overlay_rate", 0.0, 'data augmentation using flipped image overlay (0.0-1.0)')
 cmd:option("-random_half_rate", 0.0, 'data augmentation using half resolution image (0.0-1.0)')
 cmd:option("-random_unsharp_mask_rate", 0.0, 'data augmentation using unsharp mask (0.0-1.0)')
+cmd:option("-random_blur_rate", 0.0, 'data augmentation using gaussian blur (0.0-1.0)')
+cmd:option("-random_blur_size", "3,5", 'filter size for random gaussian blur (comma separated)')
+cmd:option("-random_blur_sigma_min", 0.5, 'min sigma for random gaussian blur')
+cmd:option("-random_blur_sigma_max", 1.0, 'max sigma for random gaussian blur')
+cmd:option("-random_pairwise_scale_rate", 0.0, 'data augmentation using pairwise resize for user method')
+cmd:option("-random_pairwise_scale_min", 0.85, 'min scale factor for random pairwise scale')
+cmd:option("-random_pairwise_scale_max", 1.176, 'max scale factor for random pairwise scale')
+cmd:option("-random_pairwise_rotate_rate", 0.0, 'data augmentation using pairwise resize for user method')
+cmd:option("-random_pairwise_rotate_min", -6, 'min rotate angle for random pairwise rotate')
+cmd:option("-random_pairwise_rotate_max", 6, 'max rotate angle for random pairwise rotate')
+cmd:option("-random_pairwise_negate_rate", 0.0, 'data augmentation using nagate image for user method')
+cmd:option("-random_pairwise_negate_x_rate", 0.0, 'data augmentation using nagate image only x side for user method')
+cmd:option("-pairwise_y_binary", 0, 'binarize y after data augmentation(0|1)')
+cmd:option("-pairwise_flip", 1, 'use flip(0|1)')
 cmd:option("-scale", 2.0, 'scale factor (2)')
 cmd:option("-learning_rate", 0.00025, 'learning rate for adam')
 cmd:option("-crop_size", 48, 'crop size')
@@ -59,6 +74,8 @@ cmd:option("-oracle_drop_rate", 0.5, '')
 cmd:option("-learning_rate_decay", 3.0e-7, 'learning rate decay (learning_rate * 1/(1+num_of_data*patches*epoch))')
 cmd:option("-resume", "", 'resume model file')
 cmd:option("-name", "user", 'model name for user method')
+cmd:option("-gpu", 1, 'Device ID')
+cmd:option("-loss", "huber", 'loss function (huber|l1|mse)')
 
 local function to_bool(settings, name)
    if settings[name] == 1 then
@@ -75,6 +92,8 @@ end
 to_bool(settings, "plot")
 to_bool(settings, "save_history")
 to_bool(settings, "use_transparent_png")
+to_bool(settings, "pairwise_y_binary")
+to_bool(settings, "pairwise_flip")
 
 if settings.plot then
    require 'gnuplot'
@@ -147,5 +166,7 @@ end
 
 settings.images = string.format("%s/images.t7", settings.data_dir)
 settings.image_list = string.format("%s/image_list.txt", settings.data_dir)
+
+cutorch.setDevice(opt.gpu)
 
 return settings

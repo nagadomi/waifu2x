@@ -1,7 +1,8 @@
-require 'image'
+require 'pl'
+require 'cunn'
 local iproc = require 'iproc'
-local gm = require 'graphicsmagick'
-
+local gm = {}
+gm.Image = require 'graphicsmagick.Image'
 local data_augmentation = {}
 
 local function pcacov(x)
@@ -25,8 +26,7 @@ function data_augmentation.color_noise(src, p, factor)
 	 pca_space[i]:mul(color_scale[i])
       end
       local dest = torch.mm(pca_space:t(), cv:t()):t():contiguous():resizeAs(src)
-      dest[torch.lt(dest, 0.0)] = 0.0
-      dest[torch.gt(dest, 1.0)] = 1.0
+      dest:clamp(0.0, 1.0)
 
       if conversion then
 	 dest = iproc.float2byte(dest)
@@ -70,6 +70,75 @@ function data_augmentation.unsharp_mask(src, p)
       return src
    end
 end
+function data_augmentation.blur(src, p, size, sigma_min, sigma_max)
+   size = size or "3"
+   filters = utils.split(size, ",")
+   for i = 1, #filters do
+      local s = tonumber(filters[i])
+      filters[i] = s
+   end
+   if torch.uniform() < p then
+      local src, conversion = iproc.byte2float(src)
+      local kernel_size = filters[torch.random(1, #filters)]
+      local sigma
+      if sigma_min == sigma_max then
+	 sigma = sigma_min
+      else
+	 sigma = torch.uniform(sigma_min, sigma_max)
+      end
+      local kernel = iproc.gaussian2d(kernel_size, sigma)
+      local dest = image.convolve(src, kernel, 'same')
+      if conversion then
+	 dest = iproc.float2byte(dest)
+      end
+      return dest
+   else
+      return src
+   end
+end
+function data_augmentation.pairwise_scale(x, y, p, scale_min, scale_max)
+   if torch.uniform() < p then
+      assert(x:size(2) == y:size(2) and x:size(3) == y:size(3))
+      local scale = torch.uniform(scale_min, scale_max)
+      local h = math.floor(x:size(2) * scale)
+      local w = math.floor(x:size(3) * scale)
+      x = iproc.scale(x, w, h, "Triangle")
+      y = iproc.scale(y, w, h, "Triangle")
+      return x, y
+   else
+      return x, y
+   end
+end
+function data_augmentation.pairwise_rotate(x, y, p, r_min, r_max)
+   if torch.uniform() < p then
+      assert(x:size(2) == y:size(2) and x:size(3) == y:size(3))
+      local r = torch.uniform(r_min, r_max) / 360.0 * math.pi
+      x = iproc.rotate(x, r)
+      y = iproc.rotate(y, r)
+      return x, y
+   else
+      return x, y
+   end
+end
+function data_augmentation.pairwise_negate(x, y, p)
+   if torch.uniform() < p then
+      assert(x:size(2) == y:size(2) and x:size(3) == y:size(3))
+      x = iproc.negate(x)
+      y = iproc.negate(y)
+      return x, y
+   else
+      return x, y
+   end
+end
+function data_augmentation.pairwise_negate_x(x, y, p)
+   if torch.uniform() < p then
+      assert(x:size(2) == y:size(2) and x:size(3) == y:size(3))
+      x = iproc.negate(x)
+      return x, y
+   else
+      return x, y
+   end
+end
 function data_augmentation.shift_1px(src)
    -- reducing the even/odd issue in nearest neighbor scaler.
    local direction = torch.random(1, 4)
@@ -107,11 +176,11 @@ function data_augmentation.flip(src)
       src = src:transpose(2, 3):contiguous()
    end
    if flip == 1 then
-      dest = image.hflip(src)
+      dest = iproc.hflip(src)
    elseif flip == 2 then
-      dest = image.vflip(src)
+      dest = iproc.vflip(src)
    elseif flip == 3 then
-      dest = image.hflip(image.vflip(src))
+      dest = iproc.hflip(iproc.vflip(src))
    elseif flip == 4 then
       dest = src
    end
@@ -120,4 +189,20 @@ function data_augmentation.flip(src)
    end
    return dest
 end
+
+local function test_blur()
+   torch.setdefaulttensortype("torch.FloatTensor")
+   local image =require 'image'
+   local src = image.lena()
+
+   image.display({image = src, min=0, max=1})
+   local dest = data_augmentation.blur(src, 1.0, "3,5", 0.5, 0.6)
+   image.display({image = dest, min=0, max=1})
+   dest = data_augmentation.blur(src, 1.0, "3", 1.0, 1.0)
+   image.display({image = dest, min=0, max=1})
+   dest = data_augmentation.blur(src, 1.0, "5", 0.75, 0.75)
+   image.display({image = dest, min=0, max=1})
+end
+--test_blur()
+
 return data_augmentation

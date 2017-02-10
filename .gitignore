@@ -11,6 +11,8 @@ models/*
 !models/ukbench
 !models/photo
 !models/upconv_7
+!models/upconv_7l
+!models/srresnet_12l
 !models/vgg_7
 models/*/*.png
 models/*/*/*.png

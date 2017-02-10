@@ -40,6 +40,15 @@ local function reconstruct_nn(model, x, inner_scale, offset, block_size, batch_s
 	    break
 	 end
 	 input[j+1]:copy(x[input_indexes[i + j]])
+	 if model.w2nn_gcn then
+	    local mean = input[j + 1]:mean()
+	    local stdv = input[j + 1]:std()
+	    if stdv > 0 then
+	       input[j + 1]:add(-mean):div(stdv)
+	    else
+	       input[j + 1]:add(-mean)
+	    end
+	 end
 	 c = c + 1
       end
       input_cuda:copy(input)
@@ -80,7 +89,12 @@ local function padding_params(x, model, block_size)
    p.x_w = x:size(3)
    p.x_h = x:size(2)
    p.inner_scale = reconstruct.inner_scale(model)
-   local input_offset = math.ceil(offset / p.inner_scale)
+   local input_offset
+   if model.w2nn_input_offset then
+      input_offset = model.w2nn_input_offset
+   else
+      input_offset = math.ceil(offset / p.inner_scale)
+   end
    local input_block_size = block_size
    local process_size = input_block_size - input_offset * 2
    local h_blocks = math.floor(p.x_h / process_size) +
@@ -172,6 +186,9 @@ function reconstruct.scale_rgb(model, scale, x, offset, block_size, batch_size)
    return output
 end
 function reconstruct.image(model, x, block_size)
+   if model.w2nn_input_size then
+      block_size = model.w2nn_input_size
+   end
    local i2rgb = false
    if x:size(1) == 1 then
       local new_x = torch.Tensor(3, x:size(2), x:size(3))
@@ -194,6 +211,9 @@ function reconstruct.image(model, x, block_size)
    return x
 end
 function reconstruct.scale(model, scale, x, block_size)
+   if model.w2nn_input_size then
+      block_size = model.w2nn_input_size
+   end
    local i2rgb = false
    if x:size(1) == 1 then
       local new_x = torch.Tensor(3, x:size(2), x:size(3))
@@ -287,6 +307,9 @@ local function tta(f, n, model, x, block_size)
    return average:div(#augments)
 end
 function reconstruct.image_tta(model, n, x, block_size)
+   if model.w2nn_input_size then
+      block_size = model.w2nn_input_size
+   end
    if reconstruct.is_rgb(model) then
       return tta(reconstruct.image_rgb, n, model, x, block_size)
    else
@@ -294,6 +317,9 @@ function reconstruct.image_tta(model, n, x, block_size)
    end
 end
 function reconstruct.scale_tta(model, n, scale, x, block_size)
+   if model.w2nn_input_size then
+      block_size = model.w2nn_input_size
+   end
    if reconstruct.is_rgb(model) then
       local f = function (model, x, offset, block_size)
 	 return reconstruct.scale_rgb(model, scale, x, offset, block_size)
