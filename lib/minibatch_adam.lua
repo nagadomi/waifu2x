@@ -11,7 +11,7 @@ local function minibatch_adam(model, criterion, eval_metric,
       config.xEvalCount = 0
       config.learningRate = config.xLearningRate
    end
-
+   local sum_psnr = 0
    local sum_loss = 0
    local sum_eval = 0
    local count_loss = 0
@@ -55,6 +55,7 @@ local function minibatch_adam(model, criterion, eval_metric,
 	 else
 	    se = eval_metric:forward(output, targets)
 	 end
+	 sum_psnr = sum_psnr + (10 * math.log10(1 / (se + 1.0e-6)))
 	 sum_eval = sum_eval + se
 	 sum_loss = sum_loss + f
 	 count_loss = count_loss + 1
@@ -69,10 +70,9 @@ local function minibatch_adam(model, criterion, eval_metric,
 	 collectgarbage()
 	 xlua.progress(t, train_x:size(1))
       end
-
    end
    xlua.progress(train_x:size(1), train_x:size(1))
-   return { loss = sum_loss / count_loss, MSE = sum_eval / count_loss, PSNR = 10 * math.log10(1 / (sum_eval / count_loss))}, instance_loss
+   return { loss = sum_loss / count_loss, MSE = sum_eval / count_loss, PSNR = sum_psnr / count_loss}, instance_loss
 end
 
 return minibatch_adam
