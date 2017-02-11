@@ -76,6 +76,7 @@ cmd:option("-resume", "", 'resume model file')
 cmd:option("-name", "user", 'model name for user method')
 cmd:option("-gpu", 1, 'Device ID')
 cmd:option("-loss", "huber", 'loss function (huber|l1|mse)')
+cmd:option("-update_criterion", "mse", 'mse|loss')
 
 local function to_bool(settings, name)
    if settings[name] == 1 then

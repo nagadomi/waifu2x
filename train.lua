@@ -532,9 +532,15 @@ local function train()
 	 if settings.plot then
 	    plot(hist_train, hist_valid)
 	 end
-	 if score.loss < best_score then
+	 local score_for_update
+	 if settings.update_criterion == "mse" then
+	    score_for_update = score.MSE
+	 else
+	    score_for_update = score.loss
+	 end
+	 if score_for_update < best_score then
 	    local test_image = image_loader.load_float(settings.test) -- reload
-	    best_score = score.loss
+	    best_score = score_for_update
 	    print("* model has updated")
 	    if settings.save_history then
 	       torch.save(settings.model_file_best, model:clearState(), "ascii")
@@ -583,7 +589,7 @@ local function train()
 	       end
 	    end
 	 end
-	 print("Batch-wise PSNR: " .. score.PSNR .. ", loss: " .. score.loss .. ", Minimum loss: " .. best_score .. ", MSE: " .. score.MSE)
+	 print("Batch-wise PSNR: " .. score.PSNR .. ", loss: " .. score.loss .. ", MSE: " .. score.MSE .. ", best: " .. best_score)
 	 collectgarbage()
       end
    end
