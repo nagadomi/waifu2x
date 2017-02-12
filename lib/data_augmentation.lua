@@ -139,6 +139,36 @@ function data_augmentation.pairwise_negate_x(x, y, p)
       return x, y
    end
 end
+function data_augmentation.pairwise_flip(x, y)
+   local flip = torch.random(1, 4)
+   local tr = torch.random(1, 2)
+   local x, conversion = iproc.byte2float(x)
+   y = iproc.byte2float(y)
+   x = x:contiguous()
+   y = y:contiguous()
+   if tr == 1 then
+      -- pass
+   elseif tr == 2 then
+      x = x:transpose(2, 3):contiguous()
+      y = y:transpose(2, 3):contiguous()
+   end
+   if flip == 1 then
+      x = iproc.hflip(x)
+      y = iproc.hflip(y)
+   elseif flip == 2 then
+      x = iproc.vflip(x)
+      y = iproc.vflip(y)
+   elseif flip == 3 then
+      x = iproc.hflip(iproc.vflip(x))
+      y = iproc.hflip(iproc.vflip(y))
+   elseif flip == 4 then
+   end
+   if conversion then
+      x = iproc.float2byte(x)
+      y = iproc.float2byte(y)
+   end
+   return x, y
+end
 function data_augmentation.shift_1px(src)
    -- reducing the even/odd issue in nearest neighbor scaler.
    local direction = torch.random(1, 4)
