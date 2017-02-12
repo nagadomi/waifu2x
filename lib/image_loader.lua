@@ -1,10 +1,10 @@
 local gm = require 'graphicsmagick'
 local ffi = require 'ffi'
 local iproc = require 'iproc'
+local sRGB2014 = require 'sRGB2014'
 require 'pl'
 
 local image_loader = {}
-
 local clip_eps8 = (1.0 / 255.0) * 0.5 - (1.0e-7 * (1.0 / 255.0) * 0.5)
 local clip_eps16 = (1.0 / 65535.0) * 0.5 - (1.0e-7 * (1.0 / 65535.0) * 0.5)
 local background_color = 0.5
@@ -53,6 +53,10 @@ function image_loader.encode_png(rgb, options)
    if options.gamma then
       im:gamma(options.gamma)
    end
+   if options.icm and im.profile then
+      im:profile("icm", sRGB2014)
+      im:profile("icm", options.icm)
+   end
    return im:depth(options.depth):format("PNG"):toString()
 end
 function image_loader.save_png(filename, rgb, options)
@@ -72,7 +76,13 @@ function image_loader.decode_float(blob)
       local gamma_lcd = 0.454545
       
       im:fromBlob(blob, #blob)
-      
+      if im.profile then
+	 meta.icm = im:profile("icm")
+	 if meta.icm then
+	    im:profile("icm", sRGB2014)
+	    im:removeProfile()
+	 end
+      end
       if im:colorspace() == "CMYK" then
 	 im:colorspace("RGB")
       end
