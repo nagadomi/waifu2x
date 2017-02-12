@@ -127,6 +127,8 @@ local function SpatialConvolution(backend, nInputPlane, nOutputPlane, kW, kH, dW
       error("unsupported backend:" .. backend)
    end
 end
+srcnn.SpatialConvolution = SpatialConvolution
+
 local function SpatialFullConvolution(backend, nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH, adjW, adjH)
    if backend == "cunn" then
       return nn.SpatialFullConvolution(nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH, adjW, adjH)
@@ -136,6 +138,8 @@ local function SpatialFullConvolution(backend, nInputPlane, nOutputPlane, kW, kH
       error("unsupported backend:" .. backend)
    end
 end
+srcnn.SpatialFullConvolution = SpatialFullConvolution
+
 local function ReLU(backend)
    if backend == "cunn" then
       return nn.ReLU(true)
@@ -145,6 +149,8 @@ local function ReLU(backend)
       error("unsupported backend:" .. backend)
    end
 end
+srcnn.ReLU = ReLU
+
 local function SpatialMaxPooling(backend, kW, kH, dW, dH, padW, padH)
    if backend == "cunn" then
       return nn.SpatialMaxPooling(kW, kH, dW, dH, padW, padH)
@@ -154,6 +160,7 @@ local function SpatialMaxPooling(backend, kW, kH, dW, dH, padW, padH)
       error("unsupported backend:" .. backend)
    end
 end
+srcnn.SpatialMaxPooling = SpatialMaxPooling
 
 -- VGG style net(7 layers)
 function srcnn.vgg_7(backend, ch)

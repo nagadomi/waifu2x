@@ -418,7 +418,10 @@ local function plot(train, valid)
 	 {'validation', torch.Tensor(valid), '-'}})
 end
 local function train()
-   local x = remove_small_image(torch.load(settings.images))
+   local x = torch.load(settings.images)
+   if settings.method ~= "user" then
+      x = remove_small_image(x)
+   end
    local train_x, valid_x = split_data(x, math.max(math.floor(settings.validation_rate * #x), 1))
    local hist_train = {}
    local hist_valid = {}
@@ -426,7 +429,12 @@ local function train()
    if settings.resume:len() > 0 then
       model = torch.load(settings.resume, "ascii")
    else
-      model = srcnn.create(settings.model, settings.backend, settings.color)
+      if stringx.endswith(settings.model, ".lua") then
+	 local create_model = dofile(settings.model)
+	 model = create_model(srcnn, settings)
+      else
+	 model = srcnn.create(settings.model, settings.backend, settings.color)
+      end
    end
    if model.w2nn_input_size then
       if settings.crop_size ~= model.w2nn_input_size then
