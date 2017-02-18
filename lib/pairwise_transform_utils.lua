@@ -127,11 +127,11 @@ function pairwise_transform_utils.active_cropping(x, y, lowres_y, size, scale, p
    if p < r then
       local xi = 0
       local yi = 0
-      if x:size(2) > size + 1 then
-	 xi = torch.random(0, x:size(2) - (size + 1)) * scale
-      end
       if x:size(3) > size + 1 then
-	 yi = torch.random(0, x:size(3) - (size + 1)) * scale
+	 xi = torch.random(0, x:size(3) - (size + 1)) * scale
+      end
+      if x:size(2) > size + 1 then
+	 yi = torch.random(0, x:size(2) - (size + 1)) * scale
       end
       local yc = iproc.crop(y, xi, yi, xi + size, yi + size)
       local xc = iproc.crop(x, xi / scale, yi / scale, xi / scale + size / scale, yi / scale + size / scale)
