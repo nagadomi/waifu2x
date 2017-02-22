@@ -322,6 +322,10 @@ local function create_criterion(model)
       return w2nn.L1Criterion():cuda()
    elseif settings.loss == "mse" then
       return w2nn.ClippedMSECriterion(0, 1.0):cuda()
+   elseif settings.loss == "bce" then
+      local bce = nn.BCECriterion()
+      bce.sizeAverage = true
+      return bce:cuda()
    else
       error("unsupported loss .." .. settings.loss)
    end
