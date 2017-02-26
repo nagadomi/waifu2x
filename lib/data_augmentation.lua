@@ -102,7 +102,9 @@ function data_augmentation.pairwise_scale(x, y, p, scale_min, scale_max)
       local scale = torch.uniform(scale_min, scale_max)
       local h = math.floor(x:size(2) * scale)
       local w = math.floor(x:size(3) * scale)
-      x = iproc.scale(x, w, h, "Triangle")
+      local filters = {"Lanczos", "Catrom"}
+      local x_filter = filters[torch.random(1, 2)]
+      x = iproc.scale(x, w, h, x_filter)
       y = iproc.scale(y, w, h, "Triangle")
       return x, y
    else
