@@ -81,6 +81,11 @@ if opt.output_dir:len() > 0 then
    dir.makepath(opt.output_dir)
 end
 
+-- patch for lua52
+if not math.log10 then
+   math.log10 = function(x) return math.log(x, 10) end
+end
+
 local function rgb2y_matlab(x)
    local y = torch.Tensor(1, x:size(2), x:size(3)):zero()
    x = iproc.byte2float(x)
