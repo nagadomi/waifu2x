@@ -77,6 +77,8 @@ cmd:option("-name", "user", 'model name for user method')
 cmd:option("-gpu", 1, 'Device ID')
 cmd:option("-loss", "huber", 'loss function (huber|l1|mse|bce)')
 cmd:option("-update_criterion", "mse", 'mse|loss')
+cmd:option("-padding", 0, 'replication padding size')
+cmd:option("-padding_y_zero", 0, 'zero padding y for segmentation (0|1)')
 
 local function to_bool(settings, name)
    if settings[name] == 1 then
@@ -95,6 +97,7 @@ to_bool(settings, "save_history")
 to_bool(settings, "use_transparent_png")
 to_bool(settings, "pairwise_y_binary")
 to_bool(settings, "pairwise_flip")
+to_bool(settings, "padding_y_zero")
 
 if settings.plot then
    require 'gnuplot'
