@@ -123,6 +123,10 @@ local function load_images(list)
 		  end
 		  xx, yy = crop_if_large_pair(xx, yy, settings.max_training_image_size)
 		  xx, yy = padding_xy(xx, yy, settings.padding, settings.padding_y_zero)
+		  if settings.grayscale then
+		     xx = iproc.rgb2y(xx)
+		     yy = iproc.rgb2y(yy)
+		  end
 		  table.insert(x, {{y = compression.compress(yy), x = compression.compress(xx)},
 				  {data = {filters = filters, has_x = true}}})
 	       else
@@ -137,6 +141,9 @@ local function load_images(list)
 		  scale = 2.0
 	       end
 	       if im:size(2) > (settings.crop_size * scale + MARGIN) and im:size(3) > (settings.crop_size * scale + MARGIN) then
+		  if settings.grayscale then
+		     im = iproc.rgb2y(im)
+		  end
 		  table.insert(x, {compression.compress(im), {data = {filters = filters}}})
 	       else
 		  io.stderr:write(string.format("\n%s: skip: image is too small (%d > size).\n", filename, settings.crop_size * scale + MARGIN))

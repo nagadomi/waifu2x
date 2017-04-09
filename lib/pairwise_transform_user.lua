@@ -38,8 +38,10 @@ function pairwise_transform.user(x, y, size, offset, n, options)
       yc = iproc.byte2float(yc)
       if options.rgb then
       else
-	 yc = iproc.rgb2y(yc)
-	 xc = iproc.rgb2y(xc)
+	 if xc:size(1) > 1 then
+	    yc = iproc.rgb2y(yc)
+	    xc = iproc.rgb2y(xc)
+	 end
       end
       if options.gcn then
 	 local mean = xc:mean()

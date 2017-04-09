@@ -229,6 +229,7 @@ function iproc.rgb2y(src)
    src, conversion = iproc.byte2float(src)
    local dest = torch.FloatTensor(1, src:size(2), src:size(3)):zero()
    dest:add(0.299, src[1]):add(0.587, src[2]):add(0.114, src[3])
+   dest:clamp(0, 1)
    if conversion then
       dest = iproc.float2byte(dest)
    end
