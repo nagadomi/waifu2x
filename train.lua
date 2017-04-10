@@ -480,8 +480,9 @@ local function train()
 		       ch, settings.crop_size, settings.crop_size)
    end
    local instance_loss = nil
+   local pmodel = w2nn.data_parallel(model, settings.gpu)
    for epoch = 1, settings.epoch do
-      model:training()
+      pmodel:training()
       print("# " .. epoch)
       if adam_config.learningRate then
 	 print("learning rate: " .. adam_config.learningRate)
@@ -519,13 +520,13 @@ local function train()
       instance_loss = torch.Tensor(x:size(1)):zero()
 
       for i = 1, settings.inner_epoch do
-	 model:training()
-	 local train_score, il = minibatch_adam(model, criterion, eval_metric, x, y, adam_config)
+	 pmodel:training()
+	 local train_score, il = minibatch_adam(pmodel, criterion, eval_metric, x, y, adam_config)
 	 instance_loss:copy(il)
 	 print(train_score)
-	 model:evaluate()
+	 pmodel:evaluate()
 	 print("# validation")
-	 local score = validate(model, criterion, eval_metric, valid_xy, adam_config.xBatchSize)
+	 local score = validate(pmodel, criterion, eval_metric, valid_xy, adam_config.xBatchSize)
 	 table.insert(hist_train, train_score.loss)
 	 table.insert(hist_valid, score.loss)
 	 if settings.plot then
@@ -592,9 +593,6 @@ local function train()
 	 collectgarbage()
       end
    end
-end
-if settings.gpu > 0 then
-   cutorch.setDevice(settings.gpu)
 end
 torch.manualSeed(settings.seed)
 cutorch.manualSeed(settings.seed)
