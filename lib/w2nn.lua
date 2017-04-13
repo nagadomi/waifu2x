@@ -74,5 +74,6 @@ else
    require 'SSIMCriterion'
    require 'InplaceClip01'
    require 'L1Criterion'
+   require 'ShakeShakeTable'
    return w2nn
 end
