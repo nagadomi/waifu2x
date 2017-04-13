@@ -279,10 +279,17 @@ function pairwise_transform_utils.low_resolution(src)
 	    toTensor("byte", "RGB", "DHW")
    end
 --]]
-   return gm.Image(src, "RGB", "DHW"):
-      size(src:size(3) * 0.5, src:size(2) * 0.5, "Box"):
-      size(src:size(3), src:size(2), "Box"):
-      toTensor("byte", "RGB", "DHW")
+   if src:size(1) == 1 then
+      return gm.Image(src, "I", "DHW"):
+	 size(src:size(3) * 0.5, src:size(2) * 0.5, "Box"):
+	 size(src:size(3), src:size(2), "Box"):
+	 toTensor("byte", "I", "DHW")
+   else
+      return gm.Image(src, "RGB", "DHW"):
+	 size(src:size(3) * 0.5, src:size(2) * 0.5, "Box"):
+	 size(src:size(3), src:size(2), "Box"):
+	 toTensor("byte", "RGB", "DHW")
+   end
 end
 
 return pairwise_transform_utils

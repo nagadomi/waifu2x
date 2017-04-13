@@ -63,7 +63,24 @@ local function crop_if_large_pair(x, y, max_size)
       return x, y
    end
 end
-
+local function padding_x(x, pad)
+   if pad > 0 then
+      x = iproc.padding(x, pad, pad, pad, pad)
+   end
+   return x
+end
+local function padding_xy(x, y, pad, y_zero)
+   local scale = y:size(2) / x:size(2)
+   if pad > 0 then
+      x = iproc.padding(x, pad, pad, pad, pad)
+      if y_zero then
+	 y = iproc.zero_padding(y, pad * scale, pad * scale, pad * scale, pad * scale)
+      else
+	 y = iproc.padding(y, pad * scale, pad * scale, pad * scale, pad * scale)
+      end
+   end
+   return x, y
+end
 local function load_images(list)
    local MARGIN = 32
    local csv = csvigo.load({path = list, verbose = false, mode = "raw"})
@@ -105,6 +122,11 @@ local function load_images(list)
 		     xx = alpha_util.fill(xx, meta2.alpha, alpha_color)
 		  end
 		  xx, yy = crop_if_large_pair(xx, yy, settings.max_training_image_size)
+		  xx, yy = padding_xy(xx, yy, settings.padding, settings.padding_y_zero)
+		  if settings.grayscale then
+		     xx = iproc.rgb2y(xx)
+		     yy = iproc.rgb2y(yy)
+		  end
 		  table.insert(x, {{y = compression.compress(yy), x = compression.compress(xx)},
 				  {data = {filters = filters, has_x = true}}})
 	       else
@@ -113,11 +135,15 @@ local function load_images(list)
 	    else
 	       im = crop_if_large(im, settings.max_training_image_size)
 	       im = iproc.crop_mod4(im)
+	       im = padding_x(im, settings.padding)
 	       local scale = 1.0
 	       if settings.random_half_rate > 0.0 then
 		  scale = 2.0
 	       end
 	       if im:size(2) > (settings.crop_size * scale + MARGIN) and im:size(3) > (settings.crop_size * scale + MARGIN) then
+		  if settings.grayscale then
+		     im = iproc.rgb2y(im)
+		  end
 		  table.insert(x, {compression.compress(im), {data = {filters = filters}}})
 	       else
 		  io.stderr:write(string.format("\n%s: skip: image is too small (%d > size).\n", filename, settings.crop_size * scale + MARGIN))
