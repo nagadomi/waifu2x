@@ -95,6 +95,7 @@ local function load_images(list)
       if csv_meta and csv_meta.filters then
 	 filters = csv_meta.filters
       end
+      local basename_y = path.basename(filename)
       local im, meta = image_loader.load_byte(filename)
       local skip = false
       local alpha_color = torch.random(0, 1)
@@ -128,7 +129,7 @@ local function load_images(list)
 		     yy = iproc.rgb2y(yy)
 		  end
 		  table.insert(x, {{y = compression.compress(yy), x = compression.compress(xx)},
-				  {data = {filters = filters, has_x = true}}})
+				  {data = {filters = filters, has_x = true, basename = basename_y}}})
 	       else
 		  io.stderr:write(string.format("\n%s: skip: load error.\n", csv_meta.x))
 	       end
@@ -144,7 +145,7 @@ local function load_images(list)
 		  if settings.grayscale then
 		     im = iproc.rgb2y(im)
 		  end
-		  table.insert(x, {compression.compress(im), {data = {filters = filters}}})
+		  table.insert(x, {compression.compress(im), {data = {filters = filters, basename = basename_y}}})
 	       else
 		  io.stderr:write(string.format("\n%s: skip: image is too small (%d > size).\n", filename, settings.crop_size * scale + MARGIN))
 	       end
