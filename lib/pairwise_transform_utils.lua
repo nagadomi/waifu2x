@@ -108,12 +108,6 @@ function pairwise_transform_utils.preprocess_user(x, y, scale_y, size, options)
 
    x = iproc.crop_mod4(x)
    y = iproc.crop_mod4(y)
-
-   if options.pairwise_y_binary then
-      y[torch.lt(y, 128)] = 0
-      y[torch.gt(y, 0)] = 255
-   end
-
    return x, y
 end
 function pairwise_transform_utils.active_cropping(x, y, lowres_y, size, scale, p, tries)

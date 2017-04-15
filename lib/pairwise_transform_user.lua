@@ -52,7 +52,12 @@ function pairwise_transform.user(x, y, size, offset, n, options)
 	    xc:add(-mean)
 	 end
       end
-      table.insert(batch, {xc, iproc.crop(yc, offset, offset, size - offset, size - offset)})
+      yc = iproc.crop(yc, offset, offset, size - offset, size - offset)
+      if options.pairwise_y_binary then
+	 yc[torch.lt(yc, 0.5)] = 0
+	 yc[torch.gt(yc, 0)] = 1
+      end
+      table.insert(batch, {xc, yc})
    end
 
    return batch
