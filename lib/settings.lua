@@ -80,6 +80,7 @@ cmd:option("-padding", 0, 'replication padding size')
 cmd:option("-padding_y_zero", 0, 'zero padding y for segmentation (0|1)')
 cmd:option("-grayscale", 0, 'grayscale x&y (0|1)')
 cmd:option("-validation_filename_split", 0, 'make validation-set based on filename(basename)')
+cmd:option("-invert_x", 0, 'invert x image in convert_lua')
 
 local function to_bool(settings, name)
    if settings[name] == 1 then
@@ -101,6 +102,7 @@ to_bool(settings, "pairwise_flip")
 to_bool(settings, "padding_y_zero")
 to_bool(settings, "grayscale")
 to_bool(settings, "validation_filename_split")
+to_bool(settings, "invert_x")
 
 if settings.plot then
    require 'gnuplot'

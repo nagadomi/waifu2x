@@ -118,6 +118,10 @@ local function load_images(list)
 	       -- method == user
 	       local yy = im
 	       local xx, meta2 = image_loader.load_byte(csv_meta.x)
+	       if settings.invert_x then
+		  xx = (-(xx:long()) + 255):byte()
+	       end
+
 	       if xx then
 		  if meta2 and meta2.alpha then
 		     xx = alpha_util.fill(xx, meta2.alpha, alpha_color)
