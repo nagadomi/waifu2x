@@ -148,4 +148,9 @@ end
 settings.images = string.format("%s/images.t7", settings.data_dir)
 settings.image_list = string.format("%s/image_list.txt", settings.data_dir)
 
+-- patch for lua52
+if not math.log10 then
+   math.log10 = function(x) return math.log(x, 10) end
+end
+
 return settings
