@@ -308,6 +308,12 @@ function APIHandler:post()
    local style = self:get_argument("style", "art")
    local download = (self:get_argument("download", "")):len()
 
+   if client_disconnected(self) then
+      self:set_status(400)
+      self:write("client disconnected")
+      return
+   end
+
    if tta_level == 0 then
       tta_level = auto_tta_level(x, scale)
    end
