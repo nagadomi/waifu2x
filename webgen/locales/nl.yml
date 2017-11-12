@@ -1,9 +1,9 @@
 ---
 description: Single-Image Super-Resolutie voor Anime-Style afbeeldingen met behulp van Deep Convolutional Neural Networks. Oh, en het ondersteunt foto's.
-show_demonstration: Vertoon volledige demonstratie
+show_demonstration: Toon volledige demonstratie
 go_to_github: Ga naar GitHub
 image_choosing: Afbeelding selecteren
-type_url: Typ URL
+type_url: Typ je URL
 choose_file: Of selecteer een bestand
 file_limits: "Limieten: Grootte: 5MB, Ruis vermindering: 3000x3000px, Vergroting: 1500x1500px."
 style: Stijl
@@ -16,15 +16,15 @@ nr_low: Laag
 nr_medium: Gemiddeld
 nr_high: Hoog
 nr_highest: Hoogste
-nr_hint: "Gebruik ruisvermindering alleen als de afbeelding ook daadwerkelijk ruis bevat, of het effect zal omgekeerd zijn."
+nr_hint: "Gebruik ruisvermindering alleen als de afbeelding ook daadwerkelijk ruis bevat, anders zal het effect omgekeerd zijn."
 upscaling: Vergroting
 up_none: Geen
 tta: TTA
 tta_best_effort: "n-pass auto"
 tta_rule: "Vertoon de `n-pass auto` optie."
-tta_hint: "TTA maakt de kwaliteit stabiel maar veroorzaakt een limiet in grootte"
+tta_hint: "TTA verzekerd een betere kwaliteit, maar het limiteerd de grootte van de afbeelding."
 button_convert: Converteer
 button_download: Download
 hints:
-  - "Als je gebruik maakt van FireFox, gebruik dan CTRL + S om een afbeelding op te slaan. De \"Save Image\"/\"Afbeelding Opslaan\" optie werkt niet."
+  - "Als je gebruik maakt van FireFox, gebruik dan CTRL + S om een afbeelding op te slaan. De \"Save Image\" /\ "Afbeelding Opslaan\" optie werkt niet."
   
