@@ -1,0 +1,30 @@
+---
+description: Amplia la resolució d'il·lustracions d'estil anime utilitzant xarxes neuronals convolucionals profundes. I suporta fotos.
+show_demonstration: Mostra'n una demostració
+go_to_github: Vés al GitHub
+image_choosing: Escolliu una imatge
+type_url: Escriviu una URL
+choose_file: O escolliu un fitxer
+file_limits: "Límits: Mida: 5MB, Reducció de soroll: 3000x3000px, Sobreescalat: 1500x1500px."
+style: Estil
+artwork: Il·lustració
+photo: Foto
+noise_reduction: Reducció de soroll
+expect_jpeg: espera artefactes JPEG
+nr_none: Cap
+nr_low: Baixa
+nr_medium: Mitjana
+nr_high: Alta
+nr_highest: Molt alta
+nr_hint: "Utilitzeu la reducció de soroll si la imatge té soroll, si no, podeu aconseguir l'efecte contrari."
+upscaling: Sobreescalat
+up_none: Cap
+tta: TTA
+tta_best_effort: "n-pass auto"
+tta_rule: "Mostra la regla de `n-pass auto`."
+tta_hint: "El TTA estabilitza la qualitat però limita la mida de la imatge d'origen."
+button_convert: Converteix
+button_download: Descarrega
+hints:
+  - "Si utilitzeu el Firefox, premeu la tecla Control+S per desar la imatge. L'opció \"Desa la imatge\" no funciona."
+  
