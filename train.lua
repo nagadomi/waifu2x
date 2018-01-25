@@ -29,17 +29,57 @@ local function save_test_user(model, rgb, file)
    end
 end
 local function split_data(x, test_size)
-   local index = torch.randperm(#x)
-   local train_size = #x - test_size
-   local train_x = {}
-   local valid_x = {}
-   for i = 1, train_size do
-      train_x[i] = x[index[i]]
+   if settings.validation_filename_split then
+      if not (x[1][2].data and x[1][2].data.basename) then
+	 error("`images.t` does not have basename info. You need to re-run `convert_data.lua`.")
+      end
+      local basename_db = {}
+      for i = 1, #x do
+	 local meta = x[i][2].data
+	 if basename_db[meta.basename] then
+	    table.insert(basename_db[meta.basename], x[i])
+	 else
+	    basename_db[meta.basename] = {x[i]}
+	 end
+      end
+      local basename_list = {}
+      for k, v in pairs(basename_db) do
+	 table.insert(basename_list, v)
+      end
+      local index = torch.randperm(#basename_list)
+      local train_x = {}
+      local valid_x = {}
+      local pos = 1
+      for i = 1, #basename_list do
+	 if #valid_x >= test_size then
+	    break
+	 end
+	 local xs = basename_list[index[pos]]
+	 for j = 1, #xs do
+	    table.insert(valid_x, xs[j])
+	 end
+	 pos = pos + 1
+      end
+      for i = pos, #basename_list do
+	 local xs = basename_list[index[i]]
+	 for j = 1, #xs do
+	    table.insert(train_x, xs[j])
+	 end
+      end
+      return train_x, valid_x
+   else
+      local index = torch.randperm(#x)
+      local train_size = #x - test_size
+      local train_x = {}
+      local valid_x = {}
+      for i = 1, train_size do
+	 train_x[i] = x[index[i]]
+      end
+      for i = 1, test_size do
+	 valid_x[i] = x[index[train_size + i]]
+      end
+      return train_x, valid_x
    end
-   for i = 1, test_size do
-      valid_x[i] = x[index[train_size + i]]
-   end
-   return train_x, valid_x
 end
 
 local g_transform_pool = nil
@@ -175,35 +215,19 @@ local function transform_pool_init(has_resize, offset)
 						    settings.crop_size, offset,
 						    n, conf)
 	    elseif settings.method == "user" then
-	       if is_validation == nil then is_validation = false end
-	       local rotate_rate = nil 
-	       local scale_rate = nil
-	       local negate_rate = nil
-	       local negate_x_rate = nil
-	       if is_validation then
-		  rotate_rate = 0
-		  scale_rate = 0
-		  negate_rate = 0
-		  negate_x_rate = 0
-	       else
-		  rotate_rate = settings.random_pairwise_rotate_rate
-		  scale_rate = settings.random_pairwise_scale_rate
-		  negate_rate = settings.random_pairwise_negate_rate
-		  negate_x_rate = settings.random_pairwise_negate_x_rate
-	       end
 	       local conf = tablex.update({
 		     gcn = settings.gcn,
 		     max_size = settings.max_size,
 		     active_cropping_rate = active_cropping_rate,
 		     active_cropping_tries = active_cropping_tries,
-		     random_pairwise_rotate_rate = rotate_rate,
+		     random_pairwise_rotate_rate = settings.random_pairwise_rotate_rate,
 		     random_pairwise_rotate_min = settings.random_pairwise_rotate_min,
 		     random_pairwise_rotate_max = settings.random_pairwise_rotate_max,
-		     random_pairwise_scale_rate = scale_rate,
+		     random_pairwise_scale_rate = settings.random_pairwise_scale_rate,
 		     random_pairwise_scale_min = settings.random_pairwise_scale_min,
 		     random_pairwise_scale_max = settings.random_pairwise_scale_max,
-		     random_pairwise_negate_rate = negate_rate,
-		     random_pairwise_negate_x_rate = negate_x_rate,
+		     random_pairwise_negate_rate = settings.random_pairwise_negate_rate,
+		     random_pairwise_negate_x_rate = settings.random_pairwise_negate_x_rate,
 		     pairwise_y_binary = settings.pairwise_y_binary,
 		     pairwise_flip = settings.pairwise_flip,
 		     rgb = (settings.color == "rgb")}, meta)
@@ -290,7 +314,7 @@ local function validate(model, criterion, eval_metric, data, batch_size)
       local batch_mse = eval_metric:forward(z, targets)
       loss = loss + criterion:forward(z, targets)
       mse = mse + batch_mse
-      psnr = psnr + (10 * math.log10(1 / batch_mse))
+      psnr = psnr + (10 * math.log10(1 / (batch_mse + 1.0e-6)))
       loss_count = loss_count + 1
       if loss_count % 10 == 0 then
 	 xlua.progress(t, #data)
@@ -322,6 +346,10 @@ local function create_criterion(model)
       return w2nn.L1Criterion():cuda()
    elseif settings.loss == "mse" then
       return w2nn.ClippedMSECriterion(0, 1.0):cuda()
+   elseif settings.loss == "bce" then
+      local bce = nn.BCECriterion()
+      bce.sizeAverage = true
+      return bce:cuda()
    else
       error("unsupported loss .." .. settings.loss)
    end
@@ -421,7 +449,10 @@ local function plot(train, valid)
 	 {'validation', torch.Tensor(valid), '-'}})
 end
 local function train()
-   local x = remove_small_image(torch.load(settings.images))
+   local x = torch.load(settings.images)
+   if settings.method ~= "user" then
+      x = remove_small_image(x)
+   end
    local train_x, valid_x = split_data(x, math.max(math.floor(settings.validation_rate * #x), 1))
    local hist_train = {}
    local hist_valid = {}
@@ -429,7 +460,12 @@ local function train()
    if settings.resume:len() > 0 then
       model = torch.load(settings.resume, "ascii")
    else
-      model = srcnn.create(settings.model, settings.backend, settings.color)
+      if stringx.endswith(settings.model, ".lua") then
+	 local create_model = dofile(settings.model)
+	 model = create_model(srcnn, settings)
+      else
+	 model = srcnn.create(settings.model, settings.backend, settings.color)
+      end
    end
    if model.w2nn_input_size then
       if settings.crop_size ~= model.w2nn_input_size then
@@ -484,8 +520,9 @@ local function train()
 		       ch, settings.crop_size, settings.crop_size)
    end
    local instance_loss = nil
+   local pmodel = w2nn.data_parallel(model, settings.gpu)
    for epoch = 1, settings.epoch do
-      model:training()
+      pmodel:training()
       print("# " .. epoch)
       if adam_config.learningRate then
 	 print("learning rate: " .. adam_config.learningRate)
@@ -523,13 +560,13 @@ local function train()
       instance_loss = torch.Tensor(x:size(1)):zero()
 
       for i = 1, settings.inner_epoch do
-	 model:training()
-	 local train_score, il = minibatch_adam(model, criterion, eval_metric, x, y, adam_config)
+	 pmodel:training()
+	 local train_score, il = minibatch_adam(pmodel, criterion, eval_metric, x, y, adam_config)
 	 instance_loss:copy(il)
 	 print(train_score)
-	 model:evaluate()
+	 pmodel:evaluate()
 	 print("# validation")
-	 local score = validate(model, criterion, eval_metric, valid_xy, adam_config.xBatchSize)
+	 local score = validate(pmodel, criterion, eval_metric, valid_xy, adam_config.xBatchSize)
 	 table.insert(hist_train, train_score.loss)
 	 table.insert(hist_valid, score.loss)
 	 if settings.plot then
@@ -546,8 +583,9 @@ local function train()
 	    best_score = score_for_update
 	    print("* model has updated")
 	    if settings.save_history then
-	       torch.save(settings.model_file_best, model:clearState(), "ascii")
-	       torch.save(string.format(settings.model_file, epoch, i), model:clearState(), "ascii")
+	       pmodel:clearState()
+	       torch.save(settings.model_file_best, model, "ascii")
+	       torch.save(string.format(settings.model_file, epoch, i), model, "ascii")
 	       if settings.method == "noise" then
 		  local log = path.join(settings.model_dir,
 					("noise%d_best.%d-%d.png"):format(settings.noise_level,
@@ -571,7 +609,8 @@ local function train()
 		  save_test_user(model, test_image, log)
 	       end
 	    else
-	       torch.save(settings.model_file, model:clearState(), "ascii")
+	       pmodel:clearState()
+	       torch.save(settings.model_file, model, "ascii")
 	       if settings.method == "noise" then
 		  local log = path.join(settings.model_dir,
 					("noise%d_best.png"):format(settings.noise_level))
@@ -596,9 +635,6 @@ local function train()
 	 collectgarbage()
       end
    end
-end
-if settings.gpu > 0 then
-   cutorch.setDevice(settings.gpu)
 end
 torch.manualSeed(settings.seed)
 cutorch.manualSeed(settings.seed)

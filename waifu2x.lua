@@ -276,6 +276,7 @@ local function waifu2x()
    if opt.thread > 0 then
       torch.setnumthreads(opt.thread)
    end
+   cutorch.setDevice(opt.gpu)
    if cudnn then
       cudnn.fastest = true
       if opt.l:len() > 0 then
@@ -293,6 +294,5 @@ local function waifu2x()
    else
       convert_frames(opt)
    end
-   cutorch.setDevice(opt.gpu)
 end
 waifu2x()
