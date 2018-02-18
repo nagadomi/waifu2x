@@ -84,7 +84,8 @@ sudo apt-get install libgraphicsmagick1-dev
 
 #### Install Torch7
 
-See: [Getting started with Torch](http://torch.ch/docs/getting-started.html)
+See: [Getting started with Torch](http://torch.ch/docs/getting-started.html), and [#222](https://github.com/nagadomi/waifu2x/issues/222)
+
 
 And install luarocks packages.
 ```
