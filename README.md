@@ -5,6 +5,8 @@ And it supports photo.
 
 The demo application can be found at http://waifu2x.udp.jp/ .
 
+Note that I only provide this website. Other software or website claiming "waifu2x" has nothing to do with me.
+
 ## Summary
 
 Click to see the slide show.
