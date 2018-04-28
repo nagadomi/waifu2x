@@ -135,7 +135,7 @@ function image_loader.load_float(file)
    if not fp then
       error(file .. ": failed to load image")
    end
-   local buff = fp:read("*a")
+   local buff = fp:read("*all")
    fp:close()
    return image_loader.decode_float(buff)
 end
@@ -144,7 +144,7 @@ function image_loader.load_byte(file)
    if not fp then
       error(file .. ": failed to load image")
    end
-   local buff = fp:read("*a")
+   local buff = fp:read("*all")
    fp:close()
    return image_loader.decode_byte(buff)
 end
