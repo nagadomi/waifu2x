@@ -13,6 +13,34 @@ local function pcacov(x)
    local ce, cv = torch.symeig(c, 'V')
    return ce, cv
 end
+function data_augmentation.erase(src, p, n, rect_min, rect_max)
+   if torch.uniform() < p then
+      local src, conversion = iproc.byte2float(src)
+      src = src:contiguous():clone()
+      local ch = src:size(1)
+      local height = src:size(2)
+      local width = src:size(3)
+      for i = 1, n do
+	 local r = torch.Tensor(4):uniform():cmul(torch.Tensor({height-1, width-1, rect_max - rect_min, rect_max - rect_min})):int()
+	 local rect_y1 = r[1] + 1
+	 local rect_x1 = r[2] + 1
+	 local rect_h = r[3] + rect_min
+	 local rect_w = r[4] + rect_min
+	 local rect_x2 = math.min(rect_x1 + rect_w, width)
+	 local rect_y2 = math.min(rect_y1 + rect_h, height)
+	 local sub_rect = src:sub(1, ch, rect_y1, rect_y2, rect_x1, rect_x2)
+	 for i = 1, ch do
+	    sub_rect[i]:fill(src[i][rect_y1][rect_x1])
+	 end
+      end
+      if conversion then
+	 src = iproc.float2byte(src)
+      end
+      return src
+   else
+      return src
+   end
+end
 function data_augmentation.color_noise(src, p, factor)
    factor = factor or 0.1
    if torch.uniform() < p then

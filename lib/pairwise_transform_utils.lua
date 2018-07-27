@@ -105,7 +105,11 @@ function pairwise_transform_utils.preprocess_user(x, y, scale_y, size, options)
 					   scale_max)
    x, y = data_augmentation.pairwise_negate(x, y, options.random_pairwise_negate_rate)
    x, y = data_augmentation.pairwise_negate_x(x, y, options.random_pairwise_negate_x_rate)
-
+   x = data_augmentation.erase(x, 
+			       options.random_erasing_rate,
+			       options.random_erasing_n,
+			       options.random_erasing_rect_min,
+			       options.random_erasing_rect_max)
    x = iproc.crop_mod4(x)
    y = iproc.crop_mod4(y)
    return x, y

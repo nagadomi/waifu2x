@@ -215,6 +215,17 @@ local function transform_pool_init(has_resize, offset)
 						    settings.crop_size, offset,
 						    n, conf)
 	    elseif settings.method == "user" then
+	       local random_erasing_rate = 0
+	       local random_erasing_n = 0
+	       local random_erasing_rect_min = 0
+	       local random_erasing_rect_max = 0
+	       if is_validation then
+	       else
+		  random_erasing_rate = settings.random_erasing_rate
+		  random_erasing_n = settings.random_erasing_n
+		  random_erasing_rect_min = settings.random_erasing_rect_min
+		  random_erasing_rect_max = settings.random_erasing_rect_max
+	       end
 	       local conf = tablex.update({
 		     gcn = settings.gcn,
 		     max_size = settings.max_size,
@@ -230,6 +241,10 @@ local function transform_pool_init(has_resize, offset)
 		     random_pairwise_negate_x_rate = settings.random_pairwise_negate_x_rate,
 		     pairwise_y_binary = settings.pairwise_y_binary,
 		     pairwise_flip = settings.pairwise_flip,
+		     random_erasing_rate = random_erasing_rate,
+		     random_erasing_n = random_erasing_n,
+		     random_erasing_rect_min = random_erasing_rect_min,
+		     random_erasing_rect_max = random_erasing_rect_max,
 		     rgb = (settings.color == "rgb")}, meta)
 	       return pairwise_transform.user(x, y,
 					      settings.crop_size, offset,
