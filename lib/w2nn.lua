@@ -75,5 +75,7 @@ else
    require 'InplaceClip01'
    require 'L1Criterion'
    require 'ShakeShakeTable'
+   require 'PrintTable'
+   require 'Print'
    return w2nn
 end
