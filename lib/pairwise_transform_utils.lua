@@ -92,6 +92,11 @@ end
 function pairwise_transform_utils.preprocess_user(x, y, scale_y, size, options)
 
    x, y = pairwise_transform_utils.crop_if_large_pair(x, y, scale_y, options.max_size, scale_y)
+   x = data_augmentation.erase(x, 
+			       options.random_erasing_rate,
+			       options.random_erasing_n,
+			       options.random_erasing_rect_min,
+			       options.random_erasing_rect_max)
    x, y = data_augmentation.pairwise_rotate(x, y,
 					    options.random_pairwise_rotate_rate,
 					    options.random_pairwise_rotate_min,
@@ -105,11 +110,6 @@ function pairwise_transform_utils.preprocess_user(x, y, scale_y, size, options)
 					   scale_max)
    x, y = data_augmentation.pairwise_negate(x, y, options.random_pairwise_negate_rate)
    x, y = data_augmentation.pairwise_negate_x(x, y, options.random_pairwise_negate_x_rate)
-   x = data_augmentation.erase(x, 
-			       options.random_erasing_rate,
-			       options.random_erasing_n,
-			       options.random_erasing_rect_min,
-			       options.random_erasing_rect_max)
    x = iproc.crop_mod4(x)
    y = iproc.crop_mod4(y)
    return x, y
