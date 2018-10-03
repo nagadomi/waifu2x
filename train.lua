@@ -365,6 +365,10 @@ local function create_criterion(model)
       local bce = nn.BCECriterion()
       bce.sizeAverage = true
       return bce:cuda()
+   elseif settings.loss == "aux_bce" then
+      local aux = w2nn.AuxiliaryLossCriterion(nn.BCECriterion)
+      aux.sizeAverage = true
+      return aux:cuda()
    else
       error("unsupported loss .." .. settings.loss)
    end
@@ -500,7 +504,12 @@ local function train()
    transform_pool_init(reconstruct.has_resize(model), offset)
 
    local criterion = create_criterion(model)
-   local eval_metric = w2nn.ClippedMSECriterion(0, 1):cuda()
+   local eval_metric = nil
+   if settings.loss:find("aux_") ~= nil then
+      eval_metric = w2nn.AuxiliaryLossCriterion(w2nn.ClippedMSECriterion)
+   else
+      eval_metric = w2nn.ClippedMSECriterion()
+   end
    local adam_config = {
       xLearningRate = settings.learning_rate,
       xBatchSize = settings.batch_size,

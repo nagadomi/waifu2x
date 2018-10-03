@@ -77,5 +77,8 @@ else
    require 'ShakeShakeTable'
    require 'PrintTable'
    require 'Print'
+   require 'AuxiliaryLossTable'
+   require 'AuxiliaryLossCriterion'
    return w2nn
 end
+
