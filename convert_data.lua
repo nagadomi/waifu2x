@@ -95,6 +95,7 @@ local function load_images(list)
    local x = {}
    local skip_notice = false
    for i = 1, #csv do
+      local filters = nil
       local filename = csv[i][1]
       local csv_meta = csv[i][2]
       if csv_meta and csv_meta:len() > 0 then
