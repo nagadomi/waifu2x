@@ -326,6 +326,7 @@ function srcnn.upconv_7(backend, ch)
    model:add(w2nn.InplaceClip01())
    model:add(nn.View(-1):setNumInputDims(3))
 
+
    model.w2nn_arch_name = "upconv_7"
    model.w2nn_offset = 14
    model.w2nn_scale_factor = 2
@@ -581,6 +582,476 @@ function srcnn.fcn_v1(backend, ch)
    
    return model
 end
+function srcnn.cupconv_14(backend, ch)
+   local function skip(backend, n_input, n_output, pad)
+      local con = nn.ConcatTable()
+      local conv = nn.Sequential()
+      local depad = nn.Sequential()
+      conv:add(nn.SelectTable(1))
+      conv:add(SpatialConvolution(backend, n_input, n_output, 3, 3, 1, 1, 0, 0))
+      conv:add(nn.LeakyReLU(0.1, true))
+      con:add(conv)
+      con:add(nn.Identity())
+      return con
+   end
+   local function concat(backend, n, ch, n_middle)
+      local con = nn.ConcatTable()
+      for i = 1, n do
+	 local pad = i - 1
+	 if i == 1 then
+	    con:add(nn.Sequential():add(nn.SelectTable(i)))
+	 else
+	    local seq = nn.Sequential()
+	    seq:add(nn.SelectTable(i))
+	    if pad > 0 then
+	       seq:add(nn.SpatialZeroPadding(-pad, -pad, -pad, -pad))
+	    end
+	    if i == n then
+	       --seq:add(SpatialConvolution(backend, ch, n_middle, 1, 1, 1, 1, 0, 0))
+	    else
+	       seq:add(w2nn.GradWeight(0.025))
+	       seq:add(SpatialConvolution(backend, n_middle, n_middle, 1, 1, 1, 1, 0, 0))
+	    end
+	    seq:add(nn.LeakyReLU(0.1, true))
+	    con:add(seq)
+	 end
+      end
+      return nn.Sequential():add(con):add(nn.JoinTable(2))
+   end
+   local model = nn.Sequential()
+   local m = 64
+   local n = 14
+
+   model:add(nn.ConcatTable():add(nn.Identity()))
+   for i = 1, n - 1 do
+      if i == 1 then
+	 model:add(skip(backend, ch, m))
+      else
+	 model:add(skip(backend, m, m))
+      end
+   end
+   model:add(nn.FlattenTable())
+   model:add(concat(backend, n, ch, m))
+   model:add(SpatialFullConvolution(backend, m * (n - 1) + 3, ch, 4, 4, 2, 2, 3, 3):noBias())
+   model:add(w2nn.InplaceClip01())
+   model:add(nn.View(-1):setNumInputDims(3))
+
+   model.w2nn_arch_name = "cupconv_14"
+   model.w2nn_offset = 28
+   model.w2nn_scale_factor = 2
+   model.w2nn_channels = ch
+   model.w2nn_resize = true
+
+   return model
+end
+
+function srcnn.upconv_refine(backend, ch)
+   local function block(backend, ch)
+      local seq = nn.Sequential()
+      local con = nn.ConcatTable()
+      local res = nn.Sequential()
+      local base = nn.Sequential()
+      local refine = nn.Sequential()
+      local aux_con = nn.ConcatTable()
+
+      res:add(w2nn.GradWeight(0.1))
+      res:add(SpatialConvolution(backend, ch, 32, 3, 3, 1, 1, 0, 0))
+      res:add(nn.LeakyReLU(0.1, true))
+      res:add(SpatialConvolution(backend, 32, 64, 3, 3, 1, 1, 0, 0))
+      res:add(nn.LeakyReLU(0.1, true))
+      res:add(SpatialConvolution(backend, 64, 128, 3, 3, 1, 1, 0, 0))
+      res:add(nn.LeakyReLU(0.1, true))
+      res:add(SpatialConvolution(backend, 128, ch, 3, 3, 1, 1, 0, 0):noBias())
+      res:add(w2nn.InplaceClip01())
+      res:add(nn.MulConstant(0.5))
+
+      con:add(res)
+      con:add(nn.Sequential():add(nn.SpatialZeroPadding(-4, -4, -4, -4)):add(nn.MulConstant(0.5)))
+
+      -- main output
+      refine:add(nn.CAddTable()) -- averaging
+      refine:add(nn.View(-1):setNumInputDims(3))
+      -- aux output
+      base:add(nn.SelectTable(2))
+      base:add(nn.MulConstant(2)) -- revert mul 0.5
+      base:add(nn.View(-1):setNumInputDims(3))
+
+      aux_con:add(refine)
+      aux_con:add(base)
+
+      seq:add(con)
+      seq:add(aux_con)
+      seq:add(w2nn.AuxiliaryLossTable(1))
+      return seq
+   end
+   local model = nn.Sequential()
+   model:add(SpatialConvolution(backend, ch, 32, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialConvolution(backend, 32, 32, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialConvolution(backend, 32, 64, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialConvolution(backend, 64, 128, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialConvolution(backend, 128, 128, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialConvolution(backend, 128, 256, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialFullConvolution(backend, 256, ch, 4, 4, 2, 2, 3, 3):noBias())
+   model:add(w2nn.InplaceClip01())
+   model:add(block(backend, ch))
+
+   model.w2nn_arch_name = "upconv_refine"
+   model.w2nn_offset = 18
+   model.w2nn_scale_factor = 2
+   model.w2nn_resize = true
+   model.w2nn_channels = ch
+
+   return model
+end
+
+-- cascade u-net
+function srcnn.cunet_v1(backend, ch)
+   function unet_branch(insert, backend, n_input, n_output, depad)
+      local block = nn.Sequential()
+      local pooling = SpatialConvolution(backend, n_input, n_input, 2, 2, 2, 2, 0, 0) -- downsampling
+      --block:add(w2nn.Print())
+      block:add(pooling)
+      block:add(insert)
+      block:add(SpatialFullConvolution(backend, n_output, n_output, 2, 2, 2, 2, 0, 0))-- upsampling
+      local parallel = nn.ConcatTable(2)
+      parallel:add(nn.SpatialZeroPadding(-depad, -depad, -depad, -depad))
+      parallel:add(block)
+      local model = nn.Sequential()
+      model:add(parallel)
+      model:add(nn.JoinTable(2))
+      return model
+   end
+   function unet_conv(n_input, n_middle, n_output)
+	local model = nn.Sequential()
+	model:add(SpatialConvolution(backend, n_input, n_middle, 3, 3, 1, 1, 0, 0))
+	model:add(nn.LeakyReLU(0.1, true))
+	model:add(SpatialConvolution(backend, n_middle, n_output, 3, 3, 1, 1, 0, 0))
+	return model
+   end
+   function unet(backend, ch, deconv)
+      -- 
+      local block1 = unet_conv(128, 256, 128)
+      local block2 = nn.Sequential()
+      block2:add(unet_conv(32, 64, 128))
+      block2:add(unet_branch(block1, backend, 128, 128, 4))
+      block2:add(unet_conv(128*2, 64, 32))
+      local model = nn.Sequential()
+      model:add(unet_conv(ch, 32, 32))
+      model:add(unet_branch(block2, backend, 32, 32, 16))
+      model:add(SpatialConvolution(backend, 64, 128, 3, 3, 1, 1, 0, 0))
+      model:add(nn.LeakyReLU(0.1))
+      if deconv then
+	 model:add(SpatialFullConvolution(backend, 128, ch, 4, 4, 2, 2, 3, 3))
+      else
+	 model:add(SpatialConvolution(backend, 128, ch, 3, 3, 1, 1, 0, 0))
+      end
+      return model
+   end
+   local model = nn.Sequential()
+   local con = nn.ConcatTable()
+   local aux_con = nn.ConcatTable()
+
+   model:add(unet(backend, ch, true))
+
+   con:add(unet(backend, ch, false))
+   con:add(nn.SpatialZeroPadding(-20, -20, -20, -20))
+
+   aux_con:add(nn.Sequential():add(nn.CAddTable()):add(w2nn.InplaceClip01())) -- cascaded unet output
+   aux_con:add(nn.Sequential():add(nn.SelectTable(2)):add(w2nn.InplaceClip01())) -- single unet output
+
+   model:add(con)
+   model:add(aux_con)
+   model:add(w2nn.AuxiliaryLossTable(1)) -- auxiliary loss for single unet output
+   
+   model.w2nn_arch_name = "cunet_v1"
+   model.w2nn_offset = 60
+   model.w2nn_scale_factor = 2
+   model.w2nn_channels = ch
+   model.w2nn_resize = true
+   -- 72, 128, 256 are valid
+   --model.w2nn_input_size = 128
+
+   return model
+end
+
+-- cascade u-net
+function srcnn.cunet_v2(backend, ch)
+   function unet_branch(insert, backend, n_input, n_output, depad)
+      local block = nn.Sequential()
+      local pooling = SpatialConvolution(backend, n_input, n_input, 2, 2, 2, 2, 0, 0) -- downsampling
+      --block:add(w2nn.Print())
+      block:add(pooling)
+      block:add(insert)
+      block:add(SpatialFullConvolution(backend, n_output, n_output, 2, 2, 2, 2, 0, 0))-- upsampling
+      local parallel = nn.ConcatTable(2)
+      parallel:add(nn.SpatialZeroPadding(-depad, -depad, -depad, -depad))
+      parallel:add(block)
+      local model = nn.Sequential()
+      model:add(parallel)
+      model:add(nn.CAddTable(2))
+      return model
+   end
+   function unet_conv(n_input, n_middle, n_output)
+	local model = nn.Sequential()
+	model:add(SpatialConvolution(backend, n_input, n_middle, 3, 3, 1, 1, 0, 0))
+	model:add(nn.LeakyReLU(0.1, true))
+	model:add(SpatialConvolution(backend, n_middle, n_output, 3, 3, 1, 1, 0, 0))
+	return model
+   end
+   -- res unet
+   function unet(backend, ch, deconv)
+      local block1 = unet_conv(128, 256, 128)
+      local block2 = nn.Sequential()
+      block2:add(unet_conv(64, 128, 128))
+      block2:add(unet_branch(block1, backend, 128, 128, 4))
+      block2:add(unet_conv(128, 128, 64))
+      local model = nn.Sequential()
+      model:add(nn.SpatialZeroPadding(-1, -1, -1, -1))
+      model:add(SpatialConvolution(backend, ch, 64, 3, 3, 1, 1, 0, 0))
+      model:add(unet_branch(block2, backend, 64, 64, 16))
+      if deconv then
+	 model:add(SpatialConvolution(backend, 64, 128, 3, 3, 1, 1, 0, 0))
+	 model:add(nn.LeakyReLU(0.1))
+	 model:add(SpatialFullConvolution(backend, 128, 64, 4, 4, 2, 2, 3, 3))
+      else
+	 model:add(SpatialConvolution(backend, 64, 64, 3, 3, 1, 1, 0, 0))
+      end
+      return model
+   end
+   local model = nn.Sequential()
+   local con = nn.ConcatTable()
+   local aux_con = nn.ConcatTable()
+
+   model:add(unet(backend, ch, true))
+   con:add(unet(backend, 64, false))
+   con:add(nn.SpatialZeroPadding(-19, -19, -19, -19))
+
+   model:add(con)
+   model:add(nn.CAddTable())
+   model:add(nn.LeakyReLU(0.1, true))
+   model:add(SpatialConvolution(backend, 64, ch, 3, 3, 1, 1, 0, 0))
+   
+   model.w2nn_arch_name = "cunet_v2"
+   model.w2nn_offset = 60
+   model.w2nn_scale_factor = 2
+   model.w2nn_channels = ch
+   model.w2nn_resize = true
+   -- 72, 128, 256 are valid
+   --model.w2nn_input_size = 128
+
+   return model
+end
+-- cascade u-net
+function srcnn.cunet_v3(backend, ch)
+   function unet_branch(insert, backend, n_input, n_output, depad)
+      local block = nn.Sequential()
+      local pooling = SpatialConvolution(backend, n_input, n_input, 2, 2, 2, 2, 0, 0) -- downsampling
+      --block:add(w2nn.Print())
+      block:add(pooling)
+      block:add(insert)
+      block:add(SpatialFullConvolution(backend, n_output, n_output, 2, 2, 2, 2, 0, 0))-- upsampling
+      local parallel = nn.ConcatTable(2)
+      parallel:add(nn.SpatialZeroPadding(-depad, -depad, -depad, -depad))
+      parallel:add(block)
+      local model = nn.Sequential()
+      model:add(parallel)
+      model:add(nn.CAddTable())
+      return model
+   end
+   function unet_conv(n_input, n_middle, n_output)
+	local model = nn.Sequential()
+	model:add(SpatialConvolution(backend, n_input, n_middle, 3, 3, 1, 1, 0, 0))
+	model:add(nn.LeakyReLU(0.1, true))
+	model:add(SpatialConvolution(backend, n_middle, n_output, 3, 3, 1, 1, 0, 0))
+	model:add(nn.LeakyReLU(0.1, true))
+	return model
+   end
+   function unet(backend, ch, deconv)
+      local block1 = unet_conv(128, 256, 128)
+      local block2 = nn.Sequential()
+      block2:add(unet_conv(64, 64, 128))
+      block2:add(unet_branch(block1, backend, 128, 128, 4))
+      block2:add(unet_conv(128, 64, 64))
+      local model = nn.Sequential()
+      model:add(unet_conv(ch, 32, 64))
+      model:add(unet_branch(block2, backend, 64, 64, 16))
+      if deconv then
+	 model:add(SpatialConvolution(backend, 64, 128, 3, 3, 1, 1, 0, 0))
+	 model:add(nn.LeakyReLU(0.1))
+	 model:add(SpatialFullConvolution(backend, 128, 64, 4, 4, 2, 2, 3, 3))
+      end
+      return model
+   end
+   local model = nn.Sequential()
+   local con = nn.ConcatTable()
+
+   model:add(unet(backend, ch, true))
+   model:add(nn.ConcatTable():add(unet(backend, 64, false)):add(nn.SpatialZeroPadding(-18, -18, -18, -18)))
+   model:add(nn.CAddTable())
+   model:add(SpatialConvolution(backend, 64, 64, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU())
+   model:add(SpatialConvolution(backend, 64, ch, 3, 3, 1, 1, 0, 0))
+   model:add(w2nn.InplaceClip01())
+   
+   model.w2nn_arch_name = "cunet_v3"
+   model.w2nn_offset = 60
+   model.w2nn_scale_factor = 2
+   model.w2nn_channels = ch
+   model.w2nn_resize = true
+   -- 72, 128, 256 are valid
+   --model.w2nn_input_size = 128
+
+   return model
+end
+-- cascade u-net
+function srcnn.cunet_v4(backend, ch)
+   function upconv_3(backend, n_input, n_output)
+      local model = nn.Sequential()
+      model:add(SpatialConvolution(backend, n_input, 32, 3, 3, 1, 1, 0, 0))
+      model:add(nn.LeakyReLU(0.1, true))
+      model:add(SpatialConvolution(backend, 32, 32, 3, 3, 1, 1, 0, 0))
+      model:add(nn.LeakyReLU(0.1, true))
+      model:add(SpatialFullConvolution(backend, 32, n_output, 4, 4, 2, 2, 3, 3):noBias())
+      return model
+   end
+   function unet_branch(insert, backend, n_input, n_output, depad)
+      local block = nn.Sequential()
+      local pooling = SpatialConvolution(backend, n_input, n_input, 2, 2, 2, 2, 0, 0) -- downsampling
+      --block:add(w2nn.Print())
+      block:add(pooling)
+      block:add(insert)
+      block:add(SpatialFullConvolution(backend, n_output, n_output, 2, 2, 2, 2, 0, 0))-- upsampling
+      local parallel = nn.ConcatTable(2)
+      parallel:add(nn.SpatialZeroPadding(-depad, -depad, -depad, -depad))
+      parallel:add(block)
+      local model = nn.Sequential()
+      model:add(parallel)
+      model:add(nn.CAddTable())
+      return model
+   end
+   function unet_conv(n_input, n_middle, n_output)
+	local model = nn.Sequential()
+	model:add(SpatialConvolution(backend, n_input, n_middle, 3, 3, 1, 1, 0, 0))
+	model:add(nn.LeakyReLU(0.1, true))
+	model:add(SpatialConvolution(backend, n_middle, n_output, 3, 3, 1, 1, 0, 0))
+	model:add(nn.LeakyReLU(0.1, true))
+	return model
+   end
+   function unet(backend, ch)
+      local block1 = unet_conv(128, 256, 128)
+      local block2 = nn.Sequential()
+      block2:add(unet_conv(64, 64, 128))
+      block2:add(unet_branch(block1, backend, 128, 128, 4))
+      block2:add(unet_conv(128, 64, 64))
+      local model = nn.Sequential()
+      model:add(SpatialConvolution(backend, ch, 64, 3, 3, 1, 1, 0, 0))
+      model:add(nn.LeakyReLU(0.1, true))
+      model:add(unet_branch(block2, backend, 64, 64, 16))
+      return model
+   end
+   local model = nn.Sequential()
+   local con = nn.ConcatTable()
+   local aux_con = nn.ConcatTable()
+
+   model:add(upconv_3(backend, ch, 64))
+
+   con:add(unet(backend, 32))
+   --con:add(nn.SpatialZeroPadding(-20, -20, -20, -20))
+
+   aux_con:add(nn.Sequential():add(nn.CAddTable()):add(w2nn.InplaceClip01())) -- cascaded unet output
+   aux_con:add(nn.Sequential():add(nn.SelectTable(2)):add(w2nn.InplaceClip01())) -- single output
+
+   model:add(conn)
+   model:add(nn.CAddTable())
+   model:add(SpatialConvolution(backend, 64, 64, 3, 3, 1, 1, 0, 0))
+   model:add(nn.LeakyReLU())
+   model:add(SpatialConvolution(backend, 64, ch, 3, 3, 1, 1, 0, 0))
+   model:add(w2nn.InplaceClip01())
+   model.w2nn_arch_name = "cunet_v3"
+   model.w2nn_offset = 60
+   model.w2nn_scale_factor = 2
+   model.w2nn_channels = ch
+   model.w2nn_resize = true
+   -- 72, 128, 256 are valid
+   --model.w2nn_input_size = 128
+
+   return model
+end
+
+
+function srcnn.prog_net(backend, ch)
+   function base_upscaler(backend, ch)
+      local model = nn.Sequential()
+      model:add(nn.SpatialZeroPadding(-11, -11, -11, -11))
+      model:add(SpatialConvolution(backend, ch, 32, 3, 3, 1, 1, 0, 0))
+      model:add(nn.LeakyReLU(0.1, true))
+      model:add(SpatialConvolution(backend, 32, 64, 3, 3, 1, 1, 0, 0))
+      model:add(nn.LeakyReLU(0.1, true))
+      model:add(SpatialFullConvolution(backend, 64, ch, 4, 4, 2, 2, 3, 3):noBias())
+      model:add(w2nn.InplaceClip01())
+      return model
+   end
+   function block(backend, input, output)
+      local con = nn.ConcatTable()
+      local conv = nn.Sequential()
+      local dil = nn.Sequential()
+      local b = nn.Sequential()
+
+      conv:add(SpatialConvolution(backend, input, output, 3, 3, 1, 1, 0, 0))
+      conv:add(nn.SpatialZeroPadding(-5, -5, -5, -5))
+
+      dil:add(SpatialDilatedConvolution(backend, input, output, 3, 3, 1, 1, 0, 0, 2, 2))
+      dil:add(nn.LeakyReLU(0.1, true))
+      dil:add(SpatialDilatedConvolution(backend, output, output, 3, 3, 1, 1, 0, 0, 4, 4))
+
+      con:add(conv)
+      con:add(dil)
+
+      b:add(con)
+      b:add(nn.CAddTable())
+      b:add(nn.LeakyReLU(0.1, true))
+
+      return b
+   end
+   function texture_upscaler(backend, ch)
+      local model = nn.Sequential()
+      model:add(w2nn.EdgeFilter(ch))
+      model:add(SpatialConvolution(backend, ch * 8, 32, 1, 1, 1, 1, 0, 0))
+      model:add(nn.LeakyReLU(0.1, true))
+      model:add(block(backend, 32, 128))
+      model:add(block(backend, 128, 256))
+      model:add(SpatialFullConvolution(backend, 256, ch, 4, 4, 2, 2, 3, 3):noBias())
+      return model
+   end
+   local model = nn.Sequential()
+   local con = nn.ConcatTable()
+   local aux = nn.ConcatTable()
+
+   con:add(base_upscaler(backend, ch))
+   con:add(texture_upscaler(backend, ch))
+
+   aux:add(nn.Sequential():add(nn.CAddTable()):add(w2nn.InplaceClip01()):add(nn.View(-1):setNumInputDims(3)))
+   aux:add(nn.Sequential():add(nn.SelectTable(1)):add(nn.View(-1):setNumInputDims(3)))
+
+   model:add(con)
+   model:add(aux)
+   model:add(w2nn.AuxiliaryLossTable(1))
+
+   model.w2nn_arch_name = "prog_net"
+   model.w2nn_offset = 28
+   model.w2nn_scale_factor = 2
+   model.w2nn_channels = ch
+   model.w2nn_resize = true
+
+   return model
+end
+
 function srcnn.create(model_name, backend, color)
    model_name = model_name or "vgg_7"
    backend = backend or "cunn"
@@ -602,10 +1073,52 @@ function srcnn.create(model_name, backend, color)
    end
 end
 
+
 --[[
 local model = srcnn.fcn_v1("cunn", 3):cuda()
 print(model:forward(torch.Tensor(1, 3, 108, 108):zero():cuda()):size())
 print(model)
+local model = srcnn.unet_refine("cunn", 3):cuda()
+print(model)
+print(model:forward(torch.Tensor(1, 3, 64, 64):zero():cuda()):size())
+local model = srcnn.cupconv_14("cunn", 3):cuda()
+print(model)
+print(model:forward(torch.Tensor(1, 3, 64, 64):zero():cuda()):size())
+os.exit()
+local model = srcnn.cupconv_14("cunn", 3):cuda()
+print(model)
+print(model:forward(torch.Tensor(1, 3, 64, 64):zero():cuda()):size())
+os.exit()
+
+local model = srcnn.upconv_refine("cunn", 3):cuda()
+print(model)
+model:training()
+print(model:forward(torch.Tensor(1, 3, 64, 64):zero():cuda()))
+os.exit()
+
+local model = srcnn.nw2("cunn", 3):cuda()
+print(model)
+model:training()
+print(model:forward(torch.Tensor(1, 3, 64, 64):zero():cuda()))
+os.exit()
+
+local model = srcnn.prog_net("cunn", 3):cuda()
+print(model)
+model:training()
+print(model:forward(torch.Tensor(1, 3, 128, 128):zero():cuda()))
+os.exit()
+local model = srcnn.double_unet("cunn", 3):cuda()
+print(model)
+model:training()
+print(model:forward(torch.Tensor(1, 3, 144, 144):zero():cuda()))
+os.exit()
+
+local model = srcnn.cunet_v3("cunn", 3):cuda()
+print(model)
+model:training()
+print(model:forward(torch.Tensor(1, 3, 144, 144):zero():cuda()):size())
+os.exit()
+
 --]]
 
 return srcnn
