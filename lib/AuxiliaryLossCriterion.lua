@@ -37,7 +37,7 @@ function AuxiliaryLossCriterion:updateOutput(input, target)
 	 else
 	    self.criterions[1] = self.base_criterion()
 	 end
-	 self.criterions[1].sizeAverage = self.sizeAverage()
+	 self.criterions[1].sizeAverage = self.sizeAverage
 	 if input:type() == "torch.CudaTensor" then
 	    self.criterions[1]:cuda()
 	 end
