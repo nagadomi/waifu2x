@@ -80,6 +80,10 @@ else
    require 'Print'
    require 'AuxiliaryLossTable'
    require 'AuxiliaryLossCriterion'
+   require 'GradWeight'
+   require 'RandomBinaryConvolution'
+   require 'RandomBinaryCriterion'
+   require 'EdgeFilter'
    return w2nn
 end
 
