@@ -984,6 +984,74 @@ function srcnn.cunet_v4(backend, ch)
    return model
 end
 
+function srcnn.cunet_v5(backend, ch)
+   function unet_branch(insert, backend, n_input, n_output, depad)
+      local block = nn.Sequential()
+      local pooling = SpatialConvolution(backend, n_input, n_input, 2, 2, 2, 2, 0, 0) -- downsampling
+      --block:add(w2nn.Print())
+      block:add(pooling)
+      block:add(insert)
+      block:add(SpatialFullConvolution(backend, n_output, n_output, 2, 2, 2, 2, 0, 0))-- upsampling
+      local parallel = nn.ConcatTable(2)
+      parallel:add(nn.SpatialZeroPadding(-depad, -depad, -depad, -depad))
+      parallel:add(block)
+      local model = nn.Sequential()
+      model:add(parallel)
+      model:add(nn.CAddTable())
+      return model
+   end
+   function unet_conv(n_input, n_middle, n_output)
+	local model = nn.Sequential()
+	model:add(SpatialConvolution(backend, n_input, n_middle, 3, 3, 1, 1, 0, 0))
+	model:add(nn.LeakyReLU(0.1, true))
+	model:add(SpatialConvolution(backend, n_middle, n_output, 3, 3, 1, 1, 0, 0))
+	model:add(nn.LeakyReLU(0.1, true))
+	return model
+   end
+   function unet(backend, ch, deconv)
+      local block1 = unet_conv(128, 256, 128)
+      local block2 = nn.Sequential()
+      block2:add(unet_conv(64, 64, 128))
+      block2:add(unet_branch(block1, backend, 128, 128, 4))
+      block2:add(unet_conv(128, 64, 64))
+      local model = nn.Sequential()
+      model:add(unet_conv(ch, 32, 64))
+      model:add(unet_branch(block2, backend, 64, 64, 16))
+      model:add(SpatialConvolution(backend, 64, 64, 3, 3, 1, 1, 0, 0))
+      model:add(nn.LeakyReLU(0.1))
+      if deconv then
+	 model:add(SpatialFullConvolution(backend, 64, ch, 4, 4, 2, 2, 3, 3))
+      else
+	 model:add(SpatialConvolution(backend, 64, ch, 3, 3, 1, 1, 0, 0))
+      end
+      return model
+   end
+   local model = nn.Sequential()
+   local con = nn.ConcatTable()
+   local aux_con = nn.ConcatTable()
+
+   model:add(unet(backend, ch, true))
+
+   con:add(unet(backend, ch, false))
+   con:add(nn.SpatialZeroPadding(-20, -20, -20, -20))
+
+   aux_con:add(nn.Sequential():add(nn.CAddTable()):add(w2nn.InplaceClip01())) -- cascaded unet output
+   aux_con:add(nn.Sequential():add(nn.SelectTable(2)):add(w2nn.InplaceClip01())) -- single unet output
+
+   model:add(con)
+   model:add(aux_con)
+   model:add(w2nn.AuxiliaryLossTable(1)) -- auxiliary loss for single unet output
+   
+   model.w2nn_arch_name = "cunet_v5"
+   model.w2nn_offset = 60
+   model.w2nn_scale_factor = 2
+   model.w2nn_channels = ch
+   model.w2nn_resize = true
+   -- 72, 128, 256 are valid
+   --model.w2nn_input_size = 128
+
+   return model
+end
 
 function srcnn.prog_net(backend, ch)
    function base_upscaler(backend, ch)
@@ -1117,6 +1185,12 @@ local model = srcnn.cunet_v3("cunn", 3):cuda()
 print(model)
 model:training()
 print(model:forward(torch.Tensor(1, 3, 144, 144):zero():cuda()):size())
+os.exit()
+
+local model = srcnn.cunet_v5("cunn", 3):cuda()
+print(model)
+model:training()
+print(model:forward(torch.Tensor(1, 3, 144, 144):zero():cuda()))
 os.exit()
 
 --]]
