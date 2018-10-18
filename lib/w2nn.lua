@@ -84,6 +84,7 @@ else
    require 'RandomBinaryConvolution'
    require 'RandomBinaryCriterion'
    require 'EdgeFilter'
+   require 'ScaleTable'
    return w2nn
 end
 
