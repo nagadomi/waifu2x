@@ -35,5 +35,5 @@ end
 function ScaleTable:clearState()
    self.grad_tmp:set()
    self.scale:set()
-   return parent:clearstate()
+   return parent:clearState()
 end
