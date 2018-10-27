@@ -845,9 +845,9 @@ function srcnn.upcunet_v2(backend, ch)
       model:add(unet_conv(in_ch, 32, 64, false))
       model:add(unet_branch(block2, backend, 64, 64, 16))
       if deconv then
-	 model:add(SpatialFullConvolution(backend, 64, out_ch, 4, 4, 2, 2, 3, 3))
+	 model:add(SpatialFullConvolution(backend, 64, out_ch, 4, 4, 2, 2, 3, 3):noBias())
       else
-	 model:add(SpatialConvolution(backend, 64, out_ch, 3, 3, 1, 1, 0, 0))
+	 model:add(SpatialConvolution(backend, 64, out_ch, 3, 3, 1, 1, 0, 0):noBias())
       end
       return model
    end
