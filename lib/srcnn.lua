@@ -169,6 +169,17 @@ local function ReLU(backend)
 end
 srcnn.ReLU = ReLU
 
+local function Sigmoid(backend)
+   if backend == "cunn" then
+      return nn.Sigmoid(true)
+   elseif backend == "cudnn" then
+      return cudnn.Sigmoid(true)
+   else
+      error("unsupported backend:" .. backend)
+   end
+end
+srcnn.ReLU = ReLU
+
 local function SpatialMaxPooling(backend, kW, kH, dW, dH, padW, padH)
    if backend == "cunn" then
       return nn.SpatialMaxPooling(kW, kH, dW, dH, padW, padH)
@@ -821,11 +832,11 @@ function srcnn.upcunet_v2(backend, ch)
 	 local se_fac = 4
 	 local con = nn.ConcatTable(2)
 	 local attention = nn.Sequential()
-	 attention:add(nn.SpatialAveragePooling(4, 4, 4, 4))
+	 attention:add(SpatialAveragePooling(backend, 4, 4, 4, 4))
 	 attention:add(SpatialConvolution(backend, n_output, math.floor(n_output / se_fac), 1, 1, 1, 1, 0, 0))
 	 attention:add(nn.ReLU(true))
 	 attention:add(SpatialConvolution(backend, math.floor(n_output / se_fac), n_output, 1, 1, 1, 1, 0, 0))
-	 attention:add(nn.Sigmoid(true))
+	 attention:add(nn.Sigmoid(true)) -- don't use cudnn sigmoid 
 	 attention:add(nn.SpatialUpSamplingNearest(4, 4))
 	 con:add(nn.Identity())
 	 con:add(attention)
@@ -872,7 +883,8 @@ function srcnn.upcunet_v2(backend, ch)
    model.w2nn_scale_factor = 2
    model.w2nn_channels = ch
    model.w2nn_resize = true
-   model.w2nn_valid_input_size = {76,92,108,140,156,172,188,204,220,236,252,268,284,300,316,332,348,364,380,396,412,428,444,460,476,492,508}
+   -- {76,92,108,140} are also valid size but it is too small
+   model.w2nn_valid_input_size = {156,172,188,204,220,236,252,268,284,300,316,332,348,364,380,396,412,428,444,460,476,492,508}
 
    return model
 end
