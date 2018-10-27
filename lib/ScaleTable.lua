@@ -32,3 +32,8 @@ function ScaleTable:updateGradInput(input, gradOutput)
 
    return self.gradInput
 end
+function ScaleTable:clearState()
+   self.grad_tmp:set()
+   self.scale:set()
+   return parent:clearstate()
+end

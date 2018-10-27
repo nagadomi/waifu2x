@@ -38,3 +38,9 @@ function AuxiliaryLossTable:updateGradInput(input, gradOutput)
 
    return self.gradInput
 end
+function AuxiliaryLossTable:clearState()
+   self.gradInput = {}
+   self.output_table = {}
+   self.output_tensor:set()
+   return parent:clearState()
+end
