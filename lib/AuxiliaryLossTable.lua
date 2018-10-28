@@ -41,6 +41,6 @@ end
 function AuxiliaryLossTable:clearState()
    self.gradInput = {}
    self.output_table = {}
-   self.output_tensor:set()
+   nn.utils.clear(self, 'output_tensor')
    return parent:clearState()
 end

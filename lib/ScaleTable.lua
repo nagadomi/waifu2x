@@ -33,7 +33,6 @@ function ScaleTable:updateGradInput(input, gradOutput)
    return self.gradInput
 end
 function ScaleTable:clearState()
-   self.grad_tmp:set()
-   self.scale:set()
+   nn.utils.clear(self, {'grad_tmp','scale'})
    return parent:clearState()
 end
