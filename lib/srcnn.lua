@@ -573,24 +573,122 @@ function srcnn.cunet(backend, ch)
    return model
 end
 
+-- small version of cunet
+function srcnn.upcunet_s(backend, ch)
+   -- Residual U-Net
+   local function unet(backend, ch, deconv)
+      local block1 = unet_conv(backend, 128, 256, 128, true)
+      local block2 = nn.Sequential()
+      block2:add(unet_conv(backend, 32, 64, 128, true))
+      block2:add(unet_branch(backend, block1, backend, 128, 128, 4))
+      block2:add(unet_conv(backend, 128, 64, 32, true))
+      local model = nn.Sequential()
+      model:add(unet_conv(backend, ch, 32, 32, true))
+      model:add(unet_branch(backend, block2, backend, 32, 32, 16))
+      model:add(SpatialConvolution(backend, 32, 64, 3, 3, 1, 1, 0, 0))
+      model:add(nn.LeakyReLU(0.1))
+      if deconv then
+	 model:add(SpatialFullConvolution(backend, 64, ch, 4, 4, 2, 2, 3, 3))
+      else
+	 model:add(SpatialConvolution(backend, 64, ch, 3, 3, 1, 1, 0, 0))
+      end
+      return model
+   end
+   local model = nn.Sequential()
+   local con = nn.ConcatTable()
+   local aux_con = nn.ConcatTable()
+
+   -- 2 cascade
+   model:add(unet(backend, ch, true))
+   con:add(unet(backend, ch, false))
+   con:add(nn.SpatialZeroPadding(-20, -20, -20, -20))
+
+   aux_con:add(nn.Sequential():add(nn.CAddTable()):add(w2nn.InplaceClip01())) -- cascaded unet output
+   aux_con:add(nn.Sequential():add(nn.SelectTable(2)):add(w2nn.InplaceClip01())) -- single unet output
+
+   model:add(con)
+   model:add(aux_con)
+   model:add(w2nn.AuxiliaryLossTable(1)) -- auxiliary loss for single unet output
+
+   model.w2nn_arch_name = "upcunet_s"
+   model.w2nn_offset = 60
+   model.w2nn_scale_factor = 2
+   model.w2nn_channels = ch
+   model.w2nn_resize = true
+   model.w2nn_valid_input_size = {}
+   for i = 76, 512, 4 do
+      table.insert(model.w2nn_valid_input_size, i)
+   end
+
+   return model
+end
+function srcnn.cunet_s(backend, ch)
+   local function unet(backend, ch)
+      local block1 = unet_conv(backend, 128, 256, 128, true)
+      local block2 = nn.Sequential()
+      block2:add(unet_conv(backend, 32, 64, 128, true))
+      block2:add(unet_branch(backend, block1, backend, 128, 128, 4))
+      block2:add(unet_conv(backend, 128, 64, 32, true))
+
+      local model = nn.Sequential()
+      model:add(unet_conv(backend, ch, 32, 32, true))
+      model:add(unet_branch(backend, block2, backend, 32, 32, 16))
+      model:add(SpatialConvolution(backend, 32, 64, 3, 3, 1, 1, 0, 0))
+      model:add(nn.LeakyReLU(0.1))
+      model:add(SpatialConvolution(backend, 64, ch, 3, 3, 1, 1, 0, 0))
+
+      return model
+   end
+   local model = nn.Sequential()
+   local con = nn.ConcatTable()
+   local aux_con = nn.ConcatTable()
+
+   -- 2 cascade
+   model:add(unet(backend, ch))
+   con:add(unet(backend, ch))
+   con:add(nn.SpatialZeroPadding(-20, -20, -20, -20))
+
+   aux_con:add(nn.Sequential():add(nn.CAddTable()):add(w2nn.InplaceClip01())) -- cascaded unet output
+   aux_con:add(nn.Sequential():add(nn.SelectTable(2)):add(w2nn.InplaceClip01())) -- single unet output
+
+   model:add(con)
+   model:add(aux_con)
+   model:add(w2nn.AuxiliaryLossTable(1)) -- auxiliary loss for single unet output
+
+   model.w2nn_arch_name = "cunet_s"
+   model.w2nn_offset = 40
+   model.w2nn_scale_factor = 1
+   model.w2nn_channels = ch
+   model.w2nn_resize = false
+   model.w2nn_valid_input_size = {}
+   for i = 100, 512, 4 do
+      table.insert(model.w2nn_valid_input_size, i)
+   end
+
+   return model
+end
+
 local function bench()
    local sys = require 'sys'
    cudnn.benchmark = true
    local model = nil
-   local arch = {"upconv_7", "upcunet","vgg_7", "cunet"}
+   local arch = {"upconv_7", "upcunet","upcunet_s", "vgg_7", "cunet", "cunet_s"}
    local backend = "cudnn"
+   local ch = 3
+   local batch_size = 1
+   local crop_size = 512
    for k = 1, #arch do
-      model = srcnn[arch[k]](backend, 3):cuda()
+      model = srcnn[arch[k]](backend, ch):cuda()
       model:evaluate()
       local dummy = nil
       -- warn
       for i = 1, 20 do
-	 local x = torch.Tensor(4, 3, 172, 172):uniform():cuda()
+	 local x = torch.Tensor(batch_size, ch, crop_size, crop_size):uniform():cuda()
 	 model:forward(x)
       end
       t = sys.clock()
       for i = 1, 20 do
-	 local x = torch.Tensor(4, 3, 172, 172):uniform():cuda()
+	 local x = torch.Tensor(batch_size, ch, crop_size, crop_size):uniform():cuda()
 	 local z = model:forward(x)
 	 if dummy == nil then
 	    dummy = z:clone()
@@ -623,10 +721,10 @@ function srcnn.create(model_name, backend, color)
    end
 end
 --[[
-local model = srcnn.cunet_v3("cunn", 3):cuda()
+local model = srcnn.upcunet_s("cunn", 3):cuda()
 print(model)
 model:training()
-print(model:forward(torch.Tensor(1, 3, 144, 144):zero():cuda()):size())
+print(model:forward(torch.Tensor(1, 3, 144, 144):zero():cuda()))
 bench()
 os.exit()
 --]]
