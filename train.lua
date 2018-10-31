@@ -394,11 +394,23 @@ local function create_criterion(model)
       else
 	 return w2nn.RandomBinaryCriterion(1, 128):cuda()
       end
+   elseif settings.loss == "lbp2" then
+      if reconstruct.is_rgb(model) then
+	 return w2nn.RandomBinaryCriterion(3, 128, 3, 2):cuda()
+      else
+	 return w2nn.RandomBinaryCriterion(1, 128, 3, 2):cuda()
+      end
    elseif settings.loss == "aux_lbp" then
       if reconstruct.is_rgb(model) then
 	 return w2nn.AuxiliaryLossCriterion(w2nn.RandomBinaryCriterion, {3, 128}):cuda()
       else
 	 return w2nn.AuxiliaryLossCriterion(w2nn.RandomBinaryCriterion, {1, 128}):cuda()
+      end
+   elseif settings.loss == "aux_lbp2" then
+      if reconstruct.is_rgb(model) then
+	 return w2nn.AuxiliaryLossCriterion(w2nn.RandomBinaryCriterion, {3, 128, 3, 2}):cuda()
+      else
+	 return w2nn.AuxiliaryLossCriterion(w2nn.RandomBinaryCriterion, {1, 128, 3, 2}):cuda()
       end
    else
       error("unsupported loss .." .. settings.loss)
