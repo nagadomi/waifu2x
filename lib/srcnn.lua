@@ -568,8 +568,8 @@ local function unet_branch(backend, insert, backend, n_input, n_output, depad)
    block:add(insert)
    block:add(SpatialFullConvolution(backend, n_output, n_output, 2, 2, 2, 2, 0, 0))-- upsampling
    block:add(nn.LeakyReLU(0.1, true))
-   con:add(nn.SpatialZeroPadding(-depad, -depad, -depad, -depad))
    con:add(block)
+   con:add(nn.SpatialZeroPadding(-depad, -depad, -depad, -depad))
    model:add(con)
    model:add(nn.CAddTable())
    return model
