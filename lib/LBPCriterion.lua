@@ -1,4 +1,4 @@
-local RandomBinaryCriterion, parent = torch.class('w2nn.RandomBinaryCriterion','nn.Criterion')
+local LBPCriterion, parent = torch.class('w2nn.LBPCriterion','nn.Criterion')
 
 local function create_filters(ch, n, k, layers)
    local model = nn.Sequential()
@@ -22,7 +22,7 @@ local function create_filters(ch, n, k, layers)
    end
    return model
 end
-function RandomBinaryCriterion:__init(ch, n, k, layers)
+function LBPCriterion:__init(ch, n, k, layers)
    parent.__init(self)
    self.layers = layers or 1
    self.gamma = 0.1
@@ -38,7 +38,7 @@ function RandomBinaryCriterion:__init(ch, n, k, layers)
    self.input = torch.Tensor()
    self.target = torch.Tensor()
 end
-function RandomBinaryCriterion:updateOutput(input, target)
+function LBPCriterion:updateOutput(input, target)
    if input:dim() == 2 then
       local k = math.sqrt(input:size(2) / self.ch)
       input = input:reshape(input:size(1), self.ch, k, k)
@@ -70,7 +70,7 @@ function RandomBinaryCriterion:updateOutput(input, target)
    return self.output
 end
 
-function RandomBinaryCriterion:updateGradInput(input, target)
+function LBPCriterion:updateGradInput(input, target)
    local d2 = false
    if input:dim() == 2 then
       d2 = true
