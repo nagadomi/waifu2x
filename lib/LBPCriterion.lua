@@ -64,7 +64,6 @@ function RandomBinaryCriterion:updateOutput(input, target)
    local linear_targets = self.diff[torch.ge(self.diff_abs, self.gamma)]
    local square_loss = self.square_loss_buff:resizeAs(square_targets):copy(square_targets):pow(2.0):mul(0.5):sum()
    local linear_loss = self.linear_loss_buff:resizeAs(linear_targets):copy(linear_targets):abs():add(-0.5 * self.gamma):mul(self.gamma):sum()
-
    --self.outlier_rate = linear_targets:nElement() / input:nElement()
    self.output = (square_loss + linear_loss) / lb1:nElement()
 

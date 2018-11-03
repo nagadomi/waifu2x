@@ -82,7 +82,7 @@ else
    require 'AuxiliaryLossCriterion'
    require 'GradWeight'
    require 'RandomBinaryConvolution'
-   require 'RandomBinaryCriterion'
+   require 'LBPCriterion'
    require 'EdgeFilter'
    require 'ScaleTable'
    return w2nn
