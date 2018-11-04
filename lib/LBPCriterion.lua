@@ -55,9 +55,7 @@ function LBPCriterion:updateOutput(input, target)
 
    -- huber loss
    self.diff:resizeAs(lb1):copy(lb1)
-   for i = 1, lb1:size(1) do
-      self.diff[i]:add(-1, lb2[i])
-   end
+   self.diff:add(-1, lb2)
    self.diff_abs:resizeAs(self.diff):copy(self.diff):abs()
    
    local square_targets = self.diff[torch.lt(self.diff_abs, self.gamma)]

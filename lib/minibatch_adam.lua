@@ -44,29 +44,12 @@ local function minibatch_adam(model, criterion, eval_metric,
 	 gradParameters:zero()
 	 local output = model:forward(inputs)
 	 local f = criterion:forward(output, targets)
-	 local se = 0
+	 local se = eval_metric:forward(output, targets)
 	 if config.xInstanceLoss then
-	    if type(output) then
-	       local tbl = {}
-	       for i = 1, batch_size do
-		  for j = 1, #output do
-		     tbl[j] = output[j][i]
-		  end
-		  local el = eval_metric:forward(tbl, targets[i])
-		  se = se + el
-		  instance_loss[shuffle[t + i - 1]] = el
-	       end
-	       se = (se / batch_size)
-	    else
-	       for i = 1, batch_size do
-		  local el = eval_metric:forward(output[i], targets[i])
-		  se = se + el
-		  instance_loss[shuffle[t + i - 1]] = el
-	       end
-	       se = (se / batch_size)
-	    end	       
-	 else
-	    se = eval_metric:forward(output, targets)
+	    assert(eval_metric.instance_loss, "eval metric does not support instalce_loss")
+	    for i = 1, #eval_metric.instance_loss do
+	       instance_loss[shuffle[t + i - 1]] = eval_metric.instance_loss[i]
+	    end
 	 end
 	 sum_psnr = sum_psnr + (10 * math.log10(1 / (se + 1.0e-6)))
 	 sum_eval = sum_eval + se
