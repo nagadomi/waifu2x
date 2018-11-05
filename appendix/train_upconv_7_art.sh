@@ -10,13 +10,13 @@ th train.lua -save_history 1 -scale 2 -model upconv_7 -method scale -model_dir m
 
 # noise_scale
 
-th train.lua -save_history 1 -model upconv_7 -method noise_scale -noise_level 0 -oracle_rate 0.1 -model_dir models/test/upconv_7_rev6 -downsampling_filters "Box,Sinc" -test query/noise_test.jpg -backend cudnn -thread 4  -resume models/test/upconv_7_rev5/scale2.0x_model.t7 -style art
-th train.lua -save_history 1 -model upconv_7 -method noise_scale -noise_level 1 -oracle_rate 0.1 -model_dir models/test/upconv_7_rev6 -downsampling_filters "Box,Sinc" -test query/noise_test.jpg -backend cudnn -thread 4  -resume models/test/upconv_7_rev5/scale2.0x_model.t7 -style art
-th train.lua -save_history 1 -model upconv_7 -method noise_scale -noise_level 2 -oracle_rate 0.1 -model_dir models/test/upconv_7_rev6 -downsampling_filters "Box,Sinc" -test query/noise_test.jpg -backend cudnn -thread 4  -resume models/test/upconv_7_rev5/scale2.0x_model.t7 -style art
-th train.lua -save_history 1 -model upconv_7 -method noise_scale -noise_level 3 -oracle_rate 0.1 -model_dir models/test/upconv_7_rev6 -downsampling_filters "Box,Sinc" -test query/noise_test.jpg -backend cudnn -thread 4  -resume models/test/upconv_7_rev5/scale2.0x_model.t7 -style art -nr_rate 1
+th train.lua -save_history 1 -model upconv_7 -method noise_scale -noise_level 0 -model_dir models/test/upconv_7_rev6 -downsampling_filters "Box,Sinc" -test query/noise_test.jpg -backend cudnn -thread 4  -resume models/test/upconv_7_rev5/scale2.0x_model.t7 -style art
+th train.lua -save_history 1 -model upconv_7 -method noise_scale -noise_level 1 -model_dir models/test/upconv_7_rev6 -downsampling_filters "Box,Sinc" -test query/noise_test.jpg -backend cudnn -thread 4  -resume models/test/upconv_7_rev5/scale2.0x_model.t7 -style art
+th train.lua -save_history 1 -model upconv_7 -method noise_scale -noise_level 2 -model_dir models/test/upconv_7_rev6 -downsampling_filters "Box,Sinc" -test query/noise_test.jpg -backend cudnn -thread 4  -resume models/test/upconv_7_rev5/scale2.0x_model.t7 -style art
+th train.lua -save_history 1 -model upconv_7 -method noise_scale -noise_level 3 -model_dir models/test/upconv_7_rev6 -downsampling_filters "Box,Sinc" -test query/noise_test.jpg -backend cudnn -thread 4  -resume models/test/upconv_7_rev5/scale2.0x_model.t7 -style art -nr_rate 1
 
 # noise
-th train.lua -save_history 1 -model vgg_7 -method noise -noise_level 0 -oracle_rate 0.1 -model_dir models/test/yuv420_rev2 -test query/noise_test.jpg -backend cudnn -thread 4 -style art -crop_size 32
-th train.lua -save_history 1 -model vgg_7 -method noise -noise_level 1 -oracle_rate 0.1 -model_dir models/test/yuv420_rev2 -test query/noise_test.jpg -backend cudnn -thread 3 -style art -crop_size 32
-th train.lua -save_history 1 -model vgg_7 -method noise -noise_level 2 -oracle_rate 0.1 -model_dir models/test/yuv420_rev2 -test query/noise_test.jpg -backend cudnn -thread 3 -style art -crop_size 32
-th train.lua -save_history 1 -model vgg_7 -method noise -noise_level 3 -oracle_rate 0.1 -model_dir models/test/yuv420_rev2 -test query/noise_test.jpg -backend cudnn -thread 3 -style art -crop_size 32 -nr_rate 1 
+th train.lua -save_history 1 -model vgg_7 -method noise -noise_level 0 -model_dir models/test/yuv420_rev2 -test query/noise_test.jpg -backend cudnn -thread 4 -style art -crop_size 32
+th train.lua -save_history 1 -model vgg_7 -method noise -noise_level 1 -model_dir models/test/yuv420_rev2 -test query/noise_test.jpg -backend cudnn -thread 3 -style art -crop_size 32
+th train.lua -save_history 1 -model vgg_7 -method noise -noise_level 2 -model_dir models/test/yuv420_rev2 -test query/noise_test.jpg -backend cudnn -thread 3 -style art -crop_size 32
+th train.lua -save_history 1 -model vgg_7 -method noise -noise_level 3 -model_dir models/test/yuv420_rev2 -test query/noise_test.jpg -backend cudnn -thread 3 -style art -crop_size 32 -nr_rate 1 
