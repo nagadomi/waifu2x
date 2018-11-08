@@ -1,0 +1,30 @@
+---
+description: Schimbă rezoluția fiecărei imagini de tip Anime cu ajutorul rețelelor neuronale convuluționale profunde.
+show_demonstration: Arată demonstrația
+go_to_github: Mergi către GitHub
+image_choosing: Alege imaginea
+type_url: Introdu URL-ul Imaginii
+choose_file: Sau alege un fișier
+file_limits: "Limite: Dimensiune: 5MB, Reducere Noise: 3000x3000px, upscale: 1500x1500px"
+style: Tip
+artwork: Artwork
+photo: Imagine
+noise_reduction: Reducere Noise
+expect_jpeg: Așteaptă artefactele JPEG
+nr_none: Nu
+nr_low: Încet
+nr_medium: Medium
+nr_high: Forțat
+nr_highest: Super Forțat
+nr_hint: "Aveți nevoie de reducere de Noise dacă imaginea are Noise efectiv sau poate produce efect opus."
+upscaling: Upscale
+up_none: Nu
+tta: TTA
+tta_best_effort: "n-pass auto"
+tta_rule: Regulile pentru `n-pass auto`."
+tta_hint: "TTA asigură o calitate stabilă dar limitează dimensiunea imaginii sursă."
+button_convert: Convert
+button_download: Descărcare
+hints:
+  - "Dacă folosești Firefox, te rog folosește CTRL+S pentru salvarea imaginii.  Opțiunea \"Save Image\" nu funcționează."
+
