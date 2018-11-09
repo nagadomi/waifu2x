@@ -37,7 +37,7 @@ cmd:option("-save_all", 0, 'group -save_info, -save_image and -save_baseline_ima
 cmd:option("-thread", -1, 'number of CPU threads')
 cmd:option("-tta", 0, 'use tta')
 cmd:option("-tta_level", 8, 'tta level')
-cmd:option("-crop_size", 128, 'patch size per process')
+cmd:option("-crop_size", 256, 'patch size per process')
 cmd:option("-batch_size", 1, 'batch_size')
 cmd:option("-force_cudnn", 0, 'use cuDNN backend')
 cmd:option("-yuv420", 0, 'use yuv420 jpeg')
