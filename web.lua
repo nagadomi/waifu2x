@@ -50,7 +50,8 @@ if cudnn then
 end
 opt.force_cudnn = opt.force_cudnn == 1
 opt.enable_tta = opt.enable_tta == 1
-local ART_MODEL_DIR = path.join(ROOT, "models", "upconv_7", "art")
+--local ART_MODEL_DIR = path.join(ROOT, "models", "upconv_7", "art")
+local ART_MODEL_DIR = path.join(ROOT, "models", "cunet", "art")
 local PHOTO_MODEL_DIR = path.join(ROOT, "models", "upconv_7", "photo")
 local art_model = {
    scale = w2nn.load_model(path.join(ART_MODEL_DIR, "scale2.0x_model.t7"), opt.force_cudnn),

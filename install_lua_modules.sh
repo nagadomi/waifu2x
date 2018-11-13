@@ -16,6 +16,7 @@ install_cudnn()
 luarocks install graphicsmagick
 luarocks install lua-csnappy
 luarocks install md5
+luarocks install uuid
 luarocks install csvigo
 install_cudnn
 PREFIX=$HOME/torch/install luarocks install turbo

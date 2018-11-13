@@ -12,6 +12,7 @@ photo: 照片
 noise_reduction: 降噪程度
 expect_jpeg: 可能会产生JPEG噪点
 nr_none: 不降噪
+nr_low: 低
 nr_medium: 中
 nr_high: 高
 nr_highest: 最高
