@@ -76,7 +76,7 @@ local photo_model = {
    noise3 = w2nn.load_model(path.join(PHOTO_MODEL_DIR, "noise3_model.t7"), opt.force_cudnn)
 }
 collectgarbage()
-local CLEANUP_MODEL = false -- if you are using the low memory GPU, you could use this flag.
+local CLEANUP_MODEL = true -- if you are using the low memory GPU, you could use this flag.
 local CACHE_DIR = path.join(ROOT, "cache")
 local MAX_NOISE_IMAGE = opt.max_pixels
 local MAX_SCALE_IMAGE = (math.sqrt(opt.max_pixels) / 2)^2
