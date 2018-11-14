@@ -14,6 +14,7 @@ models/*
 !models/upconv_7l
 !models/srresnet_12l
 !models/vgg_7
+!models/cunet
 models/*/*.png
 models/*/*/*.png
 
