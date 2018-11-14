@@ -435,7 +435,7 @@ function srcnn.resnet_14l(backend, ch)
    return model
 end
 
--- ResNet_with SEBlock for fast conversion
+-- ResNet with SEBlock for fast conversion
 function srcnn.upresnet_s(backend, ch)
    local model = nn.Sequential()
    model:add(SpatialConvolution(backend, ch, 64, 3, 3, 1, 1, 0, 0))
@@ -447,46 +447,6 @@ function srcnn.upresnet_s(backend, ch)
    model:add(w2nn.InplaceClip01())
    model.w2nn_arch_name = "upresnet_s"
    model.w2nn_offset = 18
-   model.w2nn_scale_factor = 2
-   model.w2nn_resize = true
-   model.w2nn_channels = ch
-
-   return model
-end
--- Cascaded ResNet with SEBlock
-function srcnn.upcresnet(backend, ch)
-   local function resnet(backend, ch, deconv)
-      local model = nn.Sequential()
-      model:add(SpatialConvolution(backend, ch, 64, 3, 3, 1, 1, 0, 0))
-      model:add(nn.LeakyReLU(0.1, true))
-      model:add(ResGroupSE(backend, 2, 64))
-      model:add(SpatialConvolution(backend, 64, 64, 3, 3, 1, 1, 0, 0))
-      model:add(nn.LeakyReLU(0.1, true))
-      if deconv then
-	 model:add(SpatialFullConvolution(backend, 64, ch, 4, 4, 2, 2, 3, 3))
-      else
-	 model:add(SpatialConvolution(backend, 64, ch, 3, 3, 1, 1, 0, 0))
-      end
-      return model
-   end
-   local model = nn.Sequential()
-   local con = nn.ConcatTable()
-   local aux_con = nn.ConcatTable()
-
-   -- 2 cascade
-   model:add(resnet(backend, ch, true))
-   con:add(nn.Sequential():add(resnet(backend, ch, false)):add(nn.SpatialZeroPadding(-1, -1, -1, -1))) -- output size must be odd
-   con:add(nn.SpatialZeroPadding(-8, -8, -8, -8))
-
-   aux_con:add(nn.Sequential():add(nn.CAddTable()):add(w2nn.InplaceClip01()))
-   aux_con:add(nn.Sequential():add(nn.SelectTable(2)):add(w2nn.InplaceClip01()))
-
-   model:add(con)
-   model:add(aux_con)
-   model:add(w2nn.AuxiliaryLossTable(1))
-
-   model.w2nn_arch_name = "upcresnet"
-   model.w2nn_offset = 22
    model.w2nn_scale_factor = 2
    model.w2nn_resize = true
    model.w2nn_channels = ch
