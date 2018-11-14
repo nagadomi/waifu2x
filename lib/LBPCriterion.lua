@@ -1,3 +1,4 @@
+-- Random Generated Local Binary Pattern Loss 
 local LBPCriterion, parent = torch.class('w2nn.LBPCriterion','nn.Criterion')
 
 local function create_filters(ch, n, k, layers)
@@ -26,7 +27,7 @@ function LBPCriterion:__init(ch, n, k, layers)
    parent.__init(self)
    self.layers = layers or 1
    self.gamma = 0.1
-   self.n = n or 32
+   self.n = n or 128
    self.k = k or 3
    self.ch = ch
    self.filter1 = create_filters(self.ch, self.n, self.k, self.layers)

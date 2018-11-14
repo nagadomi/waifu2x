@@ -550,6 +550,7 @@ end
 
 -- Cascaded Residual U-Net with SEBlock
 
+-- unet utils adapted from https://gist.github.com/toshi-k/ca75e614f1ac12fa44f62014ac1d6465
 local function unet_conv(backend, n_input, n_middle, n_output, se)
    local model = nn.Sequential()
    model:add(SpatialConvolution(backend, n_input, n_middle, 3, 3, 1, 1, 0, 0))
