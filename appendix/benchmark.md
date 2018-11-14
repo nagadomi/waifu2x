@@ -21,7 +21,7 @@ Urban100: https://github.com/jbhuang0604/SelfExSR
 | BSD100        | 29.558        | 31.427        | 31.640           | 31.749           | 31.847             |
 | Urban100      | 26.852        | 30.057        | 30.477           | 30.759           | 31.016             |
 
-### 2x - benchmark elapsed time (sec)
+### 2x - benchmark time (sec)
 
 | Dataset/Model | vgg\_7/photo  | upconv\_7/photo  | upconv\_7l/photo | resnet_14l/photo |
 |---------------|---------------|------------------|------------------|--------------------|
@@ -37,7 +37,7 @@ Note: TTA is an ensemble technique that is supported by waifu2x. TTA method is 8
 | BSD100        | 29.558        | 31.474        | 31.705           | 31.812           | 31.915             |
 | Urban100      | 26.852        | 30.140        | 30.599           | 30.868           | 31.162             |
 
-### 2x with TTA - benchmark elapsed time (sec)
+### 2x with TTA - benchmark time (sec)
 
 | Dataset/Model | vgg\_7/photo  | upconv\_7/photo  | upconv\_7l/photo | resnet_14l/photo |
 |---------------|---------------|------------------|------------------|--------------------|
@@ -61,7 +61,7 @@ art_test: This dataset contains 84 various fan-arts. Sorry, This dataset is priv
 | Catrom(Bicubic)| 30.663        | 37.278      | 37.189         | 40.184         |
 | Box            | 30.891        | 37.709      | 38.410         | 39.672         |
 
-### 2x - benchmark elapsed time (sec)
+### 2x - benchmark time (sec)
 
 | Dataset/Model | vgg\_7/art  | upconv\_7/art  | cunet/art | 
 |---------------|-------------|----------------|----------------|
@@ -76,7 +76,7 @@ art_test: This dataset contains 84 various fan-arts. Sorry, This dataset is priv
 | Catrom(Bicubic)| 30.663        | 37.498      | 37.417         | 40.592         |
 | Box            | 30.891        | 38.032      | 38.768         | 40.032         |
 
-### 2x with TTA - benchmark elapsed time (sec)
+### 2x with TTA - benchmark time (sec)
 
 | Dataset/Model | vgg\_7/art  | upconv\_7/art  | cunet/art       | 
 |---------------|-------------|----------------|----------------|
