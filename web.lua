@@ -26,7 +26,8 @@ cmd:text("waifu2x-api")
 cmd:text("Options:")
 cmd:option("-port", 8812, 'listen port')
 cmd:option("-gpu", 1, 'Device ID')
-cmd:option("-crop_size", 128, 'patch size per process')
+cmd:option("-enable_tta", 0, 'enable TTA query(0|1)')
+cmd:option("-crop_size", 256, 'patch size per process')
 cmd:option("-batch_size", 1, 'batch size')
 cmd:option("-thread", -1, 'number of CPU threads')
 cmd:option("-force_cudnn", 0, 'use cuDNN backend (0|1)')
@@ -48,7 +49,9 @@ if cudnn then
    cudnn.benchmark = true
 end
 opt.force_cudnn = opt.force_cudnn == 1
-local ART_MODEL_DIR = path.join(ROOT, "models", "upconv_7", "art")
+opt.enable_tta = opt.enable_tta == 1
+--local ART_MODEL_DIR = path.join(ROOT, "models", "upconv_7", "art")
+local ART_MODEL_DIR = path.join(ROOT, "models", "cunet", "art")
 local PHOTO_MODEL_DIR = path.join(ROOT, "models", "upconv_7", "photo")
 local art_model = {
    scale = w2nn.load_model(path.join(ART_MODEL_DIR, "scale2.0x_model.t7"), opt.force_cudnn),
@@ -73,7 +76,7 @@ local photo_model = {
    noise3 = w2nn.load_model(path.join(PHOTO_MODEL_DIR, "noise3_model.t7"), opt.force_cudnn)
 }
 collectgarbage()
-local CLEANUP_MODEL = false -- if you are using the low memory GPU, you could use this flag.
+local CLEANUP_MODEL = true -- if you are using the low memory GPU, you could use this flag.
 local CACHE_DIR = path.join(ROOT, "cache")
 local MAX_NOISE_IMAGE = opt.max_pixels
 local MAX_SCALE_IMAGE = (math.sqrt(opt.max_pixels) / 2)^2
@@ -313,11 +316,14 @@ function APIHandler:post()
       self:write("client disconnected")
       return
    end
-
-   if tta_level == 0 then
-      tta_level = auto_tta_level(x, scale)
-   end
-   if not (tta_level == 0 or tta_level == 1 or tta_level == 2 or tta_level == 4 or tta_level == 8) then
+   if opt.enable_tta then
+      if tta_level == 0 then
+	 tta_level = auto_tta_level(x, scale)
+      end
+      if not (tta_level == 0 or tta_level == 1 or tta_level == 2 or tta_level == 4 or tta_level == 8) then
+	 tta_level = 1
+      end
+   else
       tta_level = 1
    end
    if style ~= "art" then

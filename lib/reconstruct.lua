@@ -30,29 +30,38 @@ local function reconstruct_nn(model, x, inner_scale, offset, block_size, batch_s
 	 end
       end
    end
-   local input = torch.Tensor(batch_size, ch, input_block_size, input_block_size)
-   local input_cuda = torch.CudaTensor(batch_size, ch, input_block_size, input_block_size)
-   for i = 1, #input_indexes, batch_size do
-      local c = 0
-      local output
-      for j = 0, batch_size - 1 do
-	 if i + j > #input_indexes then
-	    break
+   local input = torch.Tensor(#input_indexes, ch, input_block_size, input_block_size)
+   local input_cuda = torch.CudaTensor():resize(input:size())
+   local output_cuda = torch.CudaTensor():resize(new_x:size())
+   for i = 1, #input_indexes do
+      input[i]:copy(x[input_indexes[i]])
+      if model.w2nn_gcn then
+	 local mean = input[i]:mean()
+	 local stdv = input[i]:std()
+	 if stdv > 0 then
+	    input[i]:add(-mean):div(stdv)
+	 else
+	    input[i]:add(-mean)
 	 end
-	 input[j+1]:copy(x[input_indexes[i + j]])
-	 c = c + 1
-      end
-      input_cuda:copy(input)
-      if c == batch_size then
-	 output = model:forward(input_cuda)
-      else
-	 output = model:forward(input_cuda:narrow(1, 1, c))
-      end
-      --output = output:view(batch_size, ch, output_size, output_size)
-      for j = 0, c - 1 do
-	 new_x[output_indexes[i + j]]:copy(output[j+1])
       end
    end
+   input_cuda:copy(input)
+   local batch_n = math.floor(#input_indexes / batch_size)
+   local batch_rem = #input_indexes % batch_size
+   for i = 1, batch_n * batch_size, batch_size do
+      local output = model:forward(input_cuda:narrow(1, i, batch_size))
+      for j = 0, batch_size - 1 do
+	 output_cuda[output_indexes[i + j]]:copy(output[j + 1])
+      end
+   end
+   if batch_rem > 0 then
+      local i = 1 + batch_n * batch_size
+      local output = model:forward(input_cuda:narrow(1, i, batch_rem))
+      for j = 0, batch_rem - 1 do
+	 output_cuda[output_indexes[i + j]]:copy(output[j+1])
+      end
+   end
+   new_x:copy(output_cuda)
    return new_x
 end
 local reconstruct = {}
@@ -80,7 +89,12 @@ local function padding_params(x, model, block_size)
    p.x_w = x:size(3)
    p.x_h = x:size(2)
    p.inner_scale = reconstruct.inner_scale(model)
-   local input_offset = math.ceil(offset / p.inner_scale)
+   local input_offset
+   if model.w2nn_input_offset then
+      input_offset = model.w2nn_input_offset
+   else
+      input_offset = math.ceil(offset / p.inner_scale)
+   end
    local input_block_size = block_size
    local process_size = input_block_size - input_offset * 2
    local h_blocks = math.floor(p.x_h / process_size) +
@@ -95,8 +109,27 @@ local function padding_params(x, model, block_size)
    p.pad_w2 = (w - input_offset) - p.x_w
    return p
 end
+local function find_valid_block_size(model, block_size)
+   if model.w2nn_input_size ~= nil then
+      return model.w2nn_input_size
+   elseif model.w2nn_valid_input_size ~= nil then
+      local best_size = 0
+      local best_diff = 10000
+      for i = 1, #model.w2nn_valid_input_size do
+	 local diff = math.abs(model.w2nn_valid_input_size[i] - block_size)
+	 if diff < best_diff then
+	    best_size = model.w2nn_valid_input_size[i]
+	    best_diff = diff
+	 end 
+      end
+      assert(best_size > 0)
+      return best_size
+   else
+      return block_size
+   end
+end
 function reconstruct.image_y(model, x, offset, block_size, batch_size)
-   block_size = block_size or 128
+   block_size = find_valid_block_size(model, block_size or 128)
    local p = padding_params(x, model, block_size)
    x = iproc.padding(x, p.pad_w1, p.pad_w2, p.pad_h1, p.pad_h2)
    x = x:cuda()
@@ -112,7 +145,7 @@ function reconstruct.image_y(model, x, offset, block_size, batch_size)
    return output
 end
 function reconstruct.scale_y(model, scale, x, offset, block_size, batch_size)
-   block_size = block_size or 128
+   block_size = find_valid_block_size(model, block_size or 128)
    local x_lanczos
    if reconstruct.has_resize(model) then
       x_lanczos = iproc.scale(x, x:size(3) * scale, x:size(2) * scale, "Lanczos")
@@ -139,7 +172,7 @@ function reconstruct.scale_y(model, scale, x, offset, block_size, batch_size)
    return output
 end
 function reconstruct.image_rgb(model, x, offset, block_size, batch_size)
-   block_size = block_size or 128
+   block_size = find_valid_block_size(model, block_size or 128)
    local p = padding_params(x, model, block_size)
    x = iproc.padding(x, p.pad_w1, p.pad_w2, p.pad_h1, p.pad_h2)
    if p.x_w * p.x_h > 2048*2048 then
@@ -154,7 +187,7 @@ function reconstruct.image_rgb(model, x, offset, block_size, batch_size)
    return output
 end
 function reconstruct.scale_rgb(model, scale, x, offset, block_size, batch_size)
-   block_size = block_size or 128
+   block_size = find_valid_block_size(model, block_size or 128)
    if not reconstruct.has_resize(model) then
       x = iproc.scale(x, x:size(3) * scale, x:size(2) * scale, "Box")
    end
@@ -171,7 +204,7 @@ function reconstruct.scale_rgb(model, scale, x, offset, block_size, batch_size)
    collectgarbage()
    return output
 end
-function reconstruct.image(model, x, block_size)
+function reconstruct.image(model, x, block_size, batch_size)
    local i2rgb = false
    if x:size(1) == 1 then
       local new_x = torch.Tensor(3, x:size(2), x:size(3))
@@ -183,17 +216,17 @@ function reconstruct.image(model, x, block_size)
    end
    if reconstruct.is_rgb(model) then
       x = reconstruct.image_rgb(model, x,
-				reconstruct.offset_size(model), block_size)
+				reconstruct.offset_size(model), block_size, batch_size)
    else
       x = reconstruct.image_y(model, x,
-			      reconstruct.offset_size(model), block_size)
+			      reconstruct.offset_size(model), block_size, batch_size)
    end
    if i2rgb then
       x = image.rgb2y(x)
    end
    return x
 end
-function reconstruct.scale(model, scale, x, block_size)
+function reconstruct.scale(model, scale, x, block_size, batch_size)
    local i2rgb = false
    if x:size(1) == 1 then
       local new_x = torch.Tensor(3, x:size(2), x:size(3))
@@ -206,11 +239,11 @@ function reconstruct.scale(model, scale, x, block_size)
    if reconstruct.is_rgb(model) then
       x = reconstruct.scale_rgb(model, scale, x,
 				reconstruct.offset_size(model),
-				block_size)
+				block_size, batch_size)
    else
       x = reconstruct.scale_y(model, scale, x,
 			      reconstruct.offset_size(model),
-			      block_size)
+			      block_size, batch_size)
    end
    if i2rgb then
       x = image.rgb2y(x)
@@ -287,6 +320,9 @@ local function tta(f, n, model, x, block_size)
    return average:div(#augments)
 end
 function reconstruct.image_tta(model, n, x, block_size)
+   if model.w2nn_input_size then
+      block_size = model.w2nn_input_size
+   end
    if reconstruct.is_rgb(model) then
       return tta(reconstruct.image_rgb, n, model, x, block_size)
    else
@@ -294,6 +330,9 @@ function reconstruct.image_tta(model, n, x, block_size)
    end
 end
 function reconstruct.scale_tta(model, n, scale, x, block_size)
+   if model.w2nn_input_size then
+      block_size = model.w2nn_input_size
+   end
    if reconstruct.is_rgb(model) then
       local f = function (model, x, offset, block_size)
 	 return reconstruct.scale_rgb(model, scale, x, offset, block_size)

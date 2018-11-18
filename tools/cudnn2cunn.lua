@@ -6,18 +6,29 @@ require 'w2nn'
 local srcnn = require 'srcnn'
 
 local function cudnn2cunn(cudnn_model)
-   local cunn_model = srcnn.waifu2x_cunn(srcnn.channels(cudnn_model))
-   local weight_from = cudnn_model:findModules("cudnn.SpatialConvolution")
-   local weight_to = cunn_model:findModules("nn.SpatialConvolutionMM")
+   local name = srcnn.name(cudnn_model)
+   local cunn_model = srcnn[name]('cunn', srcnn.channels(cudnn_model))
+   local param_layers = {
+      {cunn="nn.SpatialConvolutionMM", cudnn="cudnn.SpatialConvolution", attr={"bias", "weight"}},
+      {cunn="nn.SpatialDilatedConvolution", cudnn="cudnn.SpatialDilatedConvolution", attr={"bias", "weight"}},
+      {cunn="nn.SpatialFullConvolution", cudnn="cudnn.SpatialFullConvolution", attr={"bias", "weight"}},
+      {cunn="nn.Linear", cudnn="nn.Linear", attr={"bias", "weight"}}
+   }
+   for i = 1, #param_layers do
+      local p = param_layers[i]
+      local weight_from = cudnn_model:findModules(p.cudnn)
+      local weight_to = cunn_model:findModules(p.cunn)
+      print(p.cudnn, #weight_from)
+      assert(#weight_from == #weight_to)
    
-   assert(#weight_from == #weight_to)
-   
-   for i = 1, #weight_from do
-      local from = weight_from[i]
-      local to = weight_to[i]
-      
-      to.weight:copy(from.weight)
-      to.bias:copy(from.bias)
+      for i = 1, #weight_from do
+	 local from = weight_from[i]
+	 local to = weight_to[i]
+	 to.weight:copy(from.weight)
+	 if to.bias then
+	    to.bias:copy(from.bias)
+	 end
+      end
    end
    cunn_model:cuda()
    cunn_model:evaluate()
