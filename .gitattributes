@@ -1,3 +1,2 @@
-models/vgg_7/*/*.json binary
-models/upconv_7/*/*.json binary
+models/**/*.json binary
 *.t7 binary

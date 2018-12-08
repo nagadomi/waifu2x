@@ -18,7 +18,7 @@ cmd:option("-dir", "./data/test", 'test image directory')
 cmd:option("-file", "", 'test image file list')
 cmd:option("-model1_dir", "./models/anime_style_art_rgb", 'model1 directory')
 cmd:option("-model2_dir", "", 'model2 directory (optional)')
-cmd:option("-method", "scale", '(scale|noise|noise_scale|user|diff)')
+cmd:option("-method", "scale", '(scale|noise|noise_scale|user|diff|scale4)')
 cmd:option("-filter", "Catrom", "downscaling filter (Box|Lanczos|Catrom(Bicubic))")
 cmd:option("-resize_blur", 1.0, 'blur parameter for resize')
 cmd:option("-color", "y", '(rgb|y|r|g|b)')
@@ -37,7 +37,7 @@ cmd:option("-save_all", 0, 'group -save_info, -save_image and -save_baseline_ima
 cmd:option("-thread", -1, 'number of CPU threads')
 cmd:option("-tta", 0, 'use tta')
 cmd:option("-tta_level", 8, 'tta level')
-cmd:option("-crop_size", 128, 'patch size per process')
+cmd:option("-crop_size", 256, 'patch size per process')
 cmd:option("-batch_size", 1, 'batch_size')
 cmd:option("-force_cudnn", 0, 'use cuDNN backend')
 cmd:option("-yuv420", 0, 'use yuv420 jpeg')
@@ -46,6 +46,8 @@ cmd:option("-x_dir", "", 'input image for user method')
 cmd:option("-y_dir", "", 'groundtruth image for user method. filename must be the same as x_dir')
 cmd:option("-x_file", "", 'input image for user method')
 cmd:option("-y_file", "", 'groundtruth image for user method. filename must be the same as x_file')
+cmd:option("-border", 0, 'border px that will removed')
+cmd:option("-metric", "", '(jaccard)')
 
 local function to_bool(settings, name)
    if settings[name] == 1 then
@@ -158,10 +160,22 @@ local function baseline_scale(x, filter)
 		      x:size(2) * 2.0,
 		      filter)
 end
+local function baseline_scale4(x, filter)
+   return iproc.scale(x,
+		      x:size(3) * 4.0,
+		      x:size(2) * 4.0,
+		      filter)
+end
 local function transform_scale(x, opt)
    return iproc.scale(x,
 		      x:size(3) * 0.5,
 		      x:size(2) * 0.5,
+		      opt.filter, opt.resize_blur)
+end
+local function transform_scale4(x, opt)
+   return iproc.scale(x,
+		      x:size(3) * 0.25,
+		      x:size(2) * 0.25,
 		      opt.filter, opt.resize_blur)
 end
 
@@ -184,9 +198,46 @@ local function transform_scale_jpeg(x, opt)
    end
    return iproc.byte2float(x)
 end
-
+local function remove_border(x, border)
+   return iproc.crop(x,
+		     border, border,
+		     x:size(3) - border,
+		     x:size(2) - border)
+end
+local function create_metric(metric)
+   if metric and metric:len() > 0 then
+      if metric == "jaccard" then
+	 return {
+	    name = "jaccard", 
+	    func = function (a, b) 
+	       local ga = iproc.rgb2y(a)
+	       local gb = iproc.rgb2y(b)
+	       local ba = torch.Tensor():resizeAs(ga)
+	       local bb = torch.Tensor():resizeAs(gb)
+	       ba:zero()
+	       bb:zero()
+	       ba[torch.gt(ga, 0.5)] = 1.0
+	       bb[torch.gt(gb, 0.5)] = 1.0
+	       local num_a = ba:sum()
+	       local num_b = bb:sum()
+	       local a_and_b  = ba:cmul(bb):sum()
+	       local abab = (num_a + num_b - a_and_b)
+	       if abab > 0 then
+		  return (a_and_b / abab)
+	       else
+		  return 1
+	       end
+	 end}
+      else
+	 error("unknown metric: " .. metric)
+      end
+   else
+      return nil
+   end
+end
 local function benchmark(opt, x, model1, model2)
-   local mse
+   local mse1, mse2, am1, am2
+   local won = {0, 0}
    local model1_mse = 0
    local model2_mse = 0
    local baseline_mse = 0
@@ -197,6 +248,17 @@ local function benchmark(opt, x, model1, model2)
    local model2_time = 0
    local scale_f = reconstruct.scale
    local image_f = reconstruct.image
+   local detail_fp = nil
+   local am = nil
+   local model1_am = 0
+   local model2_am = 0
+
+   if opt.method == "user" or opt.method == "diff" then
+      am = create_metric(opt.metric)
+   end
+   if opt.save_info then
+      detail_fp = io.open(path.join(opt.output_dir, "benchmark_details.txt"), "w")
+   end
    if opt.tta then
       scale_f = function(model, scale, x, block_size, batch_size)
 	 return reconstruct.scale_tta(model, opt.tta_level,
@@ -209,12 +271,15 @@ local function benchmark(opt, x, model1, model2)
    end
 
    for i = 1, #x do
+      if i % 10 == 0 then
+	 collectgarbage()
+      end
       local basename = x[i].basename
       local input, model1_output, model2_output, baseline_output, ground_truth
 
       if opt.method == "scale" then
-	 input = transform_scale(x[i].y, opt)
-	 ground_truth = x[i].y
+	 input = transform_scale(iproc.byte2float(x[i].y), opt)
+	 ground_truth = iproc.byte2float(x[i].y)
 
 	 if opt.force_cudnn and i == 1 then -- run cuDNN benchmark first
 	    model1_output = scale_f(model1, 2.0, input, opt.crop_size, opt.batch_size)
@@ -231,9 +296,29 @@ local function benchmark(opt, x, model1, model2)
 	    model2_time = model2_time + (sys.clock() - t)
 	 end
 	 baseline_output = baseline_scale(input, opt.baseline_filter)
+      elseif opt.method == "scale4" then
+	 input = transform_scale4(iproc.byte2float(x[i].y), opt)
+	 ground_truth = iproc.byte2float(x[i].y)
+	 if opt.force_cudnn and i == 1 then -- run cuDNN benchmark first
+	    model1_output = scale_f(model1, 2.0, input, opt.crop_size, opt.batch_size)
+	    if model2 then
+	       model2_output = scale_f(model2, 2.0, input, opt.crop_size, opt.batch_size)
+	    end
+	 end
+	 t = sys.clock()
+	 model1_output = scale_f(model1, 2.0, input, opt.crop_size, opt.batch_size)
+	 model1_output = scale_f(model1, 2.0, model1_output, opt.crop_size, opt.batch_size)
+	 model1_time = model1_time + (sys.clock() - t)
+	 if model2 then
+	    t = sys.clock()
+	    model2_output = scale_f(model2, 2.0, input, opt.crop_size, opt.batch_size)
+	    model2_output = scale_f(model2, 2.0, model2_output, opt.crop_size, opt.batch_size)
+	    model2_time = model2_time + (sys.clock() - t)
+	 end
+	 baseline_output = baseline_scale4(input, opt.baseline_filter)
       elseif opt.method == "noise" then
-	 input = transform_jpeg(x[i].y, opt)
-	 ground_truth = x[i].y
+	 input = transform_jpeg(iproc.byte2float(x[i].y), opt)
+	 ground_truth = iproc.byte2float(x[i].y)
 
 	 if opt.force_cudnn and i == 1 then
 	    model1_output = image_f(model1, input, opt.crop_size, opt.batch_size)
@@ -251,8 +336,8 @@ local function benchmark(opt, x, model1, model2)
 	 end
 	 baseline_output = input
       elseif opt.method == "noise_scale" then
-	 input = transform_scale_jpeg(x[i].y, opt)
-	 ground_truth = x[i].y
+	 input = transform_scale_jpeg(iproc.byte2float(x[i].y), opt)
+	 ground_truth = iproc.byte2float(x[i].y)
 
 	 if opt.force_cudnn and i == 1 then
 	    if model1.noise_scale_model then
@@ -317,8 +402,8 @@ local function benchmark(opt, x, model1, model2)
 	 end
 	 baseline_output = baseline_scale(input, opt.baseline_filter)
       elseif opt.method == "user" then
-	 input = x[i].x
-	 ground_truth = x[i].y
+	 input = iproc.byte2float(x[i].x)
+	 ground_truth = iproc.byte2float(x[i].y)
 	 local y_scale = ground_truth:size(2) / input:size(2)
 	 if y_scale > 1 then
 	    if opt.force_cudnn and i == 1 then
@@ -352,19 +437,69 @@ local function benchmark(opt, x, model1, model2)
 	    end
 	 end
       elseif opt.method == "diff" then
-	 input = x[i].x
-	 ground_truth = x[i].y
+	 input = iproc.byte2float(x[i].x)
+	 ground_truth = iproc.byte2float(x[i].y)
 	 model1_output = input
       end
-      mse = MSE(ground_truth, model1_output, opt.color)
-      model1_mse = model1_mse + mse
-      model1_psnr = model1_psnr + MSE2PSNR(mse)
+      if opt.border > 0 then
+	 ground_truth = remove_border(ground_truth, opt.border)
+	 model1_output = remove_border(model1_output, opt.border)
+      end
+      if am then
+	 am1 = am.func(ground_truth, model1_output)
+	 model1_am = model1_am + am1
+      else
+	 mse1 = MSE(ground_truth, model1_output, opt.color)
+	 model1_mse = model1_mse + mse1
+	 model1_psnr = model1_psnr + MSE2PSNR(mse1)
+      end
+      local won_model = 1
       if model2 then
-	 mse = MSE(ground_truth, model2_output, opt.color)
-	 model2_mse = model2_mse + mse
-	 model2_psnr = model2_psnr + MSE2PSNR(mse)
+	 if opt.border > 0 then
+	    model2_output = remove_border(model2_output, opt.border)
+	 end
+	 if am then
+	    am2 = am.func(ground_truth, model2_output)
+	    model2_am = model2_am + am2
+	 else
+	    mse2 = MSE(ground_truth, model2_output, opt.color)
+	    model2_mse = model2_mse + mse2
+	    model2_psnr = model2_psnr + MSE2PSNR(mse2)
+	 end
+	 if am then
+	    if am1 < am2 then
+	       won[1] = won[1] + 1
+	    elseif am1 > am2 then
+	       won[2] = won[2] + 1
+	       won_model = 2
+	    end
+	 else
+	    if mse1 < mse2 then
+	       won[1] = won[1] + 1
+	    elseif mse1 > mse2 then
+	       won[2] = won[2] + 1
+	       won_model = 2
+	    end
+	 end
+	 if detail_fp then
+	    if am then
+	       detail_fp:write(string.format("%s,%f,%d\n", x[i].basename, am1, am2, won_model))
+	    else
+	       detail_fp:write(string.format("%s,%f,%f,%d\n", x[i].basename,
+					     MSE2PSNR(mse1), MSE2PSNR(mse2), won_model))
+	    end
+	 end
+      else
+	 if detail_fp then
+	    if am then
+	       detail_fp:write(string.format("%s,%f\n", x[i].basename, am1))
+	    else
+	       detail_fp:write(string.format("%s,%f\n", x[i].basename, MSE2PSNR(mse1)))
+	    end
+	 end
       end
       if baseline_output then
+	 baseline_output = remove_border(baseline_output, opt.border)
 	 mse = MSE(ground_truth, baseline_output, opt.color)
 	 baseline_mse = baseline_mse + mse
 	 baseline_psnr = baseline_psnr + MSE2PSNR(mse)
@@ -384,44 +519,65 @@ local function benchmark(opt, x, model1, model2)
 	 end
       end
       if opt.show_progress or i == #x then
-	 if model2 then
-	    if baseline_output then
+	 if am then
+	    if model2 then
 	       io.stdout:write(
-		  string.format("%d/%d; model1_time=%.2f, model2_time=%.2f, baseline_rmse=%f, model1_rmse=%f, model2_rmse=%f, baseline_psnr=%f, model1_psnr=%f, model2_psnr=%f \r",
+		  string.format("%d/%d; model1_time=%.2f, model2_time=%.2f, model1_%s=%.3f, model2_%s=%.3f \r",
 				i, #x,
 				model1_time,
 				model2_time,
-				math.sqrt(baseline_mse / i),
-				math.sqrt(model1_mse / i), math.sqrt(model2_mse / i),
-				baseline_psnr / i,
-				model1_psnr / i, model2_psnr / i
-		  ))
+				am.name, model1_am / i, am.name, model2_am / i
+	       ))
 	    else
 	       io.stdout:write(
-		  string.format("%d/%d; model1_time=%.2f, model2_time=%.2f, model1_rmse=%f, model2_rmse=%f, model1_psnr=%f, model2_psnr=%f \r",
+		  string.format("%d/%d; model1_time=%.2f, model1_%s=%.3f \r",
 				i, #x,
 				model1_time,
-				model2_time,
-				math.sqrt(model1_mse / i), math.sqrt(model2_mse / i),
-				model1_psnr / i, model2_psnr / i
-		  ))
+				am.name, model1_am / i
+	       ))
 	    end
 	 else
-	    if baseline_output then
-	       io.stdout:write(
-		  string.format("%d/%d; model1_time=%.2f, baseline_rmse=%f, model1_rmse=%f, baseline_psnr=%f, model1_psnr=%f \r",
-				i, #x,
-				model1_time,
-				math.sqrt(baseline_mse / i), math.sqrt(model1_mse / i),
-				baseline_psnr / i, model1_psnr / i
+	    if model2 then
+	       if baseline_output then
+		  io.stdout:write(
+		     string.format("%d/%d; model1_time=%.2f, model2_time=%.2f, baseline_rmse=%.3f, model1_rmse=%.3f, model2_rmse=%.3f, baseline_psnr=%.3f, model1_psnr=%.3f, model2_psnr=%.3f, model1_won=%d, model2_won=%d \r",
+				   i, #x,
+				   model1_time,
+				   model2_time,
+				   math.sqrt(baseline_mse / i),
+				   math.sqrt(model1_mse / i), math.sqrt(model2_mse / i),
+				   baseline_psnr / i,
+				   model1_psnr / i, model2_psnr / i,
+				   won[1], won[2]
 		  ))
+	       else
+		  io.stdout:write(
+		     string.format("%d/%d; model1_time=%.2f, model2_time=%.2f, model1_rmse=%.3f, model2_rmse=%.3f, model1_psnr=%.3f, model2_psnr=%.3f, model1_own=%d, model2_won=%d \r",
+				   i, #x,
+				   model1_time,
+				   model2_time,
+				   math.sqrt(model1_mse / i), math.sqrt(model2_mse / i),
+				   model1_psnr / i, model2_psnr / i,
+				   won[1], won[2]
+		  ))
+	       end
 	    else
-	       io.stdout:write(
-		  string.format("%d/%d; model1_time=%.2f, model1_rmse=%f, model1_psnr=%f \r",
-				i, #x,
-				model1_time,
-				math.sqrt(model1_mse / i), model1_psnr / i
+	       if baseline_output then
+		  io.stdout:write(
+		     string.format("%d/%d; model1_time=%.2f, baseline_rmse=%.3f, model1_rmse=%.3f, baseline_psnr=%.3f, model1_psnr=%.3f \r",
+				   i, #x,
+				   model1_time,
+				   math.sqrt(baseline_mse / i), math.sqrt(model1_mse / i),
+				   baseline_psnr / i, model1_psnr / i
 		  ))
+	       else
+		  io.stdout:write(
+		     string.format("%d/%d; model1_time=%.2f, model1_rmse=%.3f, model1_psnr=%.3f \r",
+				   i, #x,
+				   model1_time,
+				   math.sqrt(model1_mse / i), model1_psnr / i
+		  ))
+	       end
 	    end
 	 end
 	 io.stdout:flush()
@@ -442,7 +598,18 @@ local function benchmark(opt, x, model1, model2)
 	 fp:write(string.format("model2  : RMSE = %.3f, PSNR = %.3f, evaluation time = %.3f\n",
 				math.sqrt(model2_mse / #x), model2_psnr / #x, model2_time))
       end
+      if model1_am > 0 then
+	 fp:write(string.format("model1  : %s = %.3f, evaluation time = %.3f\n",
+				math.sqrt(model1_am / #x), model1_time))
+      end
+      if model2_am > 0 then
+	 fp:write(string.format("model2  : %s = %.3f, evaluation time = %.3f\n",
+				math.sqrt(model2_am / #x), model2_time))
+      end
       fp:close()
+      if detail_fp then
+	 detail_fp:close()
+      end
    end
    io.stdout:write("\n")
 end
@@ -453,13 +620,16 @@ local function load_data_from_dir(test_dir)
       local name = path.basename(files[i])
       local e = path.extension(name)
       local base = name:sub(0, name:len() - e:len())
-      local img = image_loader.load_float(files[i])
+      local img = image_loader.load_byte(files[i])
       if img then
 	 table.insert(test_x, {y = iproc.crop_mod4(img),
 			       basename = base})
       end
-      if opt.show_progress then
-	 xlua.progress(i, #files)
+      if i % 10 == 0 then
+	 if opt.show_progress then
+	    xlua.progress(i, #files)
+	 end
+	 collectgarbage()
       end
    end
    return test_x
@@ -471,13 +641,16 @@ local function load_data_from_file(test_file)
       local name = path.basename(files[i])
       local e = path.extension(name)
       local base = name:sub(0, name:len() - e:len())
-      local img = image_loader.load_float(files[i])
+      local img = image_loader.load_byte(files[i])
       if img then
 	 table.insert(test_x, {y = iproc.crop_mod4(img),
 			       basename = base})
       end
-      if opt.show_progress then
-	 xlua.progress(i, #files)
+      if i % 10 == 0 then
+	 if opt.show_progress then
+	    xlua.progress(i, #files)
+	 end
+	 collectgarbage()
       end
    end
    return test_x
@@ -524,15 +697,18 @@ local function load_user_data(y_dir, y_file, x_dir, x_file)
    end
    for i = 1, #y_files do
       local key = get_basename(y_files[i])
-      local x = image_loader.load_float(basename_db[key].x)
-      local y = image_loader.load_float(basename_db[key].y)
+      local x = image_loader.load_byte(basename_db[key].x)
+      local y = image_loader.load_byte(basename_db[key].y)
       if x and y then
 	 table.insert(test, {y = y,
 			     x = x,
-			     basename = base})
+			     basename = key})
       end
-      if opt.show_progress then
-	 xlua.progress(i, #y_files)
+      if i % 10 == 0 then
+	 if opt.show_progress then
+	    xlua.progress(i, #y_files)
+	 end
+	 collectgarbage()
       end
    end
    return test
@@ -568,7 +744,7 @@ if opt.show_progress then
    print(opt)
 end
 
-if opt.method == "scale" then
+if opt.method == "scale" or opt.method == "scale4" then
    local f1 = path.join(opt.model1_dir, "scale2.0x_model.t7")
    local f2 = path.join(opt.model2_dir, "scale2.0x_model.t7")
    local s1, model1 = pcall(w2nn.load_model, f1, opt.force_cudnn)

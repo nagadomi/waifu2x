@@ -22,8 +22,7 @@ function image_loader.encode_png(rgb, options)
       else
 	 rgb = rgb:clone():add(clip_eps8)
       end
-      rgb[torch.lt(rgb, 0.0)] = 0.0
-      rgb[torch.gt(rgb, 1.0)] = 1.0
+      rgb:clamp(0.0, 1.0)
       rgb = rgb:mul(255):floor():div(255)
    else
       if options.inplace then
@@ -31,8 +30,7 @@ function image_loader.encode_png(rgb, options)
       else
 	 rgb = rgb:clone():add(clip_eps16)
       end
-      rgb[torch.lt(rgb, 0.0)] = 0.0
-      rgb[torch.gt(rgb, 1.0)] = 1.0
+      rgb:clamp(0.0, 1.0)
       rgb = rgb:mul(65535):floor():div(65535)
    end
    local im

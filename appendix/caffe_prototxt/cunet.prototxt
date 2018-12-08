@@ -1,0 +1,794 @@
+layer {
+  name: "input"
+  type: "Input"
+  top: "Input1"
+  input_param {
+    shape {
+      dim: 1
+      dim: 3
+      dim: 312
+      dim: 312
+    }
+  }
+}
+layer {
+  name: "Convolution1"
+  type: "Convolution"
+  bottom: "Input1"
+  top: "Convolution1"
+  convolution_param {
+    num_output: 32
+    pad: 0
+    kernel_size: 3
+    stride: 1
+  }
+}
+layer {
+  name: "ReLU1"
+  type: "ReLU"
+  bottom: "Convolution1"
+  top: "Convolution1"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "Convolution2"
+  type: "Convolution"
+  bottom: "Convolution1"
+  top: "Convolution2"
+  convolution_param {
+    num_output: 64
+    pad: 0
+    kernel_size: 3
+    stride: 1
+  }
+}
+layer {
+  name: "ReLU2"
+  type: "ReLU"
+  bottom: "Convolution2"
+  top: "Convolution2"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "Convolution3"
+  type: "Convolution"
+  bottom: "Convolution2"
+  top: "Convolution3"
+  convolution_param {
+    num_output: 64
+    pad: 0
+    kernel_size: 2
+    stride: 2
+  }
+}
+layer {
+  name: "ReLU3"
+  type: "ReLU"
+  bottom: "Convolution3"
+  top: "Convolution3"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "Convolution4"
+  type: "Convolution"
+  bottom: "Convolution3"
+  top: "Convolution4"
+  convolution_param {
+    num_output: 128
+    pad: 0
+    kernel_size: 3
+    stride: 1
+  }
+}
+layer {
+  name: "ReLU4"
+  type: "ReLU"
+  bottom: "Convolution4"
+  top: "Convolution4"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "Convolution5"
+  type: "Convolution"
+  bottom: "Convolution4"
+  top: "Convolution5"
+  convolution_param {
+    num_output: 64
+    pad: 0
+    kernel_size: 3
+    stride: 1
+  }
+}
+layer {
+  name: "ReLU5"
+  type: "ReLU"
+  bottom: "Convolution5"
+  top: "Convolution5"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "Pooling1"
+  type: "Pooling"
+  bottom: "Convolution5"
+  top: "Pooling1"
+  pooling_param {
+    pool: AVE
+    global_pooling: true
+  }
+}
+layer {
+  name: "Convolution6"
+  type: "Convolution"
+  bottom: "Pooling1"
+  top: "Convolution6"
+  convolution_param {
+    num_output: 8
+    pad: 0
+    kernel_size: 1
+    stride: 1
+  }
+}
+layer {
+  name: "ReLU6"
+  type: "ReLU"
+  bottom: "Convolution6"
+  top: "Convolution6"
+}
+layer {
+  name: "Convolution7"
+  type: "Convolution"
+  bottom: "Convolution6"
+  top: "Convolution7"
+  convolution_param {
+    num_output: 64
+    pad: 0
+    kernel_size: 1
+    stride: 1
+  }
+}
+layer {
+  name: "Sigmoid1"
+  type: "Sigmoid"
+  bottom: "Convolution7"
+  top: "Convolution7"
+}
+layer {
+  name: "Flatten1"
+  type: "Flatten"
+  bottom: "Convolution7"
+  top: "Flatten1"
+}
+layer {
+  name: "Scale1"
+  type: "Scale"
+  bottom: "Convolution5"
+  bottom: "Flatten1"
+  top: "Scale1"
+  scale_param {
+    axis: 0
+    bias_term: false
+  }
+}
+layer {
+  name: "Deconvolution1"
+  type: "Deconvolution"
+  bottom: "Scale1"
+  top: "Deconvolution1"
+  convolution_param {
+    num_output: 64
+    pad: 0
+    kernel_size: 2
+    stride: 2
+  }
+}
+layer {
+  name: "ReLU7"
+  type: "ReLU"
+  bottom: "Deconvolution1"
+  top: "Deconvolution1"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "Crop1"
+  type: "Crop"
+  bottom: "Convolution2"
+  bottom: "Deconvolution1"
+  top: "Crop1"
+  crop_param {
+    axis: 2
+    offset: 4
+  }
+}
+layer {
+  name: "Eltwise1"
+  type: "Eltwise"
+  bottom: "Crop1"
+  bottom: "Deconvolution1"
+  top: "Eltwise1"
+  eltwise_param {
+    operation: SUM
+  }
+}
+layer {
+  name: "Convolution8"
+  type: "Convolution"
+  bottom: "Eltwise1"
+  top: "Convolution8"
+  convolution_param {
+    num_output: 64
+    pad: 0
+    kernel_size: 3
+    stride: 1
+  }
+}
+layer {
+  name: "ReLU8"
+  type: "ReLU"
+  bottom: "Convolution8"
+  top: "Convolution8"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "Convolution9"
+  type: "Convolution"
+  bottom: "Convolution8"
+  top: "Convolution9"
+  convolution_param {
+    num_output: 3
+    pad: 0
+    kernel_size: 3
+    stride: 1
+  }
+}
+layer {
+  name: "Convolution10"
+  type: "Convolution"
+  bottom: "Convolution9"
+  top: "Convolution10"
+  convolution_param {
+    num_output: 32
+    pad: 0
+    kernel_size: 3
+    stride: 1
+  }
+}
+layer {
+  name: "ReLU9"
+  type: "ReLU"
+  bottom: "Convolution10"
+  top: "Convolution10"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "Convolution11"
+  type: "Convolution"
+  bottom: "Convolution10"
+  top: "Convolution11"
+  convolution_param {
+    num_output: 64
+    pad: 0
+    kernel_size: 3
+    stride: 1
+  }
+}
+layer {
+  name: "ReLU10"
+  type: "ReLU"
+  bottom: "Convolution11"
+  top: "Convolution11"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "Convolution12"
+  type: "Convolution"
+  bottom: "Convolution11"
+  top: "Convolution12"
+  convolution_param {
+    num_output: 64
+    pad: 0
+    kernel_size: 2
+    stride: 2
+  }
+}
+layer {
+  name: "ReLU11"
+  type: "ReLU"
+  bottom: "Convolution12"
+  top: "Convolution12"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "Convolution13"
+  type: "Convolution"
+  bottom: "Convolution12"
+  top: "Convolution13"
+  convolution_param {
+    num_output: 64
+    pad: 0
+    kernel_size: 3
+    stride: 1
+  }
+}
+layer {
+  name: "ReLU12"
+  type: "ReLU"
+  bottom: "Convolution13"
+  top: "Convolution13"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "Convolution14"
+  type: "Convolution"
+  bottom: "Convolution13"
+  top: "Convolution14"
+  convolution_param {
+    num_output: 128
+    pad: 0
+    kernel_size: 3
+    stride: 1
+  }
+}
+layer {
+  name: "ReLU13"
+  type: "ReLU"
+  bottom: "Convolution14"
+  top: "Convolution14"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "Pooling2"
+  type: "Pooling"
+  bottom: "Convolution14"
+  top: "Pooling2"
+  pooling_param {
+    pool: AVE
+    global_pooling: true
+  }
+}
+layer {
+  name: "Convolution15"
+  type: "Convolution"
+  bottom: "Pooling2"
+  top: "Convolution15"
+  convolution_param {
+    num_output: 16
+    pad: 0
+    kernel_size: 1
+    stride: 1
+  }
+}
+layer {
+  name: "ReLU14"
+  type: "ReLU"
+  bottom: "Convolution15"
+  top: "Convolution15"
+}
+layer {
+  name: "Convolution16"
+  type: "Convolution"
+  bottom: "Convolution15"
+  top: "Convolution16"
+  convolution_param {
+    num_output: 128
+    pad: 0
+    kernel_size: 1
+    stride: 1
+  }
+}
+layer {
+  name: "Sigmoid2"
+  type: "Sigmoid"
+  bottom: "Convolution16"
+  top: "Convolution16"
+}
+layer {
+  name: "Flatten2"
+  type: "Flatten"
+  bottom: "Convolution16"
+  top: "Flatten2"
+}
+layer {
+  name: "Scale2"
+  type: "Scale"
+  bottom: "Convolution14"
+  bottom: "Flatten2"
+  top: "Scale2"
+  scale_param {
+    axis: 0
+    bias_term: false
+  }
+}
+layer {
+  name: "Convolution17"
+  type: "Convolution"
+  bottom: "Scale2"
+  top: "Convolution17"
+  convolution_param {
+    num_output: 128
+    pad: 0
+    kernel_size: 2
+    stride: 2
+  }
+}
+layer {
+  name: "ReLU15"
+  type: "ReLU"
+  bottom: "Convolution17"
+  top: "Convolution17"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "Convolution18"
+  type: "Convolution"
+  bottom: "Convolution17"
+  top: "Convolution18"
+  convolution_param {
+    num_output: 256
+    pad: 0
+    kernel_size: 3
+    stride: 1
+  }
+}
+layer {
+  name: "ReLU16"
+  type: "ReLU"
+  bottom: "Convolution18"
+  top: "Convolution18"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "Convolution19"
+  type: "Convolution"
+  bottom: "Convolution18"
+  top: "Convolution19"
+  convolution_param {
+    num_output: 128
+    pad: 0
+    kernel_size: 3
+    stride: 1
+  }
+}
+layer {
+  name: "ReLU17"
+  type: "ReLU"
+  bottom: "Convolution19"
+  top: "Convolution19"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "Pooling3"
+  type: "Pooling"
+  bottom: "Convolution19"
+  top: "Pooling3"
+  pooling_param {
+    pool: AVE
+    global_pooling: true
+  }
+}
+layer {
+  name: "Convolution20"
+  type: "Convolution"
+  bottom: "Pooling3"
+  top: "Convolution20"
+  convolution_param {
+    num_output: 16
+    pad: 0
+    kernel_size: 1
+    stride: 1
+  }
+}
+layer {
+  name: "ReLU18"
+  type: "ReLU"
+  bottom: "Convolution20"
+  top: "Convolution20"
+}
+layer {
+  name: "Convolution21"
+  type: "Convolution"
+  bottom: "Convolution20"
+  top: "Convolution21"
+  convolution_param {
+    num_output: 128
+    pad: 0
+    kernel_size: 1
+    stride: 1
+  }
+}
+layer {
+  name: "Sigmoid3"
+  type: "Sigmoid"
+  bottom: "Convolution21"
+  top: "Convolution21"
+}
+layer {
+  name: "Flatten3"
+  type: "Flatten"
+  bottom: "Convolution21"
+  top: "Flatten3"
+}
+layer {
+  name: "Scale3"
+  type: "Scale"
+  bottom: "Convolution19"
+  bottom: "Flatten3"
+  top: "Scale3"
+  scale_param {
+    axis: 0
+    bias_term: false
+  }
+}
+layer {
+  name: "Deconvolution2"
+  type: "Deconvolution"
+  bottom: "Scale3"
+  top: "Deconvolution2"
+  convolution_param {
+    num_output: 128
+    pad: 0
+    kernel_size: 2
+    stride: 2
+  }
+}
+layer {
+  name: "ReLU19"
+  type: "ReLU"
+  bottom: "Deconvolution2"
+  top: "Deconvolution2"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "Crop2"
+  type: "Crop"
+  bottom: "Scale2"
+  bottom: "Deconvolution2"
+  top: "Crop2"
+  crop_param {
+    axis: 2
+    offset: 4
+  }
+}
+layer {
+  name: "Eltwise2"
+  type: "Eltwise"
+  bottom: "Crop2"
+  bottom: "Deconvolution2"
+  top: "Eltwise2"
+  eltwise_param {
+    operation: SUM
+  }
+}
+layer {
+  name: "Convolution22"
+  type: "Convolution"
+  bottom: "Eltwise2"
+  top: "Convolution22"
+  convolution_param {
+    num_output: 64
+    pad: 0
+    kernel_size: 3
+    stride: 1
+  }
+}
+layer {
+  name: "ReLU20"
+  type: "ReLU"
+  bottom: "Convolution22"
+  top: "Convolution22"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "Convolution23"
+  type: "Convolution"
+  bottom: "Convolution22"
+  top: "Convolution23"
+  convolution_param {
+    num_output: 64
+    pad: 0
+    kernel_size: 3
+    stride: 1
+  }
+}
+layer {
+  name: "ReLU21"
+  type: "ReLU"
+  bottom: "Convolution23"
+  top: "Convolution23"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "Pooling4"
+  type: "Pooling"
+  bottom: "Convolution23"
+  top: "Pooling4"
+  pooling_param {
+    pool: AVE
+    global_pooling: true
+  }
+}
+layer {
+  name: "Convolution24"
+  type: "Convolution"
+  bottom: "Pooling4"
+  top: "Convolution24"
+  convolution_param {
+    num_output: 8
+    pad: 0
+    kernel_size: 1
+    stride: 1
+  }
+}
+layer {
+  name: "ReLU22"
+  type: "ReLU"
+  bottom: "Convolution24"
+  top: "Convolution24"
+}
+layer {
+  name: "Convolution25"
+  type: "Convolution"
+  bottom: "Convolution24"
+  top: "Convolution25"
+  convolution_param {
+    num_output: 64
+    pad: 0
+    kernel_size: 1
+    stride: 1
+  }
+}
+layer {
+  name: "Sigmoid4"
+  type: "Sigmoid"
+  bottom: "Convolution25"
+  top: "Convolution25"
+}
+layer {
+  name: "Flatten4"
+  type: "Flatten"
+  bottom: "Convolution25"
+  top: "Flatten4"
+}
+layer {
+  name: "Scale4"
+  type: "Scale"
+  bottom: "Convolution23"
+  bottom: "Flatten4"
+  top: "Scale4"
+  scale_param {
+    axis: 0
+    bias_term: false
+  }
+}
+layer {
+  name: "Deconvolution3"
+  type: "Deconvolution"
+  bottom: "Scale4"
+  top: "Deconvolution3"
+  convolution_param {
+    num_output: 64
+    pad: 0
+    kernel_size: 2
+    stride: 2
+  }
+}
+layer {
+  name: "ReLU23"
+  type: "ReLU"
+  bottom: "Deconvolution3"
+  top: "Deconvolution3"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "Crop3"
+  type: "Crop"
+  bottom: "Convolution11"
+  bottom: "Deconvolution3"
+  top: "Crop3"
+  crop_param {
+    axis: 2
+    offset: 16
+  }
+}
+layer {
+  name: "Eltwise3"
+  type: "Eltwise"
+  bottom: "Crop3"
+  bottom: "Deconvolution3"
+  top: "Eltwise3"
+  eltwise_param {
+    operation: SUM
+  }
+}
+layer {
+  name: "Convolution26"
+  type: "Convolution"
+  bottom: "Eltwise3"
+  top: "Convolution26"
+  convolution_param {
+    num_output: 64
+    pad: 0
+    kernel_size: 3
+    stride: 1
+  }
+}
+layer {
+  name: "ReLU24"
+  type: "ReLU"
+  bottom: "Convolution26"
+  top: "Convolution26"
+  relu_param {
+    negative_slope: 0.1
+  }
+}
+layer {
+  name: "Convolution27"
+  type: "Convolution"
+  bottom: "Convolution26"
+  top: "Convolution27"
+  convolution_param {
+    num_output: 3
+    pad: 0
+    kernel_size: 3
+    stride: 1
+  }
+}
+layer {
+  name: "Crop4"
+  type: "Crop"
+  bottom: "Convolution9"
+  bottom: "Convolution27"
+  top: "Crop4"
+  crop_param {
+    axis: 2
+    offset: 20
+  }
+}
+layer {
+  name: "Eltwise4"
+  type: "Eltwise"
+  bottom: "Crop4"
+  bottom: "Convolution27"
+  top: "Eltwise4"
+  eltwise_param {
+    operation: SUM
+  }
+}
+
