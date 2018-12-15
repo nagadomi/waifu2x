@@ -1,5 +1,3 @@
--- EdgeFilter.lua
--- from https://github.com/juefeix/lbcnn.torch
 require 'cunn'
 local EdgeFilter, parent = torch.class('w2nn.EdgeFilter', 'nn.SpatialConvolution')
 
