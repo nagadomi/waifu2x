@@ -108,7 +108,7 @@ th web.lua
 View at: http://localhost:8812/
 
 ## Command line tools
-Notes: If you have cuDNN library, than you can use cuDNN with `-force_cudnn 1` option. cuDNN is too much faster than default kernel.
+Notes: If you have cuDNN library, than you can use cuDNN with `-force_cudnn 1` option. cuDNN is too much faster than default kernel. If you got GPU out of memory error, you can avoid it with `-crop_size` option (e.g. `-crop_size 128`).
 
 ### Noise Reduction
 ```
