@@ -186,7 +186,7 @@ avconv -f image2 -framerate 24 -i new_frames/%d.png -i audio.mp3 -r 24 -vcodec l
 ## Train Your Own Model
 Note1: If you have cuDNN library, you can use cudnn kernel with `-backend cudnn` option. And, you can convert trained cudnn model to cunn model with `tools/rebuild.lua`.
 
-Note2: The command that was used to train for waifu2x's pretraind models is available at `appendix/train_upconv_7_art.sh`, `appendix/train_upconv_7_photo.sh`. Maybe it is helpful.
+Note2: The command that was used to train for waifu2x's pretrained models is available at `appendix/train_upconv_7_art.sh`, `appendix/train_upconv_7_photo.sh`. Maybe it is helpful.
 
 ### Data Preparation
 
