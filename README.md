@@ -5,6 +5,8 @@ And it supports photo.
 
 The demo application can be found at http://waifu2x.udp.jp/ .
 
+__Note that I only provide this website and this repository. Other software or website claiming "waifu2x" has nothing to do with me.__
+
 ## Summary
 
 Click to see the slide show.
@@ -19,27 +21,14 @@ waifu2x is inspired by SRCNN [1]. 2D character picture (HatsuneMiku) is licensed
 - [2] "For Creators", http://piapro.net/en_for_creators.html
 
 ## Public AMI
-```
-Region: us-east-1 (N.Virginia)
-AMI ID: ami-b9be23ae
-AMI NAME: waifu2x-server 20160807
-Instance Type: g2.2xlarge
-OS: Ubuntu 14.04
-User: ubuntu
-Created at: 2016-08-07
-```
-See ~/README.md
 
-Please update the git repo first.
-```
-git pull
-```
+TODO
 
 ## Third Party Software
 
 [Third-Party](https://github.com/nagadomi/waifu2x/wiki/Third-Party)
 
-If you are a windows user, I recommend you to use [waifu2x-caffe](https://github.com/lltcggie/waifu2x-caffe)(Just download from `releases` tab) or [waifu2x-conver-cpp](https://github.com/tanakamura/waifu2x-converter-cpp).
+If you are a windows user, I recommend you to use [waifu2x-caffe](https://github.com/lltcggie/waifu2x-caffe)(Just download from `releases` tab) or [waifu2x-conver-cpp](https://github.com/DeadSix27/waifu2x-converter-cpp).
 
 ## Dependencies
 
@@ -61,13 +50,15 @@ If you are a windows user, I recommend you to use [waifu2x-caffe](https://github
 ## Installation
 
 ### Setting Up the Command Line Tool Environment
- (on Ubuntu 14.04)
+ (on Ubuntu 16.04)
 
 #### Install CUDA
 
 See: [NVIDIA CUDA Getting Started Guide for Linux](http://docs.nvidia.com/cuda/cuda-getting-started-guide-for-linux/#ubuntu-installation)
 
 Download [CUDA](http://developer.nvidia.com/cuda-downloads)
+
+Note: Torch does not supported CUDA10. CUDA9.2 is recommended.
 
 ```
 sudo dpkg -i cuda-repo-ubuntu1404_7.5-18_amd64.deb
@@ -80,31 +71,26 @@ sudo apt-get install cuda
 ```
 sudo apt-get install libsnappy-dev
 sudo apt-get install libgraphicsmagick1-dev
+sudo apt-get install libssl1.0-dev # for web server
 ```
+
+Note: waifu2x requires little-cms2 linked graphicsmagick. if you use macOS/homebrew, See [#174](https://github.com/nagadomi/waifu2x/issues/174#issuecomment-384466451).
 
 #### Install Torch7
 
-See: [Getting started with Torch](http://torch.ch/docs/getting-started.html)
-
-And install luarocks packages.
-```
-luarocks install graphicsmagick # upgrade
-luarocks install lua-csnappy
-luarocks install md5
-luarocks install uuid
-luarocks install csvigo
-
-# if you need to use web application
-PREFIX=$HOME/torch/install luarocks install turbo
-
-# if you need to use cuDNN library. cuDNN is required.
-luarocks install cudnn
-```
+See: [Getting started with Torch](http://torch.ch/docs/getting-started.html). For CUDA9.x/CUDA8.x, see [#222](https://github.com/nagadomi/waifu2x/issues/222), For CUDA10, see [#253](https://github.com/nagadomi/waifu2x/issues/253#issuecomment-445448928).
 
 #### Getting waifu2x
 
 ```
 git clone --depth 1 https://github.com/nagadomi/waifu2x.git
+```
+
+and install lua modules.
+
+```
+cd waifu2x
+./install_lua_modules.sh
 ```
 
 #### Validation
@@ -122,7 +108,7 @@ th web.lua
 View at: http://localhost:8812/
 
 ## Command line tools
-Notes: If you have cuDNN library, than you can use cuDNN with `-force_cudnn 1` option. cuDNN is too much faster than default kernel.
+Notes: If you have cuDNN library, than you can use cuDNN with `-force_cudnn 1` option. cuDNN is too much faster than default kernel. If you got GPU out of memory error, you can avoid it with `-crop_size` option (e.g. `-crop_size 128`).
 
 ### Noise Reduction
 ```
@@ -200,7 +186,7 @@ avconv -f image2 -framerate 24 -i new_frames/%d.png -i audio.mp3 -r 24 -vcodec l
 ## Train Your Own Model
 Note1: If you have cuDNN library, you can use cudnn kernel with `-backend cudnn` option. And, you can convert trained cudnn model to cunn model with `tools/rebuild.lua`.
 
-Note2: The command that was used to train for waifu2x's pretraind models is available at `appendix/train_upconv_7_art.sh`, `appendix/train_upconv_7_photo.sh`. Maybe it is helpful.
+Note2: The command that was used to train for waifu2x's pretrained models is available at `appendix/train_upconv_7_art.sh`, `appendix/train_upconv_7_photo.sh`. Maybe it is helpful.
 
 ### Data Preparation
 

@@ -1,6 +1,7 @@
 local pairwise_utils = require 'pairwise_transform_utils'
 local iproc = require 'iproc'
-local gm = require 'graphicsmagick'
+local gm = {}
+gm.Image = require 'graphicsmagick.Image'
 local pairwise_transform = {}
 
 local function add_jpeg_noise_(x, quality, options)
@@ -117,8 +118,8 @@ function pairwise_transform.jpeg_scale(src, scale, style, noise_level, size, off
       yc = iproc.byte2float(yc)
       if options.rgb then
       else
-	 yc = image.rgb2yuv(yc)[1]:reshape(1, yc:size(2), yc:size(3))
-	 xc = image.rgb2yuv(xc)[1]:reshape(1, xc:size(2), xc:size(3))
+	 yc = iproc.rgb2y(yc)
+	 xc = iproc.rgb2y(xc)
       end
       table.insert(batch, {xc, iproc.crop(yc, offset, offset, size - offset, size - offset)})
    end

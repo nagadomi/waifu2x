@@ -40,8 +40,7 @@ function alpha_util.make_border(rgb, alpha, offset)
 	 collectgarbage()
       end
    end
-   rgb[torch.gt(rgb, 1.0)] = 1.0
-   rgb[torch.lt(rgb, 0.0)] = 0.0
+   rgb:clamp(0.0, 1.0)
 
    return rgb
 end

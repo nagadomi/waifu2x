@@ -1,0 +1,11 @@
+[Unit]
+Description = waifu2x API
+
+[Service]
+WorkingDirectory=/home/ubuntu/waifu2x
+ExecStart = /home/ubuntu/waifu2x/appendix/run-web.sh 1 8811
+Restart = always
+Type = simple
+
+[Install]
+WantedBy = multi-user.target

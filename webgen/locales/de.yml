@@ -1,16 +1,16 @@
 ---
-description: Einzelbild Super-Auflösungs Konvertierung für Bilder im Anime Stil mithilfe eines faltenden neuralen Netzwerks. Zusätzlich dazu unterstützt es auch Fotos.
+description: Einzelbild Super-Auflösungs Konvertierung für Bilder im Anime Stil mithilfe eines künstlichen neuronalen Netzwerk. Zusätzlich dazu unterstützt es auch Fotos.
 show_demonstration: Zeige die volle Demonstration an
 go_to_github: Gehe zu GitHub
 image_choosing: Bildauswahl
-type_url: URL hier eintragen
+type_url: URL hier einfügen
 choose_file: Oder wählen Sie eine Datei aus
 file_limits: "Beschränkungen: Größe: 5MB, Rauschunterdrückung: 3000x3000px, maximale Hochskalierung: 1500x1500px."
 style: Stil
 artwork: Illustration
 photo: Foto
 noise_reduction: Rauschunterdrückung
-expect_jpeg: verursacht möglicherweise JPEG Artifakte
+expect_jpeg: verursacht möglicherweise JPEG Artefakte
 nr_none: Keine
 nr_medium: Mittel
 nr_high: Hoch
@@ -21,5 +21,5 @@ up_none: Keine
 button_convert: Konvertieren
 button_download: Herunterladen
 hints:
-  - "Wenn Sie Firefox benutzen, benutzen Sie bitte STRG+S um das Bild zu speichern. Herunterladen funktioniert bei Firefox leider nicht."
+  - "Wenn Sie Firefox verwenden, benutzen Sie bitte STRG+S um das Bild zu speichern. Herunterladen funktioniert bei Firefox leider nicht."
   

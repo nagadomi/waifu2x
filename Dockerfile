@@ -1,4 +1,4 @@
-FROM kaixhin/cuda-torch
+FROM kaixhin/cuda-torch:7.5
 
 RUN apt-get update && apt-get install -y --no-install-recommends --force-yes \
   libsnappy-dev \
@@ -15,8 +15,7 @@ RUN \
   luarocks install md5 && \
   luarocks install uuid && \
   luarocks install csvigo && \
-  PREFIX=$HOME/torch/install luarocks install turbo && \
-  luarocks install cudnn
+  PREFIX=$HOME/torch/install luarocks install turbo
 
 # suppress message `tput: No value for $TERM and no -T specified`
 ENV TERM xterm
