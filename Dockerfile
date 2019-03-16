@@ -1,10 +1,10 @@
-FROM kaixhin/cuda-torch:7.5
+FROM nagadomi/torch7:cuda10.1-cudnn7-devel-ubuntu18.04
 
 RUN apt-get update && apt-get install -y --no-install-recommends --force-yes \
   libsnappy-dev \
   graphicsmagick \
   libgraphicsmagick1-dev \
-  libssl-dev \
+  libssl1.0-dev \
   ca-certificates \
   git && \
   rm -rf /var/lib/apt/lists/*
