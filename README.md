@@ -240,6 +240,8 @@ You can check the performance of model with `models/my_model/noise1_scale2.0x_be
 
 ## Docker
 
+( Docker image is available at https://hub.docker.com/r/nagadomi/waifu2x )
+
 Requires `nvidia-docker`.
 
 ```
