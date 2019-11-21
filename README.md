@@ -58,8 +58,6 @@ See: [NVIDIA CUDA Getting Started Guide for Linux](http://docs.nvidia.com/cuda/c
 
 Download [CUDA](http://developer.nvidia.com/cuda-downloads)
 
-Note: Torch does not supported CUDA10. CUDA9.2 is recommended.
-
 ```
 sudo dpkg -i cuda-repo-ubuntu1404_7.5-18_amd64.deb
 sudo apt-get update
@@ -78,7 +76,10 @@ Note: waifu2x requires little-cms2 linked graphicsmagick. if you use macOS/homeb
 
 #### Install Torch7
 
-See: [Getting started with Torch](http://torch.ch/docs/getting-started.html). For CUDA9.x/CUDA8.x, see [#222](https://github.com/nagadomi/waifu2x/issues/222), For CUDA10, see [#253](https://github.com/nagadomi/waifu2x/issues/253#issuecomment-445448928).
+See: [Getting started with Torch](http://torch.ch/docs/getting-started.html).
+
+- For CUDA9.x/CUDA8.x, see [#222](https://github.com/nagadomi/waifu2x/issues/222)
+- For CUDA10.x, see [#253](https://github.com/nagadomi/waifu2x/issues/253#issuecomment-445448928)
 
 #### Getting waifu2x
 
