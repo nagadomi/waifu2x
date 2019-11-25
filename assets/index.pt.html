@@ -75,27 +75,27 @@
 	  Română
 	</a>
       </div>
-      <p>Single-Image Super-Resolution for Anime-Style Art using Deep Convolutional Neural Networks. And it supports photo.</p>
+      <p>Super resolução de imagem única para arte estilo anime usando redes neurais convolucionais. Com suporte para fotos.</p>
       <p class="margin1 link-box">
 	<a href="https://raw.githubusercontent.com/nagadomi/waifu2x/master/images/slide.png" class="blue-link" target="_blank">
-	  Sobre
+	  Mostrar demonstração
 	</a>
 	| 
 	<a href="https://github.com/nagadomi/waifu2x" class="blue-link" target="_blank">
-	  Ir para Github
+	  Ir para o Github
 	</a>
       </p>
       <form action="/api" method="POST" enctype="multipart/form-data" target="_blank">
 	<div class="option-box first">
 	  <div class="option-left">Imagem:</div>
 	  <div class="option-right">
-	    <input type="text" id="url" name="url" placeholder="URL">
+	    <input type="text" id="url" name="url" placeholder="Digite uma URL">
 	    <div class="option-right-small">
-	      ARQUIVO: 
+	      Ou escolha um arquivo: 
 	      <input type="file" id="file" name="file"></div>
 	  </div>
 	  <div class="option-hint file_limits">
-	    Limites: Tamanho: 5MB, Redução de ruído: 3000x3000px, Aumento de escala: 1500x1500px.
+	    Limites: Tamanho: 5MB; Redução de ruído: 3000x3000px; Aumento de escala: 1500x1500px.
 	  </div>
 	</div>
 	<div class="option-box">
@@ -105,7 +105,7 @@
 	  <div class="option-right">
 	    <label><input type="radio" name="style" class="radio" value="art" checked>
 	      <span class="r-text">
-		Arte
+		Desenho
 	      </span>
 	    </label>
 	    <label><input type="radio" name="style" class="radio" value="photo">
@@ -119,7 +119,7 @@
 	  <div class="option-left">
 	    Redução de ruído:
 	    <div class="option-left-small">
-	      (Exceto artefato JPEG)
+	      (exceto artefato JPEG)
 	    </div>
 	  </div>
 	  <div class="option-right">
@@ -130,7 +130,7 @@
 	    </label>
 	    <label><input type="radio" name="noise" class="radio" value="0" checked>
 	      <span class="r-text">
-		Low
+		Baixa
 	      </span>
 	    </label>
 	    <label><input type="radio" name="noise" class="radio" value="1" checked>
@@ -147,12 +147,12 @@
 	    <label>
 	      <input type="radio" name="noise" class="radio" value="3">
 	      <span class="r-text">
-		Highest
+		Mais alta
 	      </span>
 	    </label>
 	  </div>
 	  <div class="option-hint">
-	    Quando usando a escala 2x, Nós nunca recomendamos usar um nível alto de redução de ruído, quase sempre deixa a imagem pior, faz sentido apenas para casos raros quando a imagem tinha uma qualidade muito má desde o começo.
+	    Use redução de ruído apenas se a imagem realmente apresentar ruído; do contrário, isso poderá piorar a qualidade da imagem.
 	  </div>
 	</div>
 	<div class="option-box">
@@ -186,7 +186,7 @@
 	<div class="bottom-hint">
 	  <ul>
 	    
-	      <li>Se Você estiver usando o Firefox, por favor, aperte CTRL+S para salvar a imagem. A opção "Salvar Imagem" não funciona</li>
+	      <li>Se você estiver usando o Firefox, por favor, aperte CTRL+S para salvar a imagem. A opção "Salvar Imagem" não funciona.</li>
 	    
 	  </ul>
 	</div>
