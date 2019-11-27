@@ -72,22 +72,22 @@
 	</a>
 	/
 	<a href="index.ro.html">
-	  Limba română
+	  Română
 	</a>
       </div>
-      <p>Schimbă rezoluția fiecărei imagini de tip Anime cu ajutorul rețelelor neuronale convuluționale profunde.</p>
+      <p>O Super-Sistemă de Schimbare Singulară al Rezoluției pentru Desene de Tip Anime ce Utilizează Rețele Neurale Profunde Convoluționale. De-asemenea suportă fotografii.</p>
       <p class="margin1 link-box">
 	<a href="https://raw.githubusercontent.com/nagadomi/waifu2x/master/images/slide.png" class="blue-link" target="_blank">
-	  Arată demonstrația
+	  Arată demonstrația deplină
 	</a>
 	| 
 	<a href="https://github.com/nagadomi/waifu2x" class="blue-link" target="_blank">
-	  Mergi către GitHub
+	  Mergi la GitHub
 	</a>
       </p>
       <form action="/api" method="POST" enctype="multipart/form-data" target="_blank">
 	<div class="option-box first">
-	  <div class="option-left">Alege imaginea:</div>
+	  <div class="option-left">Alegerea imaginii:</div>
 	  <div class="option-right">
 	    <input type="text" id="url" name="url" placeholder="Introdu URL-ul Imaginii">
 	    <div class="option-right-small">
@@ -95,7 +95,7 @@
 	      <input type="file" id="file" name="file"></div>
 	  </div>
 	  <div class="option-hint file_limits">
-	    Limite: Dimensiune: 5MB, Reducere Noise: 3000x3000px, upscale: 1500x1500px
+	    Limite: Mărime: 5MB, Reducere Zgomot: 3000x3000px, Lărgire: 1500x1500px
 	  </div>
 	</div>
 	<div class="option-box">
@@ -105,65 +105,65 @@
 	  <div class="option-right">
 	    <label><input type="radio" name="style" class="radio" value="art" checked>
 	      <span class="r-text">
-		Artwork
+		Desen
 	      </span>
 	    </label>
 	    <label><input type="radio" name="style" class="radio" value="photo">
 	      <span class="r-text">
-		Imagine
+		Fotografie
 	      </span>
 	    </label>
 	  </div>
 	</div>
 	<div class="option-box">
 	  <div class="option-left">
-	    Reducere Noise:
+	    Reducere Zgomot:
 	    <div class="option-left-small">
-	      (Așteaptă artefactele JPEG)
+	      (Va crea artefacte de tip JPEG)
 	    </div>
 	  </div>
 	  <div class="option-right">
 	    <label><input type="radio" name="noise" class="radio" value="-1">
 	      <span class="r-text">
-		Nu
+		Fără
 	      </span>
 	    </label>
 	    <label><input type="radio" name="noise" class="radio" value="0" checked>
 	      <span class="r-text">
-		Încet
+		Slab
 	      </span>
 	    </label>
 	    <label><input type="radio" name="noise" class="radio" value="1" checked>
 	      <span class="r-text">
-		Medium
+		Mediu
 	      </span>
 	    </label>
 	    <label>
 	      <input type="radio" name="noise" class="radio" value="2">
 	      <span class="r-text">
-		Forțat
+		Puternic
 	      </span>
 	    </label>
 	    <label>
 	      <input type="radio" name="noise" class="radio" value="3">
 	      <span class="r-text">
-		Super Forțat
+		Cel Mai Puternic
 	      </span>
 	    </label>
 	  </div>
 	  <div class="option-hint">
-	    Aveți nevoie de reducere de Noise dacă imaginea are Noise efectiv sau poate produce efect opus.
+	    Veți avea nevoie de Reducere Zgomot dacă imaginea are zgomot sau va crea efecte adverse.
 	  </div>
 	</div>
 	<div class="option-box">
 	  <div class="option-left">
-	    Upscale:
+	    Lărgire:
 	    <div class="option-left-small"></div>
 	  </div>
 	  <div class="option-right">
 	    <label><input type="radio" name="scale" class="radio" value="-1" checked>
 	      <span class="r-text">
-		Nu
+		Fără
 	      </span>
 	    </label>
 	    <label><input type="radio" name="scale" class="radio" value="1">
@@ -180,13 +180,13 @@
 	</div>
 	
 	
-	  <input type="submit" class="button" value="Convert">
+	  <input type="submit" class="button" value="Convertește">
 	
-	<input type="submit" name="download" value="Descărcare" class="button">
+	<input type="submit" name="download" value="Descărcă" class="button">
 	<div class="bottom-hint">
 	  <ul>
 	    
-	      <li>Dacă folosești Firefox, te rog folosește CTRL+S pentru salvarea imaginii.  Opțiunea "Save Image" nu funcționează.</li>
+	      <li>Dacă utilizezi Firefox, te rog să folosește CTRL+S pentru salvarea imaginii.  Opțiunea "Save Image" nu funcționează.</li>
 	    
 	  </ul>
 	</div>

@@ -1,30 +1,30 @@
 ---
-description: Schimbă rezoluția fiecărei imagini de tip Anime cu ajutorul rețelelor neuronale convuluționale profunde.
-show_demonstration: Arată demonstrația
-go_to_github: Mergi către GitHub
-image_choosing: Alege imaginea
+description: O Super-Sistemă de Schimbare Singulară al Rezoluției pentru Desene de Tip Anime ce Utilizează Rețele Neurale Profunde Convoluționale. De-asemenea suportă fotografii.
+show_demonstration: Arată demonstrația deplină
+go_to_github: Mergi la GitHub
+image_choosing: Alegerea imaginii
 type_url: Introdu URL-ul Imaginii
 choose_file: Sau alege un fișier
-file_limits: "Limite: Dimensiune: 5MB, Reducere Noise: 3000x3000px, upscale: 1500x1500px"
+file_limits: "Limite: Mărime: 5MB, Reducere Zgomot: 3000x3000px, Lărgire: 1500x1500px"
 style: Tip
-artwork: Artwork
-photo: Imagine
-noise_reduction: Reducere Noise
-expect_jpeg: Așteaptă artefactele JPEG
-nr_none: Nu
-nr_low: Încet
-nr_medium: Medium
-nr_high: Forțat
-nr_highest: Super Forțat
-nr_hint: "Aveți nevoie de reducere de Noise dacă imaginea are Noise efectiv sau poate produce efect opus."
-upscaling: Upscale
-up_none: Nu
-tta: TTA
+artwork: Desen
+photo: Fotografie
+noise_reduction: Reducere Zgomot
+expect_jpeg: Va crea artefacte de tip JPEG
+nr_none: Fără
+nr_low: Slab
+nr_medium: Mediu
+nr_high: Puternic
+nr_highest: Cel Mai Puternic
+nr_hint: "Veți avea nevoie de Reducere Zgomot dacă imaginea are zgomot sau va crea efecte adverse."
+upscaling: Lărgire
+up_none: Fără
+tta: Augmentare prin Predicție (TTA)
 tta_best_effort: "n-pass auto"
-tta_rule: Regulile pentru `n-pass auto`."
-tta_hint: "TTA asigură o calitate stabilă dar limitează dimensiunea imaginii sursă."
-button_convert: Convert
-button_download: Descărcare
+tta_rule: Arată regulile `n-pass auto`."
+tta_hint: "TTA asigură calitate dar limitează dimensiunele imaginii."
+button_convert: Convertește
+button_download: Descărcă
 hints:
-  - "Dacă folosești Firefox, te rog folosește CTRL+S pentru salvarea imaginii.  Opțiunea \"Save Image\" nu funcționează."
+  - "Dacă utilizezi Firefox, te rog să folosește CTRL+S pentru salvarea imaginii.  Opțiunea \"Save Image\" nu funcționează."
 
