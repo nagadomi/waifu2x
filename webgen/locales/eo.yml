@@ -1,0 +1,24 @@
+---
+description: Plibonigas la rezolucion de anime-similaj ilustraĵoj per konverteblaj neŭraj retoj. Ĝi ankaŭ kongruas kun fotoj.
+show_demonstration: Vidi ekzemplon
+go_to_github: Ligilo al GitHub
+image_choosing: selezione della immagine
+type_url: skribi retadreson
+choose_file: aŭ elekti arkivon
+file_limits: "Limoj: grandeco: 5 MB, redukto de bruo: 3000x3000px, pliiĝo de rezolucio: 1500x1500px."
+style: stilo
+artwork: ilustraĵo
+photo: fotografio
+noise_reduction: redukto de bruo
+expect_jpeg: JPEG kunpreme artefaktoj estos reduktitaj
+nr_none: nenio
+nr_medium: mezuma
+nr_high: alta
+nr_highest: maksimuma
+nr_hint: "La redukto de bruo devas esti uzata se la bildo havas kunpremajn artefaktojn; alie oni povus akiri la kontraŭan rezulton."
+upscaling: pliiĝo de rezolucio
+up_none: neniu
+button_convert: konverti
+button_download: malŝarĝi
+hints:
+  - "Se vi uzas Firefox, uzu la ŝlosilan kombinaĵon [CTRL]+[S] por konservi la bildon. La opcio \"konservi kiel...\" ne funkcias."
