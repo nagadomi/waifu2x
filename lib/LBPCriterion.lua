@@ -12,8 +12,8 @@ local function create_filters(ch, n, k, layers)
       if i == 1 then
 	 -- channel identity
 	 for j = 1, ch do
-	    filter.weight[i]:fill(0)
-	    filter.weight[i][i][math.floor(k/2)+1][math.floor(k/2)+1] = 1
+	    filter.weight[j]:fill(0)
+	    filter.weight[j][j][math.floor(k/2)+1][math.floor(k/2)+1] = 1
 	 end
       end
       model:add(filter)
