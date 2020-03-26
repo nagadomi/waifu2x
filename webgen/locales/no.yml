@@ -1,0 +1,30 @@
+---
+description: Konvertering av enkeltbilder til superoppløsning for kunst i Anime-stil ved hjelp av et kunstig nevralt nettverk. I tillegg støtter den også bilder.
+show_demonstration: Se hele demonstrasjonen
+go_to_github: Gå til GitHub
+image_choosing: Velg bilde
+type_url: Oppgi ei nettadresse
+choose_file: Eller velg ei fil
+file_limits: "Begrensninger: Størrelse: 5MB, Støyreduksjon: 3000x3000px, Oppskalering: 1500x1500px."
+style: Stil
+artwork: Kunstverk
+photo: Bilde
+noise_reduction: Støyreduksjon
+expect_jpeg: forvent JPEG-artefakt
+nr_none: Ingen
+nr_low: Lav
+nr_medium: Middels
+nr_high: Høy
+nr_highest: Høyeste
+nr_hint: "Bare bruk støyreduksjon hvis bildet faktisk inneholder støy, ellers kan du få motsatt effekt."
+upscaling: Oppskalering
+up_none: Ingen
+tta: TTA
+tta_best_effort: "n-pass auto"
+tta_rule: "Vis `n-pass auto`-valget."
+tta_hint: "TTA fører til bedre kvalitet, men begrenser bildestørrelsen."
+button_convert: Konvertér
+button_download: Last ned
+hints:
+  - "Hvis du bruker Firefox, vennligst hold CTRL+S inne for å lagre bildet. \"Lagre bilde\"-funksjonen virker ikke."
+  
