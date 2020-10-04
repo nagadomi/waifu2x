@@ -1,0 +1,29 @@
+---
+description: Підвищення роздільної здібності для мальованих картинок (таких, як аніме) із застосуванням нейронної мережі. Також працює з фотографіями.
+show_demonstration: Показати приклад
+go_to_github: Перейти на GitHub
+image_choosing: Обрати зображення
+type_url: Type URL
+choose_file: Або обрати файл
+file_limits: "Обмеження: Розмір: 5MB, Зменшення шуму: 3000x3000px, Збільшення: 1500x1500px."
+style: Стиль
+artwork: Малюнок
+photo: Фото
+noise_reduction: Зменшення шуму
+expect_jpeg: очікуйте артифакти JPEG компресії
+nr_none: Немає
+nr_low: Низьке
+nr_medium: Середнє
+nr_high: Високе
+nr_highest: Найвище
+nr_hint: "Використовуйте зменшення шуму лише коли шум дійсно присутній на зображенні, інакше якість може погіршитися."
+upscaling: Збільшення
+up_none: Немає
+tta: TTA
+tta_best_effort: "n-pass auto"
+tta_rule: "Show the rule of `n-pass auto`."
+tta_hint: "TTA makes stable quality but it limits the source image size."
+button_convert: Convert
+button_download: Download
+hints:
+  - "Для користувачів Firefox: щоб зберегти зображення, натисніть CTRL+S. Кнопка \"Зберегти зображення\" не працює."
