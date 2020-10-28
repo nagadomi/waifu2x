@@ -526,7 +526,7 @@ local function train()
    }
    local model
    if settings.resume:len() > 0 then
-      model = torch.load(settings.resume, "ascii")
+      model = w2nn.load_model(settings.resume, settings.backend == "cudnn", "ascii")
       adam_config.xEvalCount = math.floor((#train_x * settings.patches) / settings.batch_size) * settings.batch_size * settings.inner_epoch * (settings.resume_epoch - 1)
       print(string.format("set eval count = %d", adam_config.xEvalCount))
       if adam_config.xEvalCount > 0 then
