@@ -1,0 +1,29 @@
+---
+description: Super-rozdzielczość dla sztuki w stylu anime wykorzystująca głębokie konwolucyjne sieci neuronowe która obsługuje zdjęcia.
+show_demonstration: Pokaż demonstrację
+go_to_github: Zobacz projekt na GitHub
+image_choosing: Wybierz obraz
+type_url: Wpisz URL
+choose_file: Lub wybierz plik
+file_limits: "Limity: wielkość: 5MB, redukcja szumów: 3000x3000px, zwiększenie skali: 1500x1500px."
+style: Styl
+artwork: Sztuka
+photo: Zdjęcie
+noise_reduction: Redukcja szumów
+expect_jpeg: spodziewaj się artefaktów JPEG
+nr_none: Brak
+nr_low: Niska
+nr_medium: Średnia
+nr_high: Wysoka
+nr_highest: Najwyższa
+nr_hint: "Musisz użyć redukcji szumów jeśli zdjęcie ma szum lub możesz otrzymać efekt przeciwny."
+upscaling: Powiększanie skali
+up_none: Brak
+tta: TTA
+tta_best_effort: "n-pass auto"
+tta_rule: "Pokaż zasadę `n-pass auto`."
+tta_hint: "TTA stabilizuje jakość ale ogranicza wielkość zdjęcia źródłowego."
+button_convert: Konwertuj
+button_download: Pobierz
+hints:
+  - "Jeżeli jesteś użytkownikiem przeglądarki Firefox, kilknij CTRL + S aby zapisać obraz. Opcja \"Zapisz obraz\" nie działa."
