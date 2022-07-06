@@ -417,6 +417,14 @@ local index_zh_tw = file.read(path.join(ROOT, "assets", "index.zh-TW.html"))
 local index_ko = file.read(path.join(ROOT, "assets", "index.ko.html"))
 local index_nl = file.read(path.join(ROOT, "assets", "index.nl.html"))
 local index_ca = file.read(path.join(ROOT, "assets", "index.ca.html"))
+local index_ro = file.read(path.join(ROOT, "assets", "index.ro.html"))
+local index_it = file.read(path.join(ROOT, "assets", "index.it.html"))
+local index_eo = file.read(path.join(ROOT, "assets", "index.eo.html"))
+local index_no = file.read(path.join(ROOT, "assets", "index.no.html"))
+local index_uk = file.read(path.join(ROOT, "assets", "index.uk.html"))
+local index_pl = file.read(path.join(ROOT, "assets", "index.pl.html"))
+local index_bg = file.read(path.join(ROOT, "assets", "index.bg.html"))
+
 local index_en = file.read(path.join(ROOT, "assets", "index.html"))
 function FormHandler:get()
    local lang = self.request.headers:get("Accept-Language")
@@ -449,6 +457,20 @@ function FormHandler:get()
 	 self:write(index_nl)
       elseif langs[1] == "ca" or langs[1] == "ca-ES" or langs[1] == "ca-FR" or langs[1] == "ca-IT" or langs[1] == "ca-AD" then
 	 self:write(index_ca)
+      elseif langs[1] == "ro" then
+	 self:write(index_ro)
+      elseif langs[1] == "it" then
+	 self:write(index_it)
+      elseif langs[1] == "eo" then
+	 self:write(index_eo)
+      elseif langs[1] == "no" then
+	 self:write(index_no)
+      elseif langs[1] == "uk" then
+	 self:write(index_uk)
+      elseif langs[1] == "pl" then
+	 self:write(index_pl)
+      elseif langs[1] == "bg" then
+	 self:write(index_bg)
       else
 	 self:write(index_en)
       end
