@@ -7,6 +7,12 @@ The demo application can be found at http://waifu2x.udp.jp/ .
 
 __Note that I only provide this website and this repository. Other software or website claiming "waifu2x" has nothing to do with me.__
 
+## 2022/11 PyTorch version (No training code yet)
+
+[nunif](https://github.com/nagadomi/nunif)
+
+Also, the current waifu2x.udp.jp is powered by [nunif](https://github.com/nagadomi/nunif) impl.
+
 ## Summary
 
 Click to see the slide show.
