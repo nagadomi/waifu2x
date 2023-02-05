@@ -3,15 +3,13 @@
 Image Super-Resolution for Anime-style art using Deep Convolutional Neural Networks.
 And it supports photo.
 
-The demo application can be found at http://waifu2x.udp.jp/ .
+The demo application can be found at https://waifu2x.udp.jp/ (Cloud version), https://unlimited.waifu2x.net/ (In-Browser version).
 
-__Note that I only provide this website and this repository. Other software or website claiming "waifu2x" has nothing to do with me.__
-
-## 2022/11 PyTorch version (No training code yet)
+## 2023/02 PyTorch version
 
 [nunif](https://github.com/nagadomi/nunif)
 
-Also, the current waifu2x.udp.jp is powered by [nunif](https://github.com/nagadomi/nunif) impl.
+waifu2x development has already been moved to the repository above.
 
 ## Summary
 
