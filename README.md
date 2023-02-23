@@ -22,8 +22,7 @@ Click to see the slide show.
 waifu2x is inspired by SRCNN [1]. 2D character picture (HatsuneMiku) is licensed under CC BY-NC by piapro [2].
 
 - [1] Chao Dong, Chen Change Loy, Kaiming He, Xiaoou Tang, "Image Super-Resolution Using Deep Convolutional Networks", http://arxiv.org/abs/1501.00092
-- [2] "For Creators", http://piapro.net/en_for_creators.html
-
+- [2] "For Creators", https://piapro.net/intl/en_for_creators.html
 ## Public AMI
 
 TODO
