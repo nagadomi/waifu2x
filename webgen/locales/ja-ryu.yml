@@ -1,0 +1,28 @@
+---
+description: 深層畳み込みニューラルネットワークにゆる二次元画像ぬたみぬ超解像システム。 さしぬんかいん対応。
+show_demonstration: 実行例表示
+go_to_github: プロジェクトページ（GitHub）
+image_choosing: 画像選択
+type_url: URL入力
+choose_file: ファイル選択
+file_limits: "制限： サイズ： 5MB, ノイズ除去： 3000x3000px, 拡大(前)： 1500x1500px."
+style: スタイル
+artwork: イラスト
+photo: さしん
+noise_reduction: ノイズ除去
+expect_jpeg: JPEGノイズ想定
+nr_none: なし
+nr_low: ふぃく
+nr_medium: 中
+nr_high: 高
+nr_highest: じょーとぅー
+nr_hint: "ノイズ除去ー細部ぬちゃーいるくとぅがあいびーん。JPEGノイズぬあるばーに使用さびーん。"
+upscaling: 拡大
+up_none: なし
+tta: TTA
+tta_hint: "TTAー安定さる品質ちゅくやびーん。ただし画像サイズんかい制限ぬあいびーん。"
+tta_rule: "ルール"
+button_convert: 実行
+button_download: 実行結果保存
+hints:
+  - "Firefoxぬ方ー、にじりクリックから画像ぬ保存ならんぐとーるくとぅ、CTRL+SキーがALTキー後 ファイル - ページ保存っし画像しみそーれー。"
