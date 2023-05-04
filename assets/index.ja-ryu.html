@@ -27,7 +27,7 @@
 	  日本語
 	</a>
 	/
-  <a href="index.ja.html">
+        <a href="index.ja-ryu.html">
 	  うちなーぐち
 	</a>
 	/
@@ -103,32 +103,32 @@
 	  Български
 	</a>
       </div>
-      <p>深層畳み込みニューラルネットワークによる二次元画像のための超解像システム。 写真にも対応。</p>
+      <p>深層畳み込みニューラルネットワークにゆる二次元画像ぬたみぬ超解像システム。 さしぬんかいん対応。</p>
       <p class="margin1 link-box">
 	<a href="https://raw.githubusercontent.com/nagadomi/waifu2x/master/images/slide.png" class="blue-link" target="_blank">
-	  実行例を表示
+	  実行例表示
 	</a>
 	| 
 	<a href="https://github.com/nagadomi/waifu2x" class="blue-link" target="_blank">
-	  プロジェクトページ(GitHub)
+	  プロジェクトページ（GitHub）
 	</a>
       </p>
       <form action="/api" method="POST" enctype="multipart/form-data" target="_blank">
 	<div class="option-box first">
-	  <div class="option-left">画像を選択:</div>
+	  <div class="option-left">画像選択：</div>
 	  <div class="option-right">
 	    <input type="text" id="url" name="url" placeholder="URLを入力">
 	    <div class="option-right-small">
-	      ファイルを選択: 
+	      ファイル選択： 
 	      <input type="file" id="file" name="file"></div>
 	  </div>
 	  <div class="option-hint file_limits">
-	    制限: サイズ: 5MB, ノイズ除去: 3000x3000px, 拡大(前): 1500x1500px.
+	    制限： サイズ： 5MB, ノイズ除去： 3000x3000px, 拡大(前)： 1500x1500px.
 	  </div>
 	</div>
 	<div class="option-box">
 	  <div class="option-left">
-	    スタイル:
+	    スタイル：
 	  </div>
 	  <div class="option-right">
 	    <label><input type="radio" name="style" class="radio" value="art" checked>
@@ -138,16 +138,16 @@
 	    </label>
 	    <label><input type="radio" name="style" class="radio" value="photo">
 	      <span class="r-text">
-		写真
+		さしん
 	      </span>
 	    </label>
 	  </div>
 	</div>
 	<div class="option-box">
 	  <div class="option-left">
-	    ノイズ除去:
+	    ノイズ除去：
 	    <div class="option-left-small">
-	      (JPEGノイズを想定)
+	      （JPEGノイズ想定）
 	    </div>
 	  </div>
 	  <div class="option-right">
@@ -158,7 +158,7 @@
 	    </label>
 	    <label><input type="radio" name="noise" class="radio" value="0" checked>
 	      <span class="r-text">
-		低
+		ふぃく
 	      </span>
 	    </label>
 	    <label><input type="radio" name="noise" class="radio" value="1" checked>
@@ -175,17 +175,17 @@
 	    <label>
 	      <input type="radio" name="noise" class="radio" value="3">
 	      <span class="r-text">
-		最高
+		じょーとぅー
 	      </span>
 	    </label>
 	  </div>
 	  <div class="option-hint">
-	    ノイズ除去は細部が消えることがあります。JPEGノイズがある場合に使用します。
+	    ノイズ除去ー細部ぬちゃーいるくとぅがあいびーん。JPEGノイズぬあるばーに使用さびーん。
 	  </div>
 	</div>
 	<div class="option-box">
 	  <div class="option-left">
-	    拡大:
+	    拡大：
 	    <div class="option-left-small"></div>
 	  </div>
 	  <div class="option-right">
@@ -210,11 +210,11 @@
 	
 	  <input type="submit" class="button" value="実行">
 	
-	<input type="submit" name="download" value="実行結果を保存" class="button">
+	<input type="submit" name="download" value="実行結果保存" class="button">
 	<div class="bottom-hint">
 	  <ul>
 	    
-	      <li>Firefoxの方は、右クリから画像が保存できないようなので、CTRL+SキーかALTキー後 ファイル - ページを保存 で画像を保存してください。</li>
+	      <li>Firefoxぬ方ー、にじりクリックから画像ぬ保存ならんぐとーるくとぅ、CTRL+SキーがALTキー後 ファイル - ページ保存っし画像しみそーれー。</li>
 	    
 	  </ul>
 	</div>
